@@ -57,22 +57,54 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 <nav class="toc" aria-label="Table of contents">
   <p class="toc-title">Contents</p>
   <ul>
-<li class="toc-l2"><a href="#practical-go-standard-library-tutorial">Practical Go Standard Library Tutorial</a></li>
-<li class="toc-l2"><a href="#common-functions">Common functions:</a></li>
-<li class="toc-l2"><a href="#common-formatting-verbs">Common formatting verbs</a></li>
-<li class="toc-l2"><a href="#creating-strings">Creating strings</a></li>
-<li class="toc-l2"><a href="#sentinel-errors">Sentinel errors</a></li>
-<li class="toc-l2"><a href="#frequently-used-functions">Frequently used functions</a></li>
-<li class="toc-l2"><a href="#using-stringsbuilder">Using "strings.Builder"</a></li>
-<li class="toc-l2"><a href="#string-to-integer">String to integer</a></li>
-<li class="toc-l2"><a href="#integer-to-string">Integer to string</a></li>
-<li class="toc-l2"><a href="#format-values">Format values</a></li>
-<li class="toc-l2"><a href="#slices">slices</a></li>
-<li class="toc-l2"><a href="#maps">maps</a></li>
-<li class="toc-l2"><a href="#current-time">Current time</a></li>
+<li class="toc-l2"><a href="#1-introduction">1. Introduction</a></li>
+<li class="toc-l2"><a href="#2-fmt-formatting-and-printing">2. "fmt": Formatting and Printing</a></li>
+<li class="toc-l2"><a href="#3-errors-creating-and-inspecting-errors">3. "errors": Creating and Inspecting Errors</a></li>
+<li class="toc-l2"><a href="#4-strings-working-with-strings">4. "strings": Working with Strings</a></li>
+<li class="toc-l2"><a href="#5-strconv-converting-strings-and-numbers">5. "strconv": Converting Strings and Numbers</a></li>
+<li class="toc-l2"><a href="#6-slices-and-maps-collection-helpers">6. "slices" and "maps": Collection Helpers</a></li>
+<li class="toc-l2"><a href="#7-sort-sorting-collections">7. "sort": Sorting Collections</a></li>
+<li class="toc-l2"><a href="#8-time-dates-durations-and-timers">8. "time": Dates, Durations, and Timers</a></li>
+<li class="toc-l2"><a href="#9-os-files-environment-variables-and-processes">9. "os": Files, Environment Variables, and Processes</a></li>
+<li class="toc-l2"><a href="#10-pathfilepath-file-system-paths">10. "path/filepath": File-System Paths</a></li>
+<li class="toc-l2"><a href="#11-io-general-input-and-output">11. "io": General Input and Output</a></li>
+<li class="toc-l2"><a href="#12-bufio-buffered-input-and-output">12. "bufio": Buffered Input and Output</a></li>
+<li class="toc-l2"><a href="#13-bytes-working-with-byte-slices">13. "bytes": Working with Byte Slices</a></li>
+<li class="toc-l2"><a href="#14-encodingjson-json-encoding-and-decoding">14. "encoding/json": JSON Encoding and Decoding</a></li>
+<li class="toc-l2"><a href="#15-neturl-urls-and-query-parameters">15. "net/url": URLs and Query Parameters</a></li>
+<li class="toc-l2"><a href="#16-nethttp-http-clients">16. "net/http": HTTP Clients</a></li>
+<li class="toc-l2"><a href="#17-nethttp-http-servers">17. "net/http": HTTP Servers</a></li>
+<li class="toc-l2"><a href="#18-context-cancellation-deadlines-and-request-values">18. "context": Cancellation, Deadlines, and Request Values</a></li>
+<li class="toc-l2"><a href="#19-sync-synchronizing-goroutines">19. "sync": Synchronizing Goroutines</a></li>
+<li class="toc-l2"><a href="#20-syncatomic-atomic-values">20. "sync/atomic": Atomic Values</a></li>
+<li class="toc-l2"><a href="#21-channels-and-select">21. Channels and "select"</a></li>
+<li class="toc-l2"><a href="#22-log-and-logslog-application-logging">22. "log" and "log/slog": Application Logging</a></li>
+<li class="toc-l2"><a href="#23-flag-command-line-flags">23. "flag": Command-Line Flags</a></li>
+<li class="toc-l2"><a href="#24-regexp-regular-expressions">24. "regexp": Regular Expressions</a></li>
+<li class="toc-l2"><a href="#25-math-and-mathrandv2">25. "math" and "math/rand/v2"</a></li>
+<li class="toc-l2"><a href="#26-cryptorand-secure-random-values">26. "crypto/rand": Secure Random Values</a></li>
+<li class="toc-l2"><a href="#27-cryptosha256-and-encodinghex">27. "crypto/sha256" and "encoding/hex"</a></li>
+<li class="toc-l2"><a href="#28-encodingbase64">28. "encoding/base64"</a></li>
+<li class="toc-l2"><a href="#29-databasesql-database-access">29. "database/sql": Database Access</a></li>
+<li class="toc-l2"><a href="#30-htmltemplate-safe-html-templates">30. "html/template": Safe HTML Templates</a></li>
+<li class="toc-l2"><a href="#31-embed-embedding-files-in-a-binary">31. "embed": Embedding Files in a Binary</a></li>
+<li class="toc-l2"><a href="#32-testing-unit-tests">32. "testing": Unit Tests</a></li>
+<li class="toc-l2"><a href="#33-nethttphttptest-testing-http-handlers">33. "net/http/httptest": Testing HTTP Handlers</a></li>
+<li class="toc-l2"><a href="#34-benchmarks">34. Benchmarks</a></li>
+<li class="toc-l2"><a href="#35-fuzz-testing">35. Fuzz Testing</a></li>
+<li class="toc-l2"><a href="#36-runtime-runtime-information">36. "runtime": Runtime Information</a></li>
+<li class="toc-l2"><a href="#37-ossignal-graceful-shutdown">37. "os/signal": Graceful Shutdown</a></li>
+<li class="toc-l2"><a href="#38-compressgzip-compressing-data">38. "compress/gzip": Compressing Data</a></li>
+<li class="toc-l2"><a href="#39-archivezip-zip-archives">39. "archive/zip": ZIP Archives</a></li>
+<li class="toc-l2"><a href="#40-reflect-runtime-type-inspection">40. "reflect": Runtime Type Inspection</a></li>
+<li class="toc-l2"><a href="#41-complete-example-small-json-api">41. Complete Example: Small JSON API</a></li>
+<li class="toc-l2"><a href="#42-recommended-learning-order">42. Recommended Learning Order</a></li>
+<li class="toc-l2"><a href="#43-standard-library-best-practices">43. Standard-Library Best Practices</a></li>
+<li class="toc-l2"><a href="#44-package-cheat-sheet">44. Package Cheat Sheet</a></li>
+<li class="toc-l2"><a href="#45-further-reading">45. Further Reading</a></li>
   </ul>
 </nav>
-<h2 id="practical-go-standard-library-tutorial">Practical Go Standard Library Tutorial</h2><p>1. Introduction</p><p>Go includes a large standard library covering:</p><pre><code>- Text manipulation
+<p><strong>Practical Go Standard Library Tutorial</strong></p><h2 id="1-introduction">1. Introduction</h2><p>Go includes a large standard library covering:</p><pre><code>- Text manipulation
 - Input and output
 - Files and directories
 - JSON and other data formats
@@ -87,7 +119,7 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 	"fmt"
 	"net/http"
 	"strings"
-)</code></pre><p>These are standard-library packages.</p><p>An external package usually has an import path such as:</p><pre><code>import "github.com/go-chi/chi/v5"</code></pre><p>This tutorial focuses on the packages you are most likely to use in everyday Go development.</p><p>---</p><p>2. <strong>"fmt"</strong>: Formatting and Printing</p><p>The "fmt" package handles formatted input and output.</p><p>Printing values</p><pre><code>package main
+)</code></pre><p>These are standard-library packages.</p><p>An external package usually has an import path such as:</p><pre><code>import "github.com/go-chi/chi/v5"</code></pre><p>This tutorial focuses on the packages you are most likely to use in everyday Go development.</p><p>---</p><h2 id="2-fmt-formatting-and-printing">2. "fmt": Formatting and Printing</h2><p>The "fmt" package handles formatted input and output.</p><p>Printing values</p><pre><code>package main
 
 import "fmt"
 
@@ -98,11 +130,11 @@ func main() {
 	fmt.Println("Hello, Go!")
 	fmt.Println(name, age)
 	fmt.Printf("%s is %d years old\n", name, age)
-}</code></pre><h2 id="common-functions">Common functions:</h2><p>Function - Purpose</p><pre><code>fmt.Println - Prints values followed by a newline
+}</code></pre><p><strong>Common functions:</strong></p><p>Function - Purpose</p><pre><code>fmt.Println - Prints values followed by a newline
 fmt.Print - Prints values without automatically adding a newline
 fmt.Printf - Prints formatted output
 fmt.Sprintf - Creates and returns a formatted string
-fmt.Errorf - Creates a formatted error</code></pre><h2 id="common-formatting-verbs">Common formatting verbs</h2><p>Verb - Meaning</p><p>%<strong>s</strong> - String</p><p>%<strong>d</strong> - Integer</p><p>%<strong>f</strong> - Floating-point number</p><p>%<strong>t</strong> - Boolean</p><p>%<strong>v</strong> - Default representation</p><p>%+v - Detailed struct representation</p><p>%<strong>T</strong> - Value type</p><p>%<strong>q</strong> - Quoted string</p><p>%<strong>x</strong> - Hexadecimal</p><p>Example:</p><pre><code>package main
+fmt.Errorf - Creates a formatted error</code></pre><p><strong>Common formatting verbs</strong></p><p>Verb - Meaning</p><p>%<strong>s</strong> - String</p><p>%<strong>d</strong> - Integer</p><p>%<strong>f</strong> - Floating-point number</p><p>%<strong>t</strong> - Boolean</p><p>%<strong>v</strong> - Default representation</p><p>%+v - Detailed struct representation</p><p>%<strong>T</strong> - Value type</p><p>%<strong>q</strong> - Quoted string</p><p>%<strong>x</strong> - Hexadecimal</p><p>Example:</p><pre><code>package main
 
 import "fmt"
 
@@ -122,10 +154,10 @@ func main() {
 	fmt.Printf("Type: %T\n", user)
 }</code></pre><p>Output:</p><pre><code>Default: {Ginad 28}
 Detailed: {Name:Ginad Age:28}
-Type: main.User</code></pre><h2 id="creating-strings">Creating strings</h2><p>Use "<strong>fmt</strong>.Sprintf" when you need the result as a string:</p><pre><code>message := fmt.Sprintf("User %s has ID %d", "Ginad", 1001)
+Type: main.User</code></pre><p><strong>Creating strings</strong></p><p>Use "<strong>fmt</strong>.Sprintf" when you need the result as a string:</p><pre><code>message := fmt.Sprintf("User %s has ID %d", "Ginad", 1001)
 fmt.Println(message)</code></pre><p>Creating formatted errors</p><pre><code>func findUser(id int) error {
 	return fmt.Errorf("user with ID %d was not found", id)
-}</code></pre><p>---</p><p>3. "<strong>errors</strong>": Creating and Inspecting Errors</p><p>The "errors" package provides basic error creation and inspection.</p><p>Creating an error</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="3-errors-creating-and-inspecting-errors">3. "errors": Creating and Inspecting Errors</h2><p>The "errors" package provides basic error creation and inspection.</p><p>Creating an error</p><pre><code>package main
 
 import (
 	"errors"
@@ -145,7 +177,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-}</code></pre><h2 id="sentinel-errors">Sentinel errors</h2><p>A sentinel error is a package-level error value used to represent a known condition.</p><pre><code>package user
+}</code></pre><p><strong>Sentinel errors</strong></p><p>A sentinel error is a package-level error value used to represent a known condition.</p><pre><code>package user
 
 import "errors"
 
@@ -194,7 +226,7 @@ func main() {
 	if errors.As(err, &amp;validationErr) {
 		fmt.Println("Invalid field:", validationErr.Field)
 	}
-}</code></pre><p>Use:</p><p>- "errors.<strong>Is</strong>" to check whether an error matches a particular error value.</p><p>- "errors.<strong>As</strong>" to extract a particular error type.</p><p>---</p><p>4. "<strong>strings</strong>": Working with Strings</p><p>The "strings" package provides functions for searching, modifying, splitting, and joining strings.</p><pre><code>package main
+}</code></pre><p>Use:</p><p>- "errors.<strong>Is</strong>" to check whether an error matches a particular error value.</p><p>- "errors.<strong>As</strong>" to extract a particular error type.</p><p>---</p><h2 id="4-strings-working-with-strings">4. "strings": Working with Strings</h2><p>The "strings" package provides functions for searching, modifying, splitting, and joining strings.</p><pre><code>package main
 
 import (
 	"fmt"
@@ -208,7 +240,7 @@ func main() {
 	fmt.Println(strings.ToLower(text))
 	fmt.Println(strings.ToUpper(text))
 	fmt.Println(strings.Contains(text, "Go"))
-}</code></pre><h2 id="frequently-used-functions">Frequently used functions</h2><p>Function - Purpose</p><p>"strings.Contains" - Checks whether text contains another string</p><p>"strings.HasPrefix" - Checks a prefix</p><p>"strings.HasSuffix" - Checks a suffix</p><p>"strings.Split" - Splits a string</p><p>"strings.Join" - Joins strings</p><p>"strings.TrimSpace" - Removes surrounding whitespace</p><p>"strings.ReplaceAll" - Replaces matching text</p><p>"strings.ToLower" - Converts text to lowercase</p><p>"strings.ToUpper" - Converts text to uppercase</p><p>"strings.Fields" - Splits text by whitespace</p><p>"strings.Builder" - Builds strings efficiently</p><p>Splitting and joining</p><pre><code>csv := "apple,banana,orange"
+}</code></pre><p><strong>Frequently used functions</strong></p><p>Function - Purpose</p><p>"strings.Contains" - Checks whether text contains another string</p><p>"strings.HasPrefix" - Checks a prefix</p><p>"strings.HasSuffix" - Checks a suffix</p><p>"strings.Split" - Splits a string</p><p>"strings.Join" - Joins strings</p><p>"strings.TrimSpace" - Removes surrounding whitespace</p><p>"strings.ReplaceAll" - Replaces matching text</p><p>"strings.ToLower" - Converts text to lowercase</p><p>"strings.ToUpper" - Converts text to uppercase</p><p>"strings.Fields" - Splits text by whitespace</p><p>"strings.Builder" - Builds strings efficiently</p><p>Splitting and joining</p><pre><code>csv := "apple,banana,orange"
 
 fruits := strings.Split(csv, ",")
 
@@ -226,7 +258,7 @@ apple  - banana  - orange</code></pre><p>Replacing text</p><pre><code>slug := st
 	"-",
 )
 
-fmt.Println(slug)</code></pre><p>Output:</p><table><thead><tr><th><p>go-standard-<strong>library</strong></p></th></tr></thead></table><h2 id="using-stringsbuilder">Using "strings.Builder"</h2><p>Repeated string concatenation can create unnecessary allocations. Use "strings.Builder" when constructing larger strings.</p><pre><code>package main
+fmt.Println(slug)</code></pre><p>Output:</p><table><thead><tr><th><p>go-standard-<strong>library</strong></p></th></tr></thead></table><p><strong>Using "strings.Builder"</strong></p><p>Repeated string concatenation can create unnecessary allocations. Use "strings.Builder" when constructing larger strings.</p><pre><code>package main
 
 import (
 	"fmt"
@@ -256,7 +288,7 @@ func main() {
 	builder.WriteString("&lt;/ul&gt;")
 
 	return builder.String()
-}</code></pre><p>For untrusted content, use "html/template" instead of manually constructing HTML.</p><p>---</p><p>5. "<strong>strconv</strong>": Converting Strings and Numbers</p><p>The "strconv" package converts strings to primitive values and primitive values to strings.</p><h2 id="string-to-integer">String to integer</h2><pre><code>package main
+}</code></pre><p>For untrusted content, use "html/template" instead of manually constructing HTML.</p><p>---</p><h2 id="5-strconv-converting-strings-and-numbers">5. "strconv": Converting Strings and Numbers</h2><p>The "strconv" package converts strings to primitive values and primitive values to strings.</p><p><strong>String to integer</strong></p><pre><code>package main
 
 import (
 	"fmt"
@@ -273,7 +305,7 @@ func main() {
 	}
 
 	fmt.Println(number + 8)
-}</code></pre><h2 id="integer-to-string">Integer to string</h2><pre><code>id := 1001
+}</code></pre><p><strong>Integer to string</strong></p><pre><code>id := 1001
 text := strconv.Itoa(id)
 
 fmt.Println("User ID: " + text)
@@ -293,9 +325,9 @@ if err != nil {
 count, err := strconv.ParseInt("500", 10, 64)
 if err != nil {
 	return
-}</code></pre><h2 id="format-values">Format values</h2><pre><code>priceText := strconv.FormatFloat(19.95, 'f', 2, 64)
+}</code></pre><p><strong>Format values</strong></p><pre><code>priceText := strconv.FormatFloat(19.95, 'f', 2, 64)
 enabledText := strconv.FormatBool(true)
-countText := strconv.FormatInt(500, 10)</code></pre><p>---</p><p>6. "<strong>slices</strong>" and "<strong>maps</strong>": Collection Helpers</p><p>Modern Go includes standard-library helpers for slices and maps.</p><h2 id="slices">slices</h2><pre><code>package main
+countText := strconv.FormatInt(500, 10)</code></pre><p>---</p><h2 id="6-slices-and-maps-collection-helpers">6. "slices" and "maps": Collection Helpers</h2><p>Modern Go includes standard-library helpers for slices and maps.</p><p><strong>slices</strong></p><pre><code>package main
 
 import (
 	"fmt"
@@ -339,7 +371,7 @@ func main() {
 	})
 
 	fmt.Println(users)
-}</code></pre><h2 id="maps">maps</h2><pre><code>package main
+}</code></pre><p><strong>maps</strong></p><pre><code>package main
 
 import (
 	"fmt"
@@ -358,7 +390,7 @@ func main() {
 }</code></pre><p>Comparing maps:</p><pre><code>a := map[string]int{"one": 1}
 b := map[string]int{"one": 1}
 
-fmt.Println(maps.Equal(a, b))</code></pre><p>---</p><p>7. "<strong>sort</strong>": Sorting Collections</p><p>The "sort" package is still commonly found in existing Go projects.</p><p>Sorting primitive slices</p><pre><code>package main
+fmt.Println(maps.Equal(a, b))</code></pre><p>---</p><h2 id="7-sort-sorting-collections">7. "sort": Sorting Collections</h2><p>The "sort" package is still commonly found in existing Go projects.</p><p>Sorting primitive slices</p><pre><code>package main
 
 import (
 	"fmt"
@@ -378,7 +410,7 @@ func main() {
 	return users[i].Age &lt; users[j].Age
 })</code></pre><p>Descending:</p><pre><code>sort.Slice(users, func(i, j int) bool {
 	return users[i].Age &gt; users[j].Age
-})</code></pre><p>---</p><p>8. "<strong>time</strong>": Dates, Durations, and Timers</p><p>The "time" package handles dates, times, durations, timers, and tickers.</p><h2 id="current-time">Current time</h2><pre><code>package main
+})</code></pre><p>---</p><h2 id="8-time-dates-durations-and-timers">8. "time": Dates, Durations, and Timers</h2><p>The "time" package handles dates, times, durations, timers, and tickers.</p><p><strong>Current time</strong></p><pre><code>package main
 
 import (
 	"fmt"
@@ -422,7 +454,7 @@ defer ticker.Stop()
 for i := 0; i &lt; 3; i++ {
 	&lt;-ticker.C
 	fmt.Println("Tick:", time.Now())
-}</code></pre><p>---</p><p>9. "os": Files, Environment Variables, and Processes</p><p>The "os" package provides operating-system functionality.</p><p>Environment variables</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="9-os-files-environment-variables-and-processes">9. "os": Files, Environment Variables, and Processes</h2><p>The "os" package provides operating-system functionality.</p><p>Environment variables</p><pre><code>package main
 
 import (
 	"fmt"
@@ -494,7 +526,7 @@ if errors.Is(err, os.ErrNotExist) {
 	fmt.Println("Unable to inspect file:", err)
 } else {
 	fmt.Println("File exists")
-}</code></pre><p>---</p><p>10. "path/filepath": File-System Paths</p><p>Use path/filepath for paths on the local operating system.</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="10-pathfilepath-file-system-paths">10. "path/filepath": File-System Paths</h2><p>Use path/filepath for paths on the local operating system.</p><pre><code>package main
 
 import (
 	"fmt"
@@ -534,7 +566,7 @@ if err != nil {
 
 for _, file := range files {
 	fmt.Println(file)
-}</code></pre><p>Use "path", not "path/filepath", for slash-separated URL paths.</p><p>---</p><p>11. "io": General Input and Output</p><p>The <strong>io</strong> package defines interfaces and utilities used throughout Go.</p><p>Two important interfaces are:</p><pre><code>type Reader interface {
+}</code></pre><p>Use "path", not "path/filepath", for slash-separated URL paths.</p><p>---</p><h2 id="11-io-general-input-and-output">11. "io": General Input and Output</h2><p>The <strong>io</strong> package defines interfaces and utilities used throughout Go.</p><p>Two important interfaces are:</p><pre><code>type Reader interface {
 	Read(p []byte) (n int, err error)
 }
 
@@ -568,7 +600,7 @@ data, err := io.ReadAll(limited)</code></pre><p>Writing a string</p><pre><code>_
 	strings.NewReader("Go"),
 )
 
-data, err := io.ReadAll(reader)</code></pre><p>---</p><p>12. "bufio": Buffered Input and Output</p><p>Use <strong>bufio</strong> for efficient buffered reading and writing.</p><p>Reading line by line</p><pre><code>package main
+data, err := io.ReadAll(reader)</code></pre><p>---</p><h2 id="12-bufio-buffered-input-and-output">12. "bufio": Buffered Input and Output</h2><p>Use <strong>bufio</strong> for efficient buffered reading and writing.</p><p>Reading line by line</p><pre><code>package main
 
 import (
 	"bufio"
@@ -618,7 +650,7 @@ for i := 1; i &lt;= 1000; i++ {
 }</code></pre><p>Remember to <strong>call "Flush", usually with "defer"</strong>.</p><p>Scanner size limit</p><p>"bufio.Scanner" has a token-size limit. Increase it when processing unusually long lines:</p><pre><code>scanner := bufio.NewScanner(file)
 
 buffer := make([]byte, 64*1024)
-scanner.Buffer(buffer, 1024*1024)</code></pre><p>This sets a maximum token size of 1 MB.</p><p>---</p><p>13. "bytes": Working with Byte Slices</p><p>The <strong>bytes</strong> package is similar to "strings", but it works with "[]byte".</p><pre><code>package main
+scanner.Buffer(buffer, 1024*1024)</code></pre><p>This sets a maximum token size of 1 MB.</p><p>---</p><h2 id="13-bytes-working-with-byte-slices">13. "bytes": Working with Byte Slices</h2><p>The <strong>bytes</strong> package is similar to "strings", but it works with "[]byte".</p><pre><code>package main
 
 import (
 	"bytes"
@@ -642,7 +674,7 @@ request, err := http.NewRequest(
 	http.MethodPost,
 	"https://example.com/users",
 	bytes.NewReader(payload),
-)</code></pre><p>---</p><p>14. "encoding/json": JSON Encoding and Decoding</p><p>The <strong>encoding</strong>/json package converts between Go values and JSON.</p><p>Struct tags</p><pre><code>type User struct {
+)</code></pre><p>---</p><h2 id="14-encodingjson-json-encoding-and-decoding">14. "encoding/json": JSON Encoding and Decoding</h2><p>The <strong>encoding</strong>/json package converts between Go values and JSON.</p><p>Struct tags</p><pre><code>type User struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -712,7 +744,7 @@ decoder.DisallowUnknownFields() // strict check
 if err := decoder.Decode(&amp;request); err != nil {
 	http.Error(w, "invalid request body", http.StatusBadRequest)
 	return
-}</code></pre><p>This is useful for strict API request validation.</p><p>---</p><p>15. "net/url": URLs and Query Parameters</p><p>The "net/url" package parses and constructs URLs.</p><p>Parsing a URL</p><pre><code>package main
+}</code></pre><p>This is useful for strict API request validation.</p><p>---</p><h2 id="15-neturl-urls-and-query-parameters">15. "net/url": URLs and Query Parameters</h2><p>The "net/url" package parses and constructs URLs.</p><p>Parsing a URL</p><pre><code>package main
 
 import (
 	"fmt"
@@ -750,7 +782,7 @@ query.Set("page", "2")
 
 parsed.RawQuery = query.Encode()
 
-fmt.Println(parsed.String())</code></pre><p>---</p><p>16. "net/http": HTTP Clients</p><p>The "net/http" package provides HTTP client and server implementations.</p><p>Simple GET request</p><pre><code>response, err := http.Get("https://api.example.com/users")
+fmt.Println(parsed.String())</code></pre><p>---</p><h2 id="16-nethttp-http-clients">16. "net/http": HTTP Clients</h2><p>The "net/http" package provides HTTP client and server implementations.</p><p>Simple GET request</p><pre><code>response, err := http.Get("https://api.example.com/users")
 if err != nil {
 	return err
 }
@@ -845,7 +877,7 @@ func NewAPIClient(baseURL string) *APIClient {
 			Timeout: 10 * time.Second,
 		},
 	}
-}</code></pre><p>---</p><p>17. "net/http": HTTP Servers</p><p>Go can build an HTTP server without an external framework.</p><p>Basic server</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="17-nethttp-http-servers">17. "net/http": HTTP Servers</h2><p>Go can build an HTTP server without an external framework.</p><p>Basic server</p><pre><code>package main
 
 import (
 	"fmt"
@@ -933,7 +965,7 @@ if err := server.ListenAndServe(); err != nil &amp;&amp;
 		)
 	})
 }</code></pre><p>Usage:</p><pre><code>handler := loggingMiddleware(mux)
-server.Handler = handler</code></pre><p>---</p><p>18. "context": Cancellation, Deadlines, and Request Values</p><p>The <strong>context</strong> package carries deadlines, cancellation signals, and request-scoped information.</p><p>It is especially important for:</p><p>- HTTP requests</p><p>- Database operations</p><p>- Goroutines</p><p>- External API calls</p><p>- Graceful shutdown</p><p>Cancellation</p><pre><code>package main
+server.Handler = handler</code></pre><p>---</p><h2 id="18-context-cancellation-deadlines-and-request-values">18. "context": Cancellation, Deadlines, and Request Values</h2><p>The <strong>context</strong> package carries deadlines, cancellation signals, and request-scoped information.</p><p>It is especially important for:</p><p>- HTTP requests</p><p>- Database operations</p><p>- Goroutines</p><p>- External API calls</p><p>- Graceful shutdown</p><p>Cancellation</p><pre><code>package main
 
 import (
 	"context"
@@ -980,7 +1012,7 @@ result, err := performOperation(ctx)</code></pre><p><br />Respecting cancellatio
 	}
 }</code></pre><p>Context rules</p><p>1. Pass "context.Context" as the first parameter.</p><p>2. Do not store contexts inside long-lived structs.</p><p>3. Do not pass "nil"; use "context.Background()" or "context.TODO()".</p><p>4. Use context values only for request-scoped metadata.</p><p>5. Always call the returned cancellation function.</p><p>Good:</p><pre><code>func FindUser(ctx context.Context, id int) (User, error)</code></pre><p>Avoid:</p><pre><code>type UserService struct {
 	ctx context.Context
-}</code></pre><p>---</p><p>19. "sync": Synchronizing Goroutines</p><p>The <strong>sync</strong> package provides synchronization primitives.</p><p><strong>sync</strong>.WaitGroup - A wait group waits for goroutines to finish.</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="19-sync-synchronizing-goroutines">19. "sync": Synchronizing Goroutines</h2><p>The <strong>sync</strong> package provides synchronization primitives.</p><p><strong>sync</strong>.WaitGroup - A wait group waits for goroutines to finish.</p><pre><code>package main
 
 import (
 	"fmt"
@@ -1085,7 +1117,7 @@ cache.Store("user:1", "Ginad")
 value, exists := cache.Load("user:1")
 if exists {
 	fmt.Println(value)
-}</code></pre><p>---</p><p>20. "sync/atomic": Atomic Values</p><p>Atomic operations are useful for small pieces of shared state, such as counters and flags.</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="20-syncatomic-atomic-values">20. "sync/atomic": Atomic Values</h2><p>Atomic operations are useful for small pieces of shared state, such as counters and flags.</p><pre><code>package main
 import (</code></pre><p>	"fmt"</p><p>	"sync"</p><p>	"sync/atomic"</p><pre><code>)
 func main() {
 	var counter atomic.Int64
@@ -1096,7 +1128,7 @@ func main() {
 		})
 	}</code></pre><p>	wg.Wait()</p><pre><code>fmt.Println(counter.Load())
 }</code></pre><p>Boolean flag:</p><p>var ready atomic.Bool</p><p>ready.Store(true)</p><p>if ready.Load() {</p><pre><code>fmt.Println("Application is ready")
-}</code></pre><p>Use a mutex when multiple related values must be updated together.</p><p>---</p><p>21. Channels and "select"</p><p>Channels are part of the Go language, but their behavior is closely connected to the standard library’s concurrency tools.</p><p>Sending and receiving</p><pre><code>package main
+}</code></pre><p>Use a mutex when multiple related values must be updated together.</p><p>---</p><h2 id="21-channels-and-select">21. Channels and "select"</h2><p>Channels are part of the Go language, but their behavior is closely connected to the standard library’s concurrency tools.</p><p>Sending and receiving</p><pre><code>package main
 import "fmt"
 func main() {
 	messages := make(chan string)
@@ -1141,7 +1173,7 @@ func main() {
 	}</code></pre><p>	close(jobs)</p><pre><code>for i := 0; i &lt; jobCount; i++ {
 		fmt.Println("Result:", &lt;-results)
 	}
-}</code></pre><p>---</p><p>22. "log" and "log/slog": Application Logging</p><p>Basic "log"</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="22-log-and-logslog-application-logging">22. "log" and "log/slog": Application Logging</h2><p>Basic "log"</p><pre><code>package main
 import "log"
 func main() {
 	log.Println("Application started")
@@ -1162,7 +1194,7 @@ func main() {
   "msg": "user created",
   "user_id": 1001,
   "email": "Ginad@example.com"
-}</code></pre><p>Log levels</p><p>logger.Debug("database query", "query", query)</p><p>logger.Info("request completed", "status", 200)</p><p>logger.Warn("slow request", "duration", duration)</p><p>logger.Error("request failed", "error", err)</p><p>Adding permanent attributes</p><p>requestLogger := logger.With(</p><p>	"request_id", requestID,</p><p>	"method", r.Method,</p><p>	"path", r.URL.Path,</p><p>)</p><p>requestLogger.Info("request started")</p><p>Logging errors</p><p>Use:</p><p>logger.Error("failed to load user", "error", err)</p><p>Instead of converting everything into one formatted string:</p><p>logger.Error(fmt.Sprintf("failed to load user: %v", err))</p><p>Structured fields are easier for log-processing systems to query.</p><p>---</p><p>23. "flag": Command-Line Flags</p><pre><code>The "flag" package parses command-line options.
+}</code></pre><p>Log levels</p><p>logger.Debug("database query", "query", query)</p><p>logger.Info("request completed", "status", 200)</p><p>logger.Warn("slow request", "duration", duration)</p><p>logger.Error("request failed", "error", err)</p><p>Adding permanent attributes</p><p>requestLogger := logger.With(</p><p>	"request_id", requestID,</p><p>	"method", r.Method,</p><p>	"path", r.URL.Path,</p><p>)</p><p>requestLogger.Info("request started")</p><p>Logging errors</p><p>Use:</p><p>logger.Error("failed to load user", "error", err)</p><p>Instead of converting everything into one formatted string:</p><p>logger.Error(fmt.Sprintf("failed to load user: %v", err))</p><p>Structured fields are easier for log-processing systems to query.</p><p>---</p><h2 id="23-flag-command-line-flags">23. "flag": Command-Line Flags</h2><pre><code>The "flag" package parses command-line options.
 package main
 import (</code></pre><p>	"flag"</p><p>	"fmt"</p><pre><code>)
 func main() {
@@ -1188,7 +1220,7 @@ func main() {
 }</code></pre><p>Run:</p><p>go run . -name Ginad -count 3 -verbose</p><p>Remaining positional arguments:</p><p>flag.Parse()</p><pre><code>files := flag.Args()
 for _, file := range files {
 	fmt.Println(file)
-}</code></pre><p>---</p><p>24. "regexp": Regular Expressions</p><p>The "regexp" package provides regular-expression matching.</p><p>Simple matching</p><pre><code>package main
+}</code></pre><p>---</p><h2 id="24-regexp-regular-expressions">24. "regexp": Regular Expressions</h2><p>The "regexp" package provides regular-expression matching.</p><p>Simple matching</p><pre><code>package main
 import (</code></pre><p>	"fmt"</p><p>	"regexp"</p><pre><code>)
 func main() {
 	matched, err := regexp.MatchString(
@@ -1205,7 +1237,7 @@ func validUsername(username string) bool {
 matches := pattern.FindAllString(</code></pre><p>	"Order 123 contains 4 products",</p><p>	-1,</p><pre><code>)
 fmt.Println(matches)</code></pre><p>Output:</p><p>[123 4]</p><p>Replacing matches</p><pre><code>pattern := regexp.MustCompile(`\s+`)
 result := pattern.ReplaceAllString(</code></pre><p>	"Go    standard   library",</p><p>	" ",</p><pre><code>)
-fmt.Println(result)</code></pre><p>For simple prefix, suffix, containment, splitting, or replacement operations, prefer the "strings" package.</p><p>---</p><p>25. "math" and "math/rand/v2"</p><p>"math"</p><pre><code>package main
+fmt.Println(result)</code></pre><p>For simple prefix, suffix, containment, splitting, or replacement operations, prefer the "strings" package.</p><p>---</p><h2 id="25-math-and-mathrandv2">25. "math" and "math/rand/v2"</h2><p>"math"</p><pre><code>package main
 import (</code></pre><p>	"fmt"</p><p>	"math"</p><pre><code>)
 func main() {
 	fmt.Println(math.Abs(-10.5))
@@ -1223,7 +1255,7 @@ func main() {
 	fmt.Println(value)
 }</code></pre><p>Random item:</p><pre><code>names := []string{"Ginad", "Gigi", "Gane"}
 name := names[rand.IntN(len(names))]
-fmt.Println(name)</code></pre><p>Shuffle:</p><p>rand.Shuffle(len(names), func(i, j int) {</p><p>	names[i], names[j] = names[j], names[i]</p><p>})</p><p>Do not use "math/rand/v2" for passwords, access tokens, API keys, reset links, or other security-sensitive values. Use "crypto/rand".</p><p>---</p><p>26. "crypto/rand": Secure Random Values</p><p>Generate secure random bytes:</p><pre><code>package main
+fmt.Println(name)</code></pre><p>Shuffle:</p><p>rand.Shuffle(len(names), func(i, j int) {</p><p>	names[i], names[j] = names[j], names[i]</p><p>})</p><p>Do not use "math/rand/v2" for passwords, access tokens, API keys, reset links, or other security-sensitive values. Use "crypto/rand".</p><p>---</p><h2 id="26-cryptorand-secure-random-values">26. "crypto/rand": Secure Random Values</h2><p>Generate secure random bytes:</p><pre><code>package main
 import (</code></pre><p>	"crypto/rand"</p><p>	"encoding/hex"</p><p>	"fmt"</p><pre><code>)
 func generateToken(byteLength int) (string, error) {
 	data := make([]byte, byteLength)
@@ -1239,7 +1271,7 @@ func main() {
 	token, err := generateToken(32)</code></pre><p>	if err != nil {</p><pre><code>panic(err)
 	}
 	fmt.Println(token)
-}</code></pre><p>Thirty-two random bytes become a 64-character hexadecimal string.</p><p>Use secure randomness for:</p><p>- Session tokens</p><p>- Password reset tokens</p><p>- Verification codes</p><p>- API secrets</p><p>- Nonces</p><p>- Cryptographic keys</p><p>---</p><p>27. "crypto/sha256" and "encoding/hex"</p><p>Hashing data:</p><pre><code>package main
+}</code></pre><p>Thirty-two random bytes become a 64-character hexadecimal string.</p><p>Use secure randomness for:</p><p>- Session tokens</p><p>- Password reset tokens</p><p>- Verification codes</p><p>- API secrets</p><p>- Nonces</p><p>- Cryptographic keys</p><p>---</p><h2 id="27-cryptosha256-and-encodinghex">27. "crypto/sha256" and "encoding/hex"</h2><p>Hashing data:</p><pre><code>package main
 import (</code></pre><p>	"crypto/sha256"</p><p>	"encoding/hex"</p><p>	"fmt"</p><pre><code>)
 func main() {
 	input := []byte("hello")
@@ -1252,7 +1284,7 @@ if _, err := io.Copy(hasher, file); err != nil {
 	return err
 }
 checksum := hex.EncodeToString(hasher.Sum(nil))
-fmt.Println(checksum)</code></pre><p>Do not use plain SHA-256 to store user passwords. Passwords need a dedicated password-hashing algorithm such as bcrypt, scrypt, or Argon2, which are not all provided directly by the core standard library.</p><p>---</p><p>28. "encoding/base64"</p><p>Base64 converts binary data into text.</p><pre><code>package main
+fmt.Println(checksum)</code></pre><p>Do not use plain SHA-256 to store user passwords. Passwords need a dedicated password-hashing algorithm such as bcrypt, scrypt, or Argon2, which are not all provided directly by the core standard library.</p><p>---</p><h2 id="28-encodingbase64">28. "encoding/base64"</h2><p>Base64 converts binary data into text.</p><pre><code>package main
 import (</code></pre><p>	"encoding/base64"</p><p>	"fmt"</p><pre><code>)
 func main() {
 	original := []byte("Hello, Go!")
@@ -1262,7 +1294,7 @@ func main() {
 		return
 	}
 	fmt.Println(string(decoded))
-}</code></pre><p>URL-safe Base64:</p><p>encoded := base64.RawURLEncoding.EncodeToString(data)</p><p>Base64 is encoding, not encryption. Anyone can decode it.</p><p>---</p><p>29. "database/sql": Database Access</p><p>The "database/sql" package defines a common interface for relational databases.</p><p>A separate database driver is still required.</p><p>Conceptual example:</p><p>import (</p><p>	"context"</p><p>	"database/sql"</p><p>	_ "github.com/jackc/pgx/v5/stdlib"</p><p>)</p><p>Opening a database:</p><p>db, err := sql.Open("pgx", databaseURL)</p><p>if err != nil {</p><pre><code>return err
+}</code></pre><p>URL-safe Base64:</p><p>encoded := base64.RawURLEncoding.EncodeToString(data)</p><p>Base64 is encoding, not encryption. Anyone can decode it.</p><p>---</p><h2 id="29-databasesql-database-access">29. "database/sql": Database Access</h2><p>The "database/sql" package defines a common interface for relational databases.</p><p>A separate database driver is still required.</p><p>Conceptual example:</p><p>import (</p><p>	"context"</p><p>	"database/sql"</p><p>	_ "github.com/jackc/pgx/v5/stdlib"</p><p>)</p><p>Opening a database:</p><p>db, err := sql.Open("pgx", databaseURL)</p><p>if err != nil {</p><pre><code>return err
 }</code></pre><p>defer db.Close()</p><p>"sql.Open" may not immediately connect. Use "PingContext":</p><p>ctx, cancel := context.WithTimeout(</p><p>	context.Background(),</p><p>	5*time.Second,</p><p>)</p><p>defer cancel()</p><pre><code>if err := db.PingContext(ctx); err != nil {
 	return fmt.Errorf("connect to database: %w", err)
 }</code></pre><p>Querying one row</p><p>type User struct {</p><p>	ID    int64</p><p>	Name  string</p><p>	Email string</p><pre><code>}
@@ -1304,7 +1336,7 @@ affected, err := result.RowsAffected()</code></pre><p>Transaction</p><p>tx, err 
 }
 if err := tx.Commit(); err != nil {
 	return err
-}</code></pre><p>The deferred rollback is safe after a successful commit.</p><p>---</p><p>30. "html/template": Safe HTML Templates</p><pre><code>The "html/template" package generates HTML with contextual escaping.
+}</code></pre><p>The deferred rollback is safe after a successful commit.</p><p>---</p><h2 id="30-htmltemplate-safe-html-templates">30. "html/template": Safe HTML Templates</h2><pre><code>The "html/template" package generates HTML with contextual escaping.
 package main
 import (</code></pre><p>	"html/template"</p><p>	"net/http"</p><pre><code>)
 type PageData struct {</code></pre><p>	Title string</p><p>	Name  string</p><pre><code>}
@@ -1328,7 +1360,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
     {{end}}</code></pre><p>&lt;/ul&gt;</p><p>Conditions</p><p>{{if .LoggedIn}}</p><p>    &lt;p&gt;Welcome back.&lt;/p&gt;</p><p>{{else}}</p><p>    &lt;a href="/login"&gt;Sign in&lt;/a&gt;</p><p>{{end}}</p><p>Template functions</p><p>functions := template.FuncMap{</p><p>	"uppercase": strings.ToUpper,</p><pre><code>}
 tmpl := template.Must(</code></pre><p>	template.New("page.html").</p><pre><code>Funcs(functions).
 		ParseFiles("templates/page.html"),
-)</code></pre><p>Usage:</p><p>&lt;h1&gt;{{uppercase .Title}}&lt;/h1&gt;</p><p>Prefer "html/template" over "text/template" when generating HTML because it performs HTML-aware escaping.</p><p>---</p><p>31. "embed": Embedding Files in a Binary</p><p>The "embed" package can include files in the compiled application.</p><pre><code>package main
+)</code></pre><p>Usage:</p><p>&lt;h1&gt;{{uppercase .Title}}&lt;/h1&gt;</p><p>Prefer "html/template" over "text/template" when generating HTML because it performs HTML-aware escaping.</p><p>---</p><h2 id="31-embed-embedding-files-in-a-binary">31. "embed": Embedding Files in a Binary</h2><p>The "embed" package can include files in the compiled application.</p><pre><code>package main
 import (</code></pre><p>	"embed"</p><p>	"fmt"</p><p>)</p><p>//go:embed templates/index.html</p><pre><code>var indexHTML string
 func main() {
 	fmt.Println(indexHTML)
@@ -1336,7 +1368,7 @@ func main() {
 }
 fileServer := http.FileServer(http.FS(staticFS))
 mux.Handle("GET /static/", http.StripPrefix(</code></pre><p>	"/static/",</p><p>	fileServer,</p><p>))</p><p>Embedding templates:</p><p>//go:embed templates/*.html</p><pre><code>var templateFiles embed.FS
-var templates = template.Must(</code></pre><p>	template.ParseFS(templateFiles, "templates/*.html"),</p><p>)</p><p>---</p><p>32. "testing": Unit Tests</p><p>Go has built-in testing support.</p><p>Application code:</p><pre><code>package calculator
+var templates = template.Must(</code></pre><p>	template.ParseFS(templateFiles, "templates/*.html"),</p><p>)</p><p>---</p><h2 id="32-testing-unit-tests">32. "testing": Unit Tests</h2><p>Go has built-in testing support.</p><p>Application code:</p><pre><code>package calculator
 func Add(a, b int) int {
 	return a + b
 }</code></pre><p>Test file:</p><pre><code>package calculator
@@ -1395,7 +1427,7 @@ func TestAdd(t *testing.T) {
 	}
 }</code></pre><p>Test helpers</p><p>func assertEqual[T comparable](</p><p>	t *testing.T,</p><p>	got T,</p><p>	want T,</p><p>) {</p><p>	t.Helper()</p><p>	if got != want {</p><pre><code>t.Fatalf("got %v; want %v", got, want)
 	}
-}</code></pre><p>"t.Helper()" makes test failures point to the calling line.</p><p>---</p><p>33. "net/http/httptest": Testing HTTP Handlers</p><p>The standard library includes HTTP testing utilities.</p><p>Testing a handler</p><pre><code>func helloHandler(
+}</code></pre><p>"t.Helper()" makes test failures point to the calling line.</p><p>---</p><h2 id="33-nethttphttptest-testing-http-handlers">33. "net/http/httptest": Testing HTTP Handlers</h2><p>The standard library includes HTTP testing utilities.</p><p>Testing a handler</p><pre><code>func helloHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
@@ -1425,13 +1457,13 @@ func TestAdd(t *testing.T) {
 	}
 }</code></pre><p>Testing against a complete server</p><pre><code>server := httptest.NewServer(
 	http.HandlerFunc(helloHandler),
-)</code></pre><p>defer server.Close()</p><p>response, err := http.Get(server.URL)</p><p>if err != nil {</p><p>	t.Fatal(err)</p><p>}</p><p>defer response.Body.Close()</p><p>This is useful for testing HTTP clients.</p><p>---</p><p>34. Benchmarks</p><p>func BenchmarkBuildString(b *testing.B) {</p><p>	for b.Loop() {</p><pre><code>var builder strings.Builder
+)</code></pre><p>defer server.Close()</p><p>response, err := http.Get(server.URL)</p><p>if err != nil {</p><p>	t.Fatal(err)</p><p>}</p><p>defer response.Body.Close()</p><p>This is useful for testing HTTP clients.</p><p>---</p><h2 id="34-benchmarks">34. Benchmarks</h2><p>func BenchmarkBuildString(b *testing.B) {</p><p>	for b.Loop() {</p><pre><code>var builder strings.Builder
 		for j := 0; j &lt; 100; j++ {
 			builder.WriteString("hello")
 		}
 		_ = builder.String()
 	}
-}</code></pre><p>Run:</p><p>go test -bench=. ./...</p><p>Include memory statistics:</p><p>go test -bench=. -benchmem ./...</p><p>Do not optimize code only because a benchmark looks interesting. Benchmark the real operation and compare alternatives.</p><p>---</p><p>35. Fuzz Testing</p><p>Fuzz tests help find unexpected input that causes failures.</p><p>func FuzzParseNumber(f *testing.F) {</p><p>	f.Add("123")</p><p>	f.Add("-50")</p><p>	f.Add("invalid")</p><p>	f.Fuzz(func(t *testing.T, input string) {</p><pre><code>number, err := strconv.Atoi(input)
+}</code></pre><p>Run:</p><p>go test -bench=. ./...</p><p>Include memory statistics:</p><p>go test -bench=. -benchmem ./...</p><p>Do not optimize code only because a benchmark looks interesting. Benchmark the real operation and compare alternatives.</p><p>---</p><h2 id="35-fuzz-testing">35. Fuzz Testing</h2><p>Fuzz tests help find unexpected input that causes failures.</p><p>func FuzzParseNumber(f *testing.F) {</p><p>	f.Add("123")</p><p>	f.Add("-50")</p><p>	f.Add("invalid")</p><p>	f.Fuzz(func(t *testing.T, input string) {</p><pre><code>number, err := strconv.Atoi(input)
 		if err != nil {
 			return
 		}
@@ -1448,7 +1480,7 @@ func TestAdd(t *testing.T) {
 			)
 		}
 	})
-}</code></pre><p>Run:</p><p>go test -fuzz=FuzzParseNumber</p><p>---</p><p>36. "runtime": Runtime Information</p><pre><code>package main
+}</code></pre><p>Run:</p><p>go test -fuzz=FuzzParseNumber</p><p>---</p><h2 id="36-runtime-runtime-information">36. "runtime": Runtime Information</h2><pre><code>package main
 import (</code></pre><p>	"fmt"</p><p>	"runtime"</p><pre><code>)
 func main() {
 	fmt.Println("Operating system:", runtime.GOOS)
@@ -1458,7 +1490,7 @@ func main() {
 	fmt.Println("Go version:", runtime.Version())
 }</code></pre><p>Memory statistics:</p><p>var stats runtime.MemStats</p><p>runtime.ReadMemStats(&amp;stats)</p><pre><code>fmt.Println("Allocated bytes:", stats.Alloc)
 fmt.Println("Total allocated:", stats.TotalAlloc)
-fmt.Println("Heap objects:", stats.HeapObjects)</code></pre><p>Most applications should not manually call the garbage collector or change runtime internals without a measured reason.</p><p>---</p><p>37. "os/signal": Graceful Shutdown</p><p>Servers should stop accepting traffic and allow active requests to finish.</p><pre><code>package main
+fmt.Println("Heap objects:", stats.HeapObjects)</code></pre><p>Most applications should not manually call the garbage collector or change runtime internals without a measured reason.</p><p>---</p><h2 id="37-ossignal-graceful-shutdown">37. "os/signal": Graceful Shutdown</h2><p>Servers should stop accepting traffic and allow active requests to finish.</p><pre><code>package main
 import (</code></pre><p>	"context"</p><p>	"errors"</p><p>	"log"</p><p>	"net/http"</p><p>	"os"</p><p>	"os/signal"</p><p>	"syscall"</p><p>	"time"</p><pre><code>)
 func main() {
 	mux := http.NewServeMux()</code></pre><p>	mux.HandleFunc("GET /", func(</p><pre><code>w http.ResponseWriter,
@@ -1498,21 +1530,21 @@ func main() {
 		}
 	}
 	log.Println("server stopped")
-}</code></pre><p>---</p><p>38. "compress/gzip": Compressing Data</p><p>Compressing a file</p><p>func compressFile(</p><p>	sourcePath string,</p><p>	destinationPath string,</p><p>) error {</p><p>	source, err := os.Open(sourcePath)</p><p>	if err != nil {</p><pre><code>return err
+}</code></pre><p>---</p><h2 id="38-compressgzip-compressing-data">38. "compress/gzip": Compressing Data</h2><p>Compressing a file</p><p>func compressFile(</p><p>	sourcePath string,</p><p>	destinationPath string,</p><p>) error {</p><p>	source, err := os.Open(sourcePath)</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer source.Close()</p><p>	destination, err := os.Create(destinationPath)</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer destination.Close()</p><p>	writer := gzip.NewWriter(destination)</p><p>	defer writer.Close()</p><p>	_, err = io.Copy(writer, source)</p><pre><code>return err
 }</code></pre><p>Decompressing</p><p>func decompressFile(</p><p>	sourcePath string,</p><p>	destinationPath string,</p><p>) error {</p><p>	source, err := os.Open(sourcePath)</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer source.Close()</p><p>	reader, err := gzip.NewReader(source)</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer reader.Close()</p><p>	destination, err := os.Create(destinationPath)</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer destination.Close()</p><p>	_, err = io.Copy(destination, reader)</p><pre><code>return err
-}</code></pre><p>---</p><p>39. "archive/zip": ZIP Archives</p><p>Creating a ZIP file</p><pre><code>func createArchive(path string) error {
+}</code></pre><p>---</p><h2 id="39-archivezip-zip-archives">39. "archive/zip": ZIP Archives</h2><p>Creating a ZIP file</p><pre><code>func createArchive(path string) error {
 	file, err := os.Create(path)</code></pre><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	defer file.Close()</p><p>	archive := zip.NewWriter(file)</p><p>	defer archive.Close()</p><p>	writer, err := archive.Create("hello.txt")</p><p>	if err != nil {</p><pre><code>return err
 	}</code></pre><p>	_, err = writer.Write([]byte("Hello from ZIP"))</p><pre><code>return err
 }</code></pre><p>Reading a ZIP file</p><p>reader, err := zip.OpenReader("archive.zip")</p><p>if err != nil {</p><pre><code>return err
 }</code></pre><p>defer reader.Close()</p><pre><code>for _, file := range reader.File {
 	fmt.Println(file.Name)
-}</code></pre><p>When extracting ZIP files, validate output paths to prevent path traversal attacks such as entries containing "../".</p><p>---</p><p>40. "reflect": Runtime Type Inspection</p><p>Reflection can inspect values and types at runtime.</p><pre><code>package main
+}</code></pre><p>When extracting ZIP files, validate output paths to prevent path traversal attacks such as entries containing "../".</p><p>---</p><h2 id="40-reflect-runtime-type-inspection">40. "reflect": Runtime Type Inspection</h2><p>Reflection can inspect values and types at runtime.</p><pre><code>package main
 import (</code></pre><p>	"fmt"</p><p>	"reflect"</p><pre><code>)
 func main() {
 	value := 42
@@ -1529,7 +1561,7 @@ func inspect(value any) {
 			field.Tag.Get("json"),
 		)
 	}
-}</code></pre><p>Reflection is useful for:</p><p>- Serialization libraries</p><p>- Validation libraries</p><p>- Dependency injection</p><p>- Object mapping</p><p>- Framework internals</p><p>For normal application logic, interfaces, generics, and explicit code are usually easier to understand and maintain.</p><p>---</p><p>41. Complete Example: Small JSON API</p><p>This example combines several commonly used standard-library packages.</p><pre><code>package main
+}</code></pre><p>Reflection is useful for:</p><p>- Serialization libraries</p><p>- Validation libraries</p><p>- Dependency injection</p><p>- Object mapping</p><p>- Framework internals</p><p>For normal application logic, interfaces, generics, and explicit code are usually easier to understand and maintain.</p><p>---</p><h2 id="41-complete-example-small-json-api">41. Complete Example: Small JSON API</h2><p>This example combines several commonly used standard-library packages.</p><pre><code>package main
 import (</code></pre><p>	"context"</p><p>	"encoding/json"</p><p>	"errors"</p><p>	"log/slog"</p><p>	"net/http"</p><p>	"os"</p><p>	"os/signal"</p><p>	"strconv"</p><p>	"sync"</p><p>	"syscall"</p><p>	"time"</p><pre><code>)
 type User struct {</code></pre><p>	ID   int64  `json:"id"`</p><p>	Name string `json:"name"`</p><pre><code>}
 type CreateUserRequest struct {</code></pre><p>	Name string `json:"name"`</p><pre><code>}
@@ -1673,8 +1705,8 @@ func main() {
 		)
 	}</code></pre><p>	logger.Info("server stopped")</p><p>}</p><p>Run:</p><p>go run .</p><p>Create a user:</p><pre><code>curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
-  -d '{"name":"Ginad"}'</code></pre><p>Retrieve the user:</p><p>curl http://localhost:8080/users/1</p><p>Check health:</p><p>curl http://localhost:8080/health</p><p>---</p><p>42. Recommended Learning Order</p><p>Learn these packages first:</p><p>1. "fmt"</p><p>2. "errors"</p><p>3. "strings"</p><p>4. "strconv"</p><p>5. "slices"</p><p>6. "time"</p><p>7. "os"</p><p>8. "path/filepath"</p><p>9. "io"</p><p>10. "bufio"</p><p>11. "encoding/json"</p><p>12. "net/url"</p><p>13. "net/http"</p><p>14. "context"</p><p>15. "sync"</p><p>16. "log/slog"</p><p>17. "testing"</p><p>18. "net/http/httptest"</p><p>Then continue with:</p><p>1. "database/sql"</p><p>2. "html/template"</p><p>3. "embed"</p><p>4. "crypto/rand"</p><p>5. "crypto/sha256"</p><p>6. "encoding/base64"</p><p>7. "regexp"</p><p>8. "compress/gzip"</p><p>9. "archive/zip"</p><p>10. "runtime"</p><p>11. "os/signal"</p><p>12. "reflect"</p><p>---</p><p>43. Standard-Library Best Practices</p><p>Close resources</p><p>file, err := os.Open(path)</p><p>if err != nil {</p><pre><code>return err
-}</code></pre><p>defer file.Close()</p><p>The same applies to:</p><p>- HTTP response bodies</p><p>- Database rows</p><p>- ZIP readers</p><p>- Gzip readers</p><p>- Files</p><p>Wrap errors with context</p><p>Good:</p><p>return fmt.Errorf("read configuration file: %w", err)</p><p>Less useful:</p><p>return err</p><p>Set network timeouts</p><p>client := &amp;http.Client{</p><p>	Timeout: 10 * time.Second,</p><p>}</p><p>Also configure server timeouts.</p><p>Use context for cancellation</p><p>func LoadUser(</p><p>	ctx context.Context,</p><p>	id int64,</p><p>) (User, error)</p><p>Limit untrusted input</p><p>reader := http.MaxBytesReader(</p><p>	w,</p><p>	r.Body,</p><p>	1&lt;&lt;20,</p><p>)</p><p>Prefer streaming for large data</p><p>Prefer:</p><p>io.Copy(destination, source)</p><p>Over reading an entire large file into memory.</p><p>Protect shared state</p><p>Use:</p><p>- "sync.Mutex"</p><p>- "sync.RWMutex"</p><p>- Channels</p><p>- Atomic values</p><p>Do not concurrently modify a regular map without synchronization.</p><p>Use secure randomness for secrets</p><p>Use:</p><p>crypto/rand</p><p>Not:</p><p>math/rand/v2</p><p>Use structured logs</p><p>logger.Error(</p><p>	"failed to save user",</p><p>	"user_id", id,</p><p>	"error", err,</p><p>)</p><p>Test behavior</p><p>Focus tests on observable behavior rather than internal implementation details.</p><p>---</p><p>44. Package Cheat Sheet</p><p>Task - Package</p><p>Print formatted output - "fmt"</p><p>Create and inspect errors - "errors"</p><p>Manipulate strings - "strings"</p><p>Convert strings and numbers - "strconv"</p><p>Work with generic slices - "slices"</p><p>Work with generic maps - "maps"</p><p>Sort collections - "slices", "sort"</p><p>Work with dates and durations - "time"</p><p>Read files and environment variables - "os"</p><p>Build file paths - "path/filepath"</p><p>Stream data - "io"</p><p>Buffered reading and writing - "bufio"</p><p>Work with byte slices - "bytes"</p><p>Encode and decode JSON - "encoding/json"</p><p>Parse URLs - "net/url"</p><p>Build HTTP clients and servers - "net/http"</p><p>Handle cancellation and deadlines - "context"</p><p>Synchronize goroutines - "sync"</p><p>Atomic counters and flags - "sync/atomic"</p><p>Structured logging - "log/slog"</p><p>Parse CLI flags - "flag"</p><p>Use regular expressions - "regexp"</p><p>Mathematical operations - "math"</p><p>Non-secure randomness - "math/rand/v2"</p><p>Secure randomness - "crypto/rand"</p><p>Hash data - "crypto/sha256"</p><p>Encode binary data as text - "encoding/base64", "encoding/hex"</p><p>Access relational databases - "database/sql"</p><p>Generate safe HTML - "html/template"</p><p>Embed application files - "embed"</p><p>Write unit tests - "testing"</p><p>Test HTTP handlers - "net/http/httptest"</p><p>Graceful shutdown - "os/signal"</p><p>Compress data - "compress/gzip"</p><p>Create ZIP archives - "archive/zip"</p><p>Inspect runtime information - "runtime"</p><p>Runtime type inspection - "reflect"</p><p>---</p><p>45. Further Reading</p><p>- Go standard-library package index: "https://pkg.go.dev/std"</p><p>- Official Go documentation: "https://go.dev/doc/"</p><p>- Effective Go: "https://go.dev/doc/effective_go"</p><p>- Go package documentation: "https://pkg.go.dev"</p><p>- Go source-code organization: "https://go.dev/doc/code"</p><p>- Go module organization: "https://go.dev/doc/modules/layout”</p>
+  -d '{"name":"Ginad"}'</code></pre><p>Retrieve the user:</p><p>curl http://localhost:8080/users/1</p><p>Check health:</p><p>curl http://localhost:8080/health</p><p>---</p><h2 id="42-recommended-learning-order">42. Recommended Learning Order</h2><p>Learn these packages first:</p><p>1. "fmt"</p><p>2. "errors"</p><p>3. "strings"</p><p>4. "strconv"</p><p>5. "slices"</p><p>6. "time"</p><p>7. "os"</p><p>8. "path/filepath"</p><p>9. "io"</p><p>10. "bufio"</p><p>11. "encoding/json"</p><p>12. "net/url"</p><p>13. "net/http"</p><p>14. "context"</p><p>15. "sync"</p><p>16. "log/slog"</p><p>17. "testing"</p><p>18. "net/http/httptest"</p><p>Then continue with:</p><p>1. "database/sql"</p><p>2. "html/template"</p><p>3. "embed"</p><p>4. "crypto/rand"</p><p>5. "crypto/sha256"</p><p>6. "encoding/base64"</p><p>7. "regexp"</p><p>8. "compress/gzip"</p><p>9. "archive/zip"</p><p>10. "runtime"</p><p>11. "os/signal"</p><p>12. "reflect"</p><p>---</p><h2 id="43-standard-library-best-practices">43. Standard-Library Best Practices</h2><p>Close resources</p><p>file, err := os.Open(path)</p><p>if err != nil {</p><pre><code>return err
+}</code></pre><p>defer file.Close()</p><p>The same applies to:</p><p>- HTTP response bodies</p><p>- Database rows</p><p>- ZIP readers</p><p>- Gzip readers</p><p>- Files</p><p>Wrap errors with context</p><p>Good:</p><p>return fmt.Errorf("read configuration file: %w", err)</p><p>Less useful:</p><p>return err</p><p>Set network timeouts</p><p>client := &amp;http.Client{</p><p>	Timeout: 10 * time.Second,</p><p>}</p><p>Also configure server timeouts.</p><p>Use context for cancellation</p><p>func LoadUser(</p><p>	ctx context.Context,</p><p>	id int64,</p><p>) (User, error)</p><p>Limit untrusted input</p><p>reader := http.MaxBytesReader(</p><p>	w,</p><p>	r.Body,</p><p>	1&lt;&lt;20,</p><p>)</p><p>Prefer streaming for large data</p><p>Prefer:</p><p>io.Copy(destination, source)</p><p>Over reading an entire large file into memory.</p><p>Protect shared state</p><p>Use:</p><p>- "sync.Mutex"</p><p>- "sync.RWMutex"</p><p>- Channels</p><p>- Atomic values</p><p>Do not concurrently modify a regular map without synchronization.</p><p>Use secure randomness for secrets</p><p>Use:</p><p>crypto/rand</p><p>Not:</p><p>math/rand/v2</p><p>Use structured logs</p><p>logger.Error(</p><p>	"failed to save user",</p><p>	"user_id", id,</p><p>	"error", err,</p><p>)</p><p>Test behavior</p><p>Focus tests on observable behavior rather than internal implementation details.</p><p>---</p><h2 id="44-package-cheat-sheet">44. Package Cheat Sheet</h2><p>Task - Package</p><p>Print formatted output - "fmt"</p><p>Create and inspect errors - "errors"</p><p>Manipulate strings - "strings"</p><p>Convert strings and numbers - "strconv"</p><p>Work with generic slices - "slices"</p><p>Work with generic maps - "maps"</p><p>Sort collections - "slices", "sort"</p><p>Work with dates and durations - "time"</p><p>Read files and environment variables - "os"</p><p>Build file paths - "path/filepath"</p><p>Stream data - "io"</p><p>Buffered reading and writing - "bufio"</p><p>Work with byte slices - "bytes"</p><p>Encode and decode JSON - "encoding/json"</p><p>Parse URLs - "net/url"</p><p>Build HTTP clients and servers - "net/http"</p><p>Handle cancellation and deadlines - "context"</p><p>Synchronize goroutines - "sync"</p><p>Atomic counters and flags - "sync/atomic"</p><p>Structured logging - "log/slog"</p><p>Parse CLI flags - "flag"</p><p>Use regular expressions - "regexp"</p><p>Mathematical operations - "math"</p><p>Non-secure randomness - "math/rand/v2"</p><p>Secure randomness - "crypto/rand"</p><p>Hash data - "crypto/sha256"</p><p>Encode binary data as text - "encoding/base64", "encoding/hex"</p><p>Access relational databases - "database/sql"</p><p>Generate safe HTML - "html/template"</p><p>Embed application files - "embed"</p><p>Write unit tests - "testing"</p><p>Test HTTP handlers - "net/http/httptest"</p><p>Graceful shutdown - "os/signal"</p><p>Compress data - "compress/gzip"</p><p>Create ZIP archives - "archive/zip"</p><p>Inspect runtime information - "runtime"</p><p>Runtime type inspection - "reflect"</p><p>---</p><h2 id="45-further-reading">45. Further Reading</h2><p>- Go standard-library package index: "https://pkg.go.dev/std"</p><p>- Official Go documentation: "https://go.dev/doc/"</p><p>- Effective Go: "https://go.dev/doc/effective_go"</p><p>- Go package documentation: "https://pkg.go.dev"</p><p>- Go source-code organization: "https://go.dev/doc/code"</p><p>- Go module organization: "https://go.dev/doc/modules/layout”</p>
 </div>
 <a href="#" class="toc-back">&#8593; Top</a>
 </body>

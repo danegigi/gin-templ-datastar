@@ -32,6 +32,7 @@ const PAGES = [
     title: "Go Standard Library",
     blurb: "The common standard-library packages you reach for every day: fmt, strings, errors, os, encoding/json, and more.",
     src: `${UPLOADS}/25ae1c889d8d4439bfaff446c52f9de2_Go_Standard_Library__common_.docx`,
+    headings: "numbered",
   },
   {
     slug: "gin-gonic",
@@ -60,6 +61,36 @@ const PAGES = [
     href: "tutorial.html",
   },
 ];
+
+// Promote numbered section lines like:  9. "os": Files and Processes
+// (a leading "N." followed by a package name) to real <h2> headings.
+// Used by docs whose sections are numbered rather than heading-styled.
+function promoteNumberedHeadings(html) {
+  let maxSeen = 0; // highest section number promoted so far
+  return html.replace(/<p>\s*(?:<strong>)?\s*(\d{1,3})\.\s+([\s\S]*?)(?:<\/strong>)?\s*<\/p>/gi, (m, numStr, rest) => {
+    const num = parseInt(numStr, 10);
+    const text = rest.replace(/<[^>]+>/g, "").trim();
+    const bareQuotedPkg = /^["“][a-z/0-9._-]+["”](\s+and\s+["“][a-z/0-9._-]+["”])?$/i.test(text);
+    // Sections form a monotonically increasing run (1,2,3,…). A number that
+    // moves the sequence FORWARD is a real section; one that jumps backward is
+    // a restarting in-content list (cheat sheet / learning order) — skip it.
+    const continuesSequence = num >= maxSeen && num <= maxSeen + 5;
+    if (bareQuotedPkg) {
+      // A bare "pkg" line is only a heading if it continues the section run.
+      if (!continuesSequence) return m;
+      maxSeen = num;
+      return `<h2>${num}. ${text}</h2>`;
+    }
+    // Lines with a ": Title" or descriptive words after the package/topic.
+    const hasColonTitle = /:\s+\S/.test(text);
+    const hasQuotedPkgTitle = /^["“][a-z/0-9._-]+["”]/i.test(text) && text.split(/\s+/).length >= 3;
+    const isShortTopicTitle = text.length <= 45 && text.split(/\s+/).length <= 6 &&
+      !/[.!?]$/.test(text) && /^[A-Z"“]/.test(text);
+    const looksHeading = (hasColonTitle || hasQuotedPkgTitle || isShortTopicTitle) && continuesSequence;
+    if (looksHeading) { maxSeen = num; return `<h2>${num}. ${text}</h2>`; }
+    return m;
+  });
+}
 
 // Some docs (e.g. go-stdlib) never used Word heading styles — every section
 // title is just a bold paragraph like <p><strong>The fmt package</strong></p>.
@@ -323,7 +354,12 @@ ${bodyHtml}
     // the single, largest heading; the doc's own top-level headings sit under it.
     const demoted = value.replace(/<(\/?)h1(\s[^>]*)?>/gi, "<$1h2$2>");
     const formatted = scrub(collapseCodeParagraphs(formatCodeBlocks(demoted)));
-    const { html: withIds, toc } = addTocAndIds(promoteBoldHeadings(formatted));
+    // Section headings: numbered docs (go-stdlib) promote "N. …" lines;
+    // everything else promotes bold-only paragraph titles.
+    const headed = p.headings === "numbered"
+      ? promoteNumberedHeadings(formatted)
+      : promoteBoldHeadings(formatted);
+    const { html: withIds, toc } = addTocAndIds(headed);
     fs.writeFileSync(path.join(DOCS, `${p.slug}.html`), pageShell(p.title, withIds, toc));
     console.log(`Wrote docs/${p.slug}.html`);
   }
