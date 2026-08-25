@@ -423,7 +423,7 @@ ${STYLE}
 ${cards}
   </div>
   <div class="footer">
-    Source: <a href="https://github.com/danegigi/gin-templ-datastar">github.com/danegigi/gin-templ-datastar</a>
+    Source: <a href="https://github.com/danegigi/go-tut">github.com/danegigi/go-tut</a>
   </div>
 </div>
 </body>

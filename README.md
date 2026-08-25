@@ -1,4 +1,4 @@
-# gin-templ-datastar
+# go-tut
 
 A server-rendered Go admin panel built with **Gin**, **templ**, **Datastar**, and **Tailwind CSS** — a single self-contained binary that renders HTML on the server, layers in reactive UI with zero hand-written JavaScript, and exposes a JSON API secured with JWT.
 
@@ -7,6 +7,8 @@ It's a complete, working example of the "hypermedia-driven Go" stack: type-safe 
 ## 📘 Tutorial
 
 This project ships with a full written tutorial for **beginner-to-mid-level developers** that explains not just *what* the code does but *why* it's organized the way it is — walking through `main.go`, models, stores, routes, handlers, templ pages, layouts, middleware, authentication, Datastar, Tailwind, air, the Makefile, the skeleton-first performance work, and end-to-end testing with Playwright.
+
+Live docs: **https://danegigi.github.io/go-tut/**
 
 - **Read it as a web page:** [`docs/index.html`](docs/index.html) (also published via GitHub Pages)
 - **Read the source:** [`TUTORIAL.md`](TUTORIAL.md)
