@@ -8,6 +8,7 @@
 :root{--bg:#0f1117;--surface:#1a1d27;--border:#2d3148;--text:#e2e4f0;--muted:#8b8fa8;--accent:#7c87ff;--code-bg:#1e2130;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.75;}
 .nav{position:sticky;top:0;z-index:10;background:rgba(15,17,23,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;}
 .nav a{color:var(--accent);text-decoration:none;font-weight:600;font-size:0.9rem;}
@@ -15,8 +16,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .nav .crumb{color:var(--muted);font-size:0.85rem;}
 .container{max-width:920px;margin:0 auto;padding:40px 36px 96px;}
 h1{font-size:2.5rem;font-weight:800;color:#fff;margin:28px 0 16px;line-height:1.2;letter-spacing:-0.01em;}
-h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
+h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);scroll-margin-top:70px;}
+h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;scroll-margin-top:70px;}
 h4,h5,h6{font-size:1rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
 p{margin-bottom:14px;color:#cdd0e0;}
 a{color:var(--accent);}
@@ -33,6 +34,17 @@ li{margin-bottom:6px;color:#cdd0e0;}
 blockquote{border-left:3px solid var(--accent);margin:18px 0;padding:12px 18px;background:rgba(124,135,255,.07);color:var(--muted);border-radius:0 6px 6px 0;}
 img{max-width:100%;border-radius:8px;}
 hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin:24px 0 36px;}
+.toc-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;}
+.toc ul{list-style:none;padding:0;margin:0;}
+.toc li{margin:2px 0;}
+.toc a{color:#c5caff;text-decoration:none;font-size:0.92rem;}
+.toc a:hover{color:var(--accent);text-decoration:underline;}
+.toc-l2{margin-left:0;}
+.toc-l3{margin-left:18px;}
+.toc-l3 a{color:var(--muted);font-size:0.88rem;}
+.toc-back{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
+.toc-back:hover{opacity:1;}
 </style>
 </head>
 <body>
@@ -42,7 +54,25 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 </nav>
 <div class="container">
 <h1 class="page-title">Go Standard Library</h1>
-<p><strong>Practical Go Standard Library Tutorial</strong></p><p>1. Introduction</p><p>Go includes a large standard library covering:</p><pre><code>- Text manipulation
+<nav class="toc" aria-label="Table of contents">
+  <p class="toc-title">Contents</p>
+  <ul>
+<li class="toc-l2"><a href="#practical-go-standard-library-tutorial">Practical Go Standard Library Tutorial</a></li>
+<li class="toc-l2"><a href="#common-functions">Common functions:</a></li>
+<li class="toc-l2"><a href="#common-formatting-verbs">Common formatting verbs</a></li>
+<li class="toc-l2"><a href="#creating-strings">Creating strings</a></li>
+<li class="toc-l2"><a href="#sentinel-errors">Sentinel errors</a></li>
+<li class="toc-l2"><a href="#frequently-used-functions">Frequently used functions</a></li>
+<li class="toc-l2"><a href="#using-stringsbuilder">Using "strings.Builder"</a></li>
+<li class="toc-l2"><a href="#string-to-integer">String to integer</a></li>
+<li class="toc-l2"><a href="#integer-to-string">Integer to string</a></li>
+<li class="toc-l2"><a href="#format-values">Format values</a></li>
+<li class="toc-l2"><a href="#slices">slices</a></li>
+<li class="toc-l2"><a href="#maps">maps</a></li>
+<li class="toc-l2"><a href="#current-time">Current time</a></li>
+  </ul>
+</nav>
+<h2 id="practical-go-standard-library-tutorial">Practical Go Standard Library Tutorial</h2><p>1. Introduction</p><p>Go includes a large standard library covering:</p><pre><code>- Text manipulation
 - Input and output
 - Files and directories
 - JSON and other data formats
@@ -68,11 +98,11 @@ func main() {
 	fmt.Println("Hello, Go!")
 	fmt.Println(name, age)
 	fmt.Printf("%s is %d years old\n", name, age)
-}</code></pre><p><strong>Common functions:</strong></p><p>Function - Purpose</p><pre><code>fmt.Println - Prints values followed by a newline
+}</code></pre><h2 id="common-functions">Common functions:</h2><p>Function - Purpose</p><pre><code>fmt.Println - Prints values followed by a newline
 fmt.Print - Prints values without automatically adding a newline
 fmt.Printf - Prints formatted output
 fmt.Sprintf - Creates and returns a formatted string
-fmt.Errorf - Creates a formatted error</code></pre><p><strong>Common formatting verbs</strong></p><p>Verb - Meaning</p><p>%<strong>s</strong> - String</p><p>%<strong>d</strong> - Integer</p><p>%<strong>f</strong> - Floating-point number</p><p>%<strong>t</strong> - Boolean</p><p>%<strong>v</strong> - Default representation</p><p>%+v - Detailed struct representation</p><p>%<strong>T</strong> - Value type</p><p>%<strong>q</strong> - Quoted string</p><p>%<strong>x</strong> - Hexadecimal</p><p>Example:</p><pre><code>package main
+fmt.Errorf - Creates a formatted error</code></pre><h2 id="common-formatting-verbs">Common formatting verbs</h2><p>Verb - Meaning</p><p>%<strong>s</strong> - String</p><p>%<strong>d</strong> - Integer</p><p>%<strong>f</strong> - Floating-point number</p><p>%<strong>t</strong> - Boolean</p><p>%<strong>v</strong> - Default representation</p><p>%+v - Detailed struct representation</p><p>%<strong>T</strong> - Value type</p><p>%<strong>q</strong> - Quoted string</p><p>%<strong>x</strong> - Hexadecimal</p><p>Example:</p><pre><code>package main
 
 import "fmt"
 
@@ -92,7 +122,7 @@ func main() {
 	fmt.Printf("Type: %T\n", user)
 }</code></pre><p>Output:</p><pre><code>Default: {Ginad 28}
 Detailed: {Name:Ginad Age:28}
-Type: main.User</code></pre><p><strong>Creating strings</strong></p><p>Use "<strong>fmt</strong>.Sprintf" when you need the result as a string:</p><pre><code>message := fmt.Sprintf("User %s has ID %d", "Ginad", 1001)
+Type: main.User</code></pre><h2 id="creating-strings">Creating strings</h2><p>Use "<strong>fmt</strong>.Sprintf" when you need the result as a string:</p><pre><code>message := fmt.Sprintf("User %s has ID %d", "Ginad", 1001)
 fmt.Println(message)</code></pre><p>Creating formatted errors</p><pre><code>func findUser(id int) error {
 	return fmt.Errorf("user with ID %d was not found", id)
 }</code></pre><p>---</p><p>3. "<strong>errors</strong>": Creating and Inspecting Errors</p><p>The "errors" package provides basic error creation and inspection.</p><p>Creating an error</p><pre><code>package main
@@ -115,7 +145,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-}</code></pre><p><strong>Sentinel errors</strong></p><p>A sentinel error is a package-level error value used to represent a known condition.</p><pre><code>package user
+}</code></pre><h2 id="sentinel-errors">Sentinel errors</h2><p>A sentinel error is a package-level error value used to represent a known condition.</p><pre><code>package user
 
 import "errors"
 
@@ -178,7 +208,7 @@ func main() {
 	fmt.Println(strings.ToLower(text))
 	fmt.Println(strings.ToUpper(text))
 	fmt.Println(strings.Contains(text, "Go"))
-}</code></pre><p><strong>Frequently used functions</strong></p><p>Function - Purpose</p><p>"strings.Contains" - Checks whether text contains another string</p><p>"strings.HasPrefix" - Checks a prefix</p><p>"strings.HasSuffix" - Checks a suffix</p><p>"strings.Split" - Splits a string</p><p>"strings.Join" - Joins strings</p><p>"strings.TrimSpace" - Removes surrounding whitespace</p><p>"strings.ReplaceAll" - Replaces matching text</p><p>"strings.ToLower" - Converts text to lowercase</p><p>"strings.ToUpper" - Converts text to uppercase</p><p>"strings.Fields" - Splits text by whitespace</p><p>"strings.Builder" - Builds strings efficiently</p><p>Splitting and joining</p><pre><code>csv := "apple,banana,orange"
+}</code></pre><h2 id="frequently-used-functions">Frequently used functions</h2><p>Function - Purpose</p><p>"strings.Contains" - Checks whether text contains another string</p><p>"strings.HasPrefix" - Checks a prefix</p><p>"strings.HasSuffix" - Checks a suffix</p><p>"strings.Split" - Splits a string</p><p>"strings.Join" - Joins strings</p><p>"strings.TrimSpace" - Removes surrounding whitespace</p><p>"strings.ReplaceAll" - Replaces matching text</p><p>"strings.ToLower" - Converts text to lowercase</p><p>"strings.ToUpper" - Converts text to uppercase</p><p>"strings.Fields" - Splits text by whitespace</p><p>"strings.Builder" - Builds strings efficiently</p><p>Splitting and joining</p><pre><code>csv := "apple,banana,orange"
 
 fruits := strings.Split(csv, ",")
 
@@ -196,7 +226,7 @@ apple  - banana  - orange</code></pre><p>Replacing text</p><pre><code>slug := st
 	"-",
 )
 
-fmt.Println(slug)</code></pre><p>Output:</p><table><thead><tr><th><p>go-standard-<strong>library</strong></p></th></tr></thead></table><p><strong>Using "strings.Builder"</strong></p><p>Repeated string concatenation can create unnecessary allocations. Use "strings.Builder" when constructing larger strings.</p><pre><code>package main
+fmt.Println(slug)</code></pre><p>Output:</p><table><thead><tr><th><p>go-standard-<strong>library</strong></p></th></tr></thead></table><h2 id="using-stringsbuilder">Using "strings.Builder"</h2><p>Repeated string concatenation can create unnecessary allocations. Use "strings.Builder" when constructing larger strings.</p><pre><code>package main
 
 import (
 	"fmt"
@@ -226,7 +256,7 @@ func main() {
 	builder.WriteString("&lt;/ul&gt;")
 
 	return builder.String()
-}</code></pre><p>For untrusted content, use "html/template" instead of manually constructing HTML.</p><p>---</p><p>5. "<strong>strconv</strong>": Converting Strings and Numbers</p><p>The "strconv" package converts strings to primitive values and primitive values to strings.</p><p><strong>String to integer</strong></p><pre><code>package main
+}</code></pre><p>For untrusted content, use "html/template" instead of manually constructing HTML.</p><p>---</p><p>5. "<strong>strconv</strong>": Converting Strings and Numbers</p><p>The "strconv" package converts strings to primitive values and primitive values to strings.</p><h2 id="string-to-integer">String to integer</h2><pre><code>package main
 
 import (
 	"fmt"
@@ -243,7 +273,7 @@ func main() {
 	}
 
 	fmt.Println(number + 8)
-}</code></pre><p><strong>Integer to string</strong></p><pre><code>id := 1001
+}</code></pre><h2 id="integer-to-string">Integer to string</h2><pre><code>id := 1001
 text := strconv.Itoa(id)
 
 fmt.Println("User ID: " + text)
@@ -263,9 +293,9 @@ if err != nil {
 count, err := strconv.ParseInt("500", 10, 64)
 if err != nil {
 	return
-}</code></pre><p><strong>Format values</strong></p><pre><code>priceText := strconv.FormatFloat(19.95, 'f', 2, 64)
+}</code></pre><h2 id="format-values">Format values</h2><pre><code>priceText := strconv.FormatFloat(19.95, 'f', 2, 64)
 enabledText := strconv.FormatBool(true)
-countText := strconv.FormatInt(500, 10)</code></pre><p>---</p><p>6. "<strong>slices</strong>" and "<strong>maps</strong>": Collection Helpers</p><p>Modern Go includes standard-library helpers for slices and maps.</p><p><strong>slices</strong></p><pre><code>package main
+countText := strconv.FormatInt(500, 10)</code></pre><p>---</p><p>6. "<strong>slices</strong>" and "<strong>maps</strong>": Collection Helpers</p><p>Modern Go includes standard-library helpers for slices and maps.</p><h2 id="slices">slices</h2><pre><code>package main
 
 import (
 	"fmt"
@@ -309,7 +339,7 @@ func main() {
 	})
 
 	fmt.Println(users)
-}</code></pre><p><strong>maps</strong></p><pre><code>package main
+}</code></pre><h2 id="maps">maps</h2><pre><code>package main
 
 import (
 	"fmt"
@@ -348,7 +378,7 @@ func main() {
 	return users[i].Age &lt; users[j].Age
 })</code></pre><p>Descending:</p><pre><code>sort.Slice(users, func(i, j int) bool {
 	return users[i].Age &gt; users[j].Age
-})</code></pre><p>---</p><p>8. "<strong>time</strong>": Dates, Durations, and Timers</p><p>The "time" package handles dates, times, durations, timers, and tickers.</p><p><strong>Current time</strong></p><pre><code>package main
+})</code></pre><p>---</p><p>8. "<strong>time</strong>": Dates, Durations, and Timers</p><p>The "time" package handles dates, times, durations, timers, and tickers.</p><h2 id="current-time">Current time</h2><pre><code>package main
 
 import (
 	"fmt"
@@ -1646,5 +1676,6 @@ func main() {
   -d '{"name":"Ginad"}'</code></pre><p>Retrieve the user:</p><p>curl http://localhost:8080/users/1</p><p>Check health:</p><p>curl http://localhost:8080/health</p><p>---</p><p>42. Recommended Learning Order</p><p>Learn these packages first:</p><p>1. "fmt"</p><p>2. "errors"</p><p>3. "strings"</p><p>4. "strconv"</p><p>5. "slices"</p><p>6. "time"</p><p>7. "os"</p><p>8. "path/filepath"</p><p>9. "io"</p><p>10. "bufio"</p><p>11. "encoding/json"</p><p>12. "net/url"</p><p>13. "net/http"</p><p>14. "context"</p><p>15. "sync"</p><p>16. "log/slog"</p><p>17. "testing"</p><p>18. "net/http/httptest"</p><p>Then continue with:</p><p>1. "database/sql"</p><p>2. "html/template"</p><p>3. "embed"</p><p>4. "crypto/rand"</p><p>5. "crypto/sha256"</p><p>6. "encoding/base64"</p><p>7. "regexp"</p><p>8. "compress/gzip"</p><p>9. "archive/zip"</p><p>10. "runtime"</p><p>11. "os/signal"</p><p>12. "reflect"</p><p>---</p><p>43. Standard-Library Best Practices</p><p>Close resources</p><p>file, err := os.Open(path)</p><p>if err != nil {</p><pre><code>return err
 }</code></pre><p>defer file.Close()</p><p>The same applies to:</p><p>- HTTP response bodies</p><p>- Database rows</p><p>- ZIP readers</p><p>- Gzip readers</p><p>- Files</p><p>Wrap errors with context</p><p>Good:</p><p>return fmt.Errorf("read configuration file: %w", err)</p><p>Less useful:</p><p>return err</p><p>Set network timeouts</p><p>client := &amp;http.Client{</p><p>	Timeout: 10 * time.Second,</p><p>}</p><p>Also configure server timeouts.</p><p>Use context for cancellation</p><p>func LoadUser(</p><p>	ctx context.Context,</p><p>	id int64,</p><p>) (User, error)</p><p>Limit untrusted input</p><p>reader := http.MaxBytesReader(</p><p>	w,</p><p>	r.Body,</p><p>	1&lt;&lt;20,</p><p>)</p><p>Prefer streaming for large data</p><p>Prefer:</p><p>io.Copy(destination, source)</p><p>Over reading an entire large file into memory.</p><p>Protect shared state</p><p>Use:</p><p>- "sync.Mutex"</p><p>- "sync.RWMutex"</p><p>- Channels</p><p>- Atomic values</p><p>Do not concurrently modify a regular map without synchronization.</p><p>Use secure randomness for secrets</p><p>Use:</p><p>crypto/rand</p><p>Not:</p><p>math/rand/v2</p><p>Use structured logs</p><p>logger.Error(</p><p>	"failed to save user",</p><p>	"user_id", id,</p><p>	"error", err,</p><p>)</p><p>Test behavior</p><p>Focus tests on observable behavior rather than internal implementation details.</p><p>---</p><p>44. Package Cheat Sheet</p><p>Task - Package</p><p>Print formatted output - "fmt"</p><p>Create and inspect errors - "errors"</p><p>Manipulate strings - "strings"</p><p>Convert strings and numbers - "strconv"</p><p>Work with generic slices - "slices"</p><p>Work with generic maps - "maps"</p><p>Sort collections - "slices", "sort"</p><p>Work with dates and durations - "time"</p><p>Read files and environment variables - "os"</p><p>Build file paths - "path/filepath"</p><p>Stream data - "io"</p><p>Buffered reading and writing - "bufio"</p><p>Work with byte slices - "bytes"</p><p>Encode and decode JSON - "encoding/json"</p><p>Parse URLs - "net/url"</p><p>Build HTTP clients and servers - "net/http"</p><p>Handle cancellation and deadlines - "context"</p><p>Synchronize goroutines - "sync"</p><p>Atomic counters and flags - "sync/atomic"</p><p>Structured logging - "log/slog"</p><p>Parse CLI flags - "flag"</p><p>Use regular expressions - "regexp"</p><p>Mathematical operations - "math"</p><p>Non-secure randomness - "math/rand/v2"</p><p>Secure randomness - "crypto/rand"</p><p>Hash data - "crypto/sha256"</p><p>Encode binary data as text - "encoding/base64", "encoding/hex"</p><p>Access relational databases - "database/sql"</p><p>Generate safe HTML - "html/template"</p><p>Embed application files - "embed"</p><p>Write unit tests - "testing"</p><p>Test HTTP handlers - "net/http/httptest"</p><p>Graceful shutdown - "os/signal"</p><p>Compress data - "compress/gzip"</p><p>Create ZIP archives - "archive/zip"</p><p>Inspect runtime information - "runtime"</p><p>Runtime type inspection - "reflect"</p><p>---</p><p>45. Further Reading</p><p>- Go standard-library package index: "https://pkg.go.dev/std"</p><p>- Official Go documentation: "https://go.dev/doc/"</p><p>- Effective Go: "https://go.dev/doc/effective_go"</p><p>- Go package documentation: "https://pkg.go.dev"</p><p>- Go source-code organization: "https://go.dev/doc/code"</p><p>- Go module organization: "https://go.dev/doc/modules/layout”</p>
 </div>
+<a href="#" class="toc-back">&#8593; Top</a>
 </body>
 </html>

@@ -8,6 +8,7 @@
 :root{--bg:#0f1117;--surface:#1a1d27;--border:#2d3148;--text:#e2e4f0;--muted:#8b8fa8;--accent:#7c87ff;--code-bg:#1e2130;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.75;}
 .nav{position:sticky;top:0;z-index:10;background:rgba(15,17,23,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;}
 .nav a{color:var(--accent);text-decoration:none;font-weight:600;font-size:0.9rem;}
@@ -15,8 +16,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .nav .crumb{color:var(--muted);font-size:0.85rem;}
 .container{max-width:920px;margin:0 auto;padding:40px 36px 96px;}
 h1{font-size:2.5rem;font-weight:800;color:#fff;margin:28px 0 16px;line-height:1.2;letter-spacing:-0.01em;}
-h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
+h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);scroll-margin-top:70px;}
+h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;scroll-margin-top:70px;}
 h4,h5,h6{font-size:1rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
 p{margin-bottom:14px;color:#cdd0e0;}
 a{color:var(--accent);}
@@ -33,6 +34,17 @@ li{margin-bottom:6px;color:#cdd0e0;}
 blockquote{border-left:3px solid var(--accent);margin:18px 0;padding:12px 18px;background:rgba(124,135,255,.07);color:var(--muted);border-radius:0 6px 6px 0;}
 img{max-width:100%;border-radius:8px;}
 hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin:24px 0 36px;}
+.toc-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;}
+.toc ul{list-style:none;padding:0;margin:0;}
+.toc li{margin:2px 0;}
+.toc a{color:#c5caff;text-decoration:none;font-size:0.92rem;}
+.toc a:hover{color:var(--accent);text-decoration:underline;}
+.toc-l2{margin-left:0;}
+.toc-l3{margin-left:18px;}
+.toc-l3 a{color:var(--muted);font-size:0.88rem;}
+.toc-back{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
+.toc-back:hover{opacity:1;}
 </style>
 </head>
 <body>
@@ -42,10 +54,59 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 </nav>
 <div class="container">
 <h1 class="page-title">Go Basics</h1>
-<h2><a id="_8x57017dn20f"></a>Go Language Documentation</h2><p>Modern Go development is module-first. You normally create a project folder anywhere, run `go mod init`, and let the Go tool manage dependencies through `go.mod` and `go.sum`.<br /><br />* Use modules, not GOPATH/src, for almost every new project.<br />* Use <strong>go</strong> install <strong>package</strong>@version to install command-line tools.<br />* Use <strong>go</strong> get only to add, upgrade, or downgrade module dependencies.<br />* Use <strong>go</strong> work for local multi-module development; do not treat it as a production dependency manager.</p><h2><a id="_ydrifyxq9yhe"></a><strong>1. Installation and Environment</strong></h2><p>Install Go from the official Go downloads page or a trusted package manager. After installation, verify the version and environment variables:<br /><br /></p><pre><code>go version
-go env GOROOT GOPATH GOMOD GOWORK</code></pre><p>Modern projects do not need to live under GOPATH. GOPATH is still used for the module cache and binaries installed by go install, but your source code can be anywhere. Ensure your binary path is exported:</p><pre><code>export PATH="$PATH:$(go env GOPATH)/bin"</code></pre><h3>Useful Environment Commands:</h3><pre><code>go env # Print Go environment
+<nav class="toc" aria-label="Table of contents">
+  <p class="toc-title">Contents</p>
+  <ul>
+<li class="toc-l2"><a href="#go-language-documentation">Go Language Documentation</a></li>
+<li class="toc-l2"><a href="#1-installation-and-environment">1. Installation and Environment</a></li>
+<li class="toc-l3"><a href="#useful-environment-commands">Useful Environment Commands:</a></li>
+<li class="toc-l2"><a href="#2-project-setup-with-modules">2. Project Setup With Modules</a></li>
+<li class="toc-l3"><a href="#creating-a-new-app">Creating a New App</a></li>
+<li class="toc-l3"><a href="#gomod-essentials">go.mod Essentials</a></li>
+<li class="toc-l3"><a href="#common-module-commands">Common Module Commands</a></li>
+<li class="toc-l3"><a href="#installing-cli-tools">Installing CLI Tools</a></li>
+<li class="toc-l2"><a href="#3-workspaces-go-work">3. Workspaces (go work)</a></li>
+<li class="toc-l2"><a href="#4-packages-imports-and-visibility">4. Packages, Imports, and Visibility</a></li>
+<li class="toc-l2"><a href="#5-variables-constants-and-types">5. Variables, Constants, and Types</a></li>
+<li class="toc-l3"><a href="#type-conversions-amp-conversions-via-packages">Type Conversions &amp; Conversions via Packages</a></li>
+<li class="toc-l2"><a href="#6-control-flow-amp-loop-scope-mechanics">6. Control Flow &amp; Loop Scope Mechanics</a></li>
+<li class="toc-l3"><a href="#the-loop-pre-iteration-variable-fix">The Loop Pre-Iteration Variable Fix</a></li>
+<li class="toc-l2"><a href="#7-functions-defer-and-error-handling">7. Functions, Defer, and Error Handling</a></li>
+<li class="toc-l3"><a href="#explicit-errors">Explicit Errors</a></li>
+<li class="toc-l2"><a href="#8-data-structures-and-mutation">8. Data Structures and Mutation</a></li>
+<li class="toc-l3"><a href="#slices">Slices</a></li>
+<li class="toc-l3"><a href="#maps">Maps</a></li>
+<li class="toc-l3"><a href="#pointers">Pointers</a></li>
+<li class="toc-l2"><a href="#9-structs-methods-and-interfaces">9. Structs, Methods, and Interfaces</a></li>
+<li class="toc-l2"><a href="#10-generics">10. Generics</a></li>
+<li class="toc-l3"><a href="#advanced-generic-pattern-generic-chainable-methods-builder-p">Advanced Generic Pattern: Generic Chainable Methods (Builder Pattern)</a></li>
+<li class="toc-l2"><a href="#11-concurrency-patterns">11. Concurrency Patterns</a></li>
+<li class="toc-l3"><a href="#standard-concurrency-waitgroup">Standard Concurrency: WaitGroup</a></li>
+<li class="toc-l3"><a href="#channels-and-select">Channels and Select</a></li>
+<li class="toc-l3"><a href="#context-interruption-amp-management">Context Interruption &amp; Management</a></li>
+<li class="toc-l3"><a href="#structured-concurrency-with-errgroup-wggo">Structured Concurrency with errgroup (wg.Go)</a></li>
+<li class="toc-l2"><a href="#12-testing-fuzzing-and-security">12. Testing, Fuzzing, and Security</a></li>
+<li class="toc-l3"><a href="#unit-testing">Unit Testing</a></li>
+<li class="toc-l3"><a href="#fuzz-testing">Fuzz Testing</a></li>
+<li class="toc-l3"><a href="#security-profiling">Security Profiling</a></li>
+<li class="toc-l2"><a href="#13-modern-system-standard-utilities">13. Modern System Standard Utilities</a></li>
+<li class="toc-l3"><a href="#file-operations-ioutil-modern-replacements">File Operations (ioutil modern replacements)</a></li>
+<li class="toc-l3"><a href="#streaming-file-transfers">Streaming File Transfers</a></li>
+<li class="toc-l3"><a href="#json-encoding-amp-decoding">JSON Encoding &amp; Decoding</a></li>
+<li class="toc-l3"><a href="#time-formats">Time Formats</a></li>
+<li class="toc-l2"><a href="#14-http-infrastructure">14. HTTP Infrastructure</a></li>
+<li class="toc-l3"><a href="#server-creation">Server Creation</a></li>
+<li class="toc-l3"><a href="#client-execution">Client Execution</a></li>
+<li class="toc-l2"><a href="#15-structural-production-layout-amp-deployment">15. Structural Production Layout &amp; Deployment</a></li>
+<li class="toc-l3"><a href="#minimal-distroless-dockerfile-production-template">Minimal Distroless Dockerfile Production Template</a></li>
+<li class="toc-l2"><a href="#16-build-tags">16. Build Tags</a></li>
+<li class="toc-l2"><a href="#17-practical-cheat-sheet">17. Practical Cheat Sheet</a></li>
+  </ul>
+</nav>
+<h2 id="go-language-documentation"><a id="_8x57017dn20f"></a>Go Language Documentation</h2><p>Modern Go development is module-first. You normally create a project folder anywhere, run `go mod init`, and let the Go tool manage dependencies through `go.mod` and `go.sum`.<br /><br />* Use modules, not GOPATH/src, for almost every new project.<br />* Use <strong>go</strong> install <strong>package</strong>@version to install command-line tools.<br />* Use <strong>go</strong> get only to add, upgrade, or downgrade module dependencies.<br />* Use <strong>go</strong> work for local multi-module development; do not treat it as a production dependency manager.</p><h2 id="1-installation-and-environment"><a id="_ydrifyxq9yhe"></a><strong>1. Installation and Environment</strong></h2><p>Install Go from the official Go downloads page or a trusted package manager. After installation, verify the version and environment variables:<br /><br /></p><pre><code>go version
+go env GOROOT GOPATH GOMOD GOWORK</code></pre><p>Modern projects do not need to live under GOPATH. GOPATH is still used for the module cache and binaries installed by go install, but your source code can be anywhere. Ensure your binary path is exported:</p><pre><code>export PATH="$PATH:$(go env GOPATH)/bin"</code></pre><h3 id="useful-environment-commands">Useful Environment Commands:</h3><pre><code>go env # Print Go environment
 go env -w GOPRIVATE=github.com/your-org/ # Private modules configurations
-go env -w GOTOOLCHAIN=auto # Allow automatic toolchain selection</code></pre><h2>2. Project Setup With Modules</h2><h3>Creating a New App</h3><pre><code>mkdir hello-go
+go env -w GOTOOLCHAIN=auto # Allow automatic toolchain selection</code></pre><h2 id="2-project-setup-with-modules">2. Project Setup With Modules</h2><h3 id="creating-a-new-app">Creating a New App</h3><pre><code>mkdir hello-go
 cd hello-go
 go mod init github.com/danegigi/SampleGo</code></pre><p>Create main.go file:</p><pre><code>package main
 
@@ -53,17 +114,17 @@ import "fmt"
 
 func main() {
     fmt.Println("Hello, Go")
-}</code></pre><p>Run your code directly using:</p><pre><code>go run .</code></pre><h3>go.mod Essentials</h3><p>The go.mod file tracks required language specifications and toolchains:</p><pre><code>module github.com/danegigi/SampleGo
+}</code></pre><p>Run your code directly using:</p><pre><code>go run .</code></pre><h3 id="gomod-essentials">go.mod Essentials</h3><p>The go.mod file tracks required language specifications and toolchains:</p><pre><code>module github.com/danegigi/SampleGo
 go 1.26.5
 
-require github.com/google/uuid v1.6.0</code></pre><h3>Common Module Commands</h3><table><thead><tr><th><p>Command</p></th><th><p>Description</p></th></tr><tr><th><p>go mod init example.com/app</p></th><th><p>Create a new go.mod file</p></th></tr><tr><th><p>go mod tidy</p></th><th><p>Add missing and remove unused dependencies</p></th></tr><tr><th><p>go get example.com/mod@v1.2.3</p></th><th><p>Change or update a dependency version</p></th></tr><tr><th><p>go list -m all</p></th><th><p>List selected module versions</p></th></tr><tr><th><p>go mod graph</p></th><th><p>View the module dependency graph</p></th></tr><tr><th><p>go mod why -m example.com/mod</p></th><th><p>Explain why a module is required</p></th></tr><tr><th><p>go mod download</p></th><th><p>Pre-download dependencies to the local cache</p></th></tr><tr><th><p>go mod vendor</p></th><th><p>Create a vendor/ directory for a single module</p></th></tr></thead></table><h3>Installing CLI Tools</h3><p>Install tools with go install and an explicit version to keep tool installation decoupled from project dependencies:</p><pre><code>go install golang.org/x/tools/cmd/godoc@latest
-go install golang.org/x/vuln/cmd/govulncheck@latest</code></pre><p><br /></p><h2>3. Workspaces (go work)</h2><p>A workspace lets you work on multiple local modules simultaneously without manually managing replace directives.</p><pre><code>mkdir platform &amp;&amp; cd platform
+require github.com/google/uuid v1.6.0</code></pre><h3 id="common-module-commands">Common Module Commands</h3><table><thead><tr><th><p>Command</p></th><th><p>Description</p></th></tr><tr><th><p>go mod init example.com/app</p></th><th><p>Create a new go.mod file</p></th></tr><tr><th><p>go mod tidy</p></th><th><p>Add missing and remove unused dependencies</p></th></tr><tr><th><p>go get example.com/mod@v1.2.3</p></th><th><p>Change or update a dependency version</p></th></tr><tr><th><p>go list -m all</p></th><th><p>List selected module versions</p></th></tr><tr><th><p>go mod graph</p></th><th><p>View the module dependency graph</p></th></tr><tr><th><p>go mod why -m example.com/mod</p></th><th><p>Explain why a module is required</p></th></tr><tr><th><p>go mod download</p></th><th><p>Pre-download dependencies to the local cache</p></th></tr><tr><th><p>go mod vendor</p></th><th><p>Create a vendor/ directory for a single module</p></th></tr></thead></table><h3 id="installing-cli-tools">Installing CLI Tools</h3><p>Install tools with go install and an explicit version to keep tool installation decoupled from project dependencies:</p><pre><code>go install golang.org/x/tools/cmd/godoc@latest
+go install golang.org/x/vuln/cmd/govulncheck@latest</code></pre><p><br /></p><h2 id="3-workspaces-go-work">3. Workspaces (go work)</h2><p>A workspace lets you work on multiple local modules simultaneously without manually managing replace directives.</p><pre><code>mkdir platform &amp;&amp; cd platform
 git clone git@example.com:company/api.git
 git clone git@example.com:company/shared.git</code></pre><p><br />Initialize workspace with directories<br /></p><pre><code>go work init ./api ./shared
 go work use ./another-module
 go work sync
 go env GOWORK</code></pre><p><br /></p><p><em>Production builds should be verified independently from each module without relying on go.work.</em></p><table><thead><tr><th><p>GOWORK=off <strong>go</strong> test ./...</p></th></tr></thead></table><p>Workspace vendoring is natively supported:</p><pre><code>go work vendor
-go test -mod=vendor ./...</code></pre><h2>4. Packages, Imports, and Visibility</h2><p>The first statement in every Go file is the package declaration.</p><p>Files in the same folder must use the same package name.</p><p>Executable programs use package main and define func main().</p><pre><code>package main
+go test -mod=vendor ./...</code></pre><h2 id="4-packages-imports-and-visibility">4. Packages, Imports, and Visibility</h2><p>The first statement in every Go file is the package declaration.</p><p>Files in the same folder must use the same package name.</p><p>Executable programs use package main and define func main().</p><pre><code>package main
 
 import (
     "fmt"
@@ -72,19 +133,19 @@ import (
 
 func main() {
     fmt.Println(mathx.Add(2, 3))
-}</code></pre><p><strong>Exported</strong>: Start with an uppercase letter (User, NewServer).</p><p><strong>Unexported</strong>: Start with a lowercase letter (user, newServer).</p><p><strong>internal/ packages</strong> can only be imported by code inside that specific parent directory tree.</p><h2>5. Variables, Constants, and Types</h2><pre><code>var count int
+}</code></pre><p><strong>Exported</strong>: Start with an uppercase letter (User, NewServer).</p><p><strong>Unexported</strong>: Start with a lowercase letter (user, newServer).</p><p><strong>internal/ packages</strong> can only be imported by code inside that specific parent directory tree.</p><h2 id="5-variables-constants-and-types">5. Variables, Constants, and Types</h2><pre><code>var count int
 var name string = "Ginad"
 var enabled = true
 score := 42 // Valid only inside functions
 
-const appName = "demo"</code></pre><p>Common built-in types include bool, string, integers, float types, error, any (alias for interface{}), and comparable.</p><h3>Type Conversions &amp; Conversions via Packages</h3><pre><code>i := 42
+const appName = "demo"</code></pre><p>Common built-in types include bool, string, integers, float types, error, any (alias for interface{}), and comparable.</p><h3 id="type-conversions-amp-conversions-via-packages">Type Conversions &amp; Conversions via Packages</h3><pre><code>i := 42
 f := float64(1)
 s := strconv.Itoa(i)
 
 n, err := strconv.Atoi("123")
 if err != nil {
     return err
-}</code></pre><p><br /></p><h2>6. Control Flow &amp; Loop Scope Mechanics</h2><pre><code>if n := len(items); n == 0 {
+}</code></pre><p><br /></p><h2 id="6-control-flow-amp-loop-scope-mechanics">6. Control Flow &amp; Loop Scope Mechanics</h2><pre><code>if n := len(items); n == 0 {
     return errors.New("empty")
 }
 
@@ -101,7 +162,7 @@ for i := range 10 {
 // Map iterations
 for key, value := range m {
     fmt.Println(key, value)
-}</code></pre><h3>The Loop Pre-Iteration Variable Fix</h3><h4>The Problem (Go 1.21 and earlier)</h4><p>Historically, Go reused the exact same memory address for the loop iteration variable across every iteration loop execution. If you passed a pointer of the loop variable, or captured it inside a closure (such as a goroutine or an event callback), every single reference wound up pointing to the final mutated value of the loop.</p><h4>The Modern Fix (Go 1.22+)</h4><p>Since Go 1.22, loop variables created by for loops are per-iteration variables. This prevents accidental closure bugs in goroutines and callbacks natively without requiring manual semantic workarounds.</p><h4>Comparison Example</h4><pre><code>package main
+}</code></pre><h3 id="the-loop-pre-iteration-variable-fix">The Loop Pre-Iteration Variable Fix</h3><h4>The Problem (Go 1.21 and earlier)</h4><p>Historically, Go reused the exact same memory address for the loop iteration variable across every iteration loop execution. If you passed a pointer of the loop variable, or captured it inside a closure (such as a goroutine or an event callback), every single reference wound up pointing to the final mutated value of the loop.</p><h4>The Modern Fix (Go 1.22+)</h4><p>Since Go 1.22, loop variables created by for loops are per-iteration variables. This prevents accidental closure bugs in goroutines and callbacks natively without requiring manual semantic workarounds.</p><h4>Comparison Example</h4><pre><code>package main
 
 import (
 	"fmt"
@@ -138,7 +199,7 @@ func main() {
 		}()
 	}
 	wg.Wait()
-}</code></pre><h2>7. Functions, Defer, and Error Handling</h2><pre><code>func add(a, b int) int {
+}</code></pre><h2 id="7-functions-defer-and-error-handling">7. Functions, Defer, and Error Handling</h2><pre><code>func add(a, b int) int {
     return a + b
 }
 
@@ -152,7 +213,7 @@ func sum(nums ...int) int {
         total += n
     }
     return total
-}</code></pre><p><strong>init()</strong> niladic function called only once, good for testing and setting global variables before actual execution</p><p><strong>defer</strong> schedules functions to execute immediately when the surrounding function returns. Commonly used to close resources, release mutexes, and catch unexpected panics.</p><h3>Explicit Errors</h3><p>Go handles exceptions using explicit value errors. Wrap contextual errors with %w and inspect them using errors.Is or errors.As:</p><pre><code>var ErrNotFound = errors.New("not found")
+}</code></pre><p><strong>init()</strong> niladic function called only once, good for testing and setting global variables before actual execution</p><p><strong>defer</strong> schedules functions to execute immediately when the surrounding function returns. Commonly used to close resources, release mutexes, and catch unexpected panics.</p><h3 id="explicit-errors">Explicit Errors</h3><p>Go handles exceptions using explicit value errors. Wrap contextual errors with %w and inspect them using errors.Is or errors.As:</p><pre><code>var ErrNotFound = errors.New("not found")
 
 func load(id string) (User, error) {
     if id == "" {
@@ -191,23 +252,23 @@ var validationErr *ValidationError
 if errors.As(err, &amp;validationErr) {
 	fmt.Println("Field:", validationErr.Field)
 	fmt.Println("Message:", validationErr.Msg)
-}</code></pre><p><br />Note:</p><p>errors.Is - Compare against a known error value</p><p>errors.As - Find/extract an error of a particular type</p><p>Use panic only for programmer blunders or unrecoverable system initialization errors—never basic bad data or user inputs.</p><h2>8. Data Structures and Mutation</h2><h3>Slices</h3><pre><code>names := []string{"Dane", "Ginad", "Gigi"}
+}</code></pre><p><br />Note:</p><p>errors.Is - Compare against a known error value</p><p>errors.As - Find/extract an error of a particular type</p><p>Use panic only for programmer blunders or unrecoverable system initialization errors—never basic bad data or user inputs.</p><h2 id="8-data-structures-and-mutation">8. Data Structures and Mutation</h2><h3 id="slices">Slices</h3><pre><code>names := []string{"Dane", "Ginad", "Gigi"}
 names = append(names, "Gane")
 
 // Delete an element at index 1
 names = append(names[:1], names[2:]...) 
 
 // Duplicate/Copy a slice
-copyOfNames := append([]string(nil), names...)</code></pre><h3>Maps</h3><pre><code>counts := map[string]int{"a": 1}
+copyOfNames := append([]string(nil), names...)</code></pre><h3 id="maps">Maps</h3><pre><code>counts := map[string]int{"a": 1}
 counts["b"] = 2
 
 value, ok := counts["a"]
-delete(counts, "b")</code></pre><h3>Pointers</h3><p>Slices, maps, and channels are reference-like types; structs and arrays are passed by value (copied). Use pointers for value mutation and memory footprint reduction:</p><pre><code>func increment(n *int) {
+delete(counts, "b")</code></pre><h3 id="pointers">Pointers</h3><p>Slices, maps, and channels are reference-like types; structs and arrays are passed by value (copied). Use pointers for value mutation and memory footprint reduction:</p><pre><code>func increment(n *int) {
     *n++
 }
 
 x := 1
-increment(&amp;x) // x is now 2</code></pre><h2>9. Structs, Methods, and Interfaces</h2><pre><code>type User struct {
+increment(&amp;x) // x is now 2</code></pre><h2 id="9-structs-methods-and-interfaces">9. Structs, Methods, and Interfaces</h2><pre><code>type User struct {
     ID        int64     `json:"id" db:"id"`
     Name      string    `json:"name" db:"name"`
     CreatedAt time.Time `json:"created_at" db:"created_at"`
@@ -225,7 +286,7 @@ func (u *User) Rename(name string) {
 
 type Store interface {
     FindUser(ctx context.Context, id int64) (User, error)
-}</code></pre><p>Interfaces are satisfied implicitly. Keep your interfaces small and target them closely to consumer spaces.</p><h2>10. Generics</h2><p>Generics parameterize functions and structures across a defined set of compatible types.</p><pre><code>type Number interface {
+}</code></pre><p>Interfaces are satisfied implicitly. Keep your interfaces small and target them closely to consumer spaces.</p><h2 id="10-generics">10. Generics</h2><p>Generics parameterize functions and structures across a defined set of compatible types.</p><pre><code>type Number interface {
     ~int | ~int64 | ~float64
 }
 
@@ -251,7 +312,7 @@ func MapKeys[K comparable, V any](m map[K]V) []K {
         keys = append(keys, k)
     }
     return keys
-}</code></pre><h3>Advanced Generic Pattern: Generic Chainable Methods (Builder Pattern)</h3><p>By using generic parameters, you can write types that provide a fluent, chainable API for any data structure while ensuring static type check safety at compilation time.</p><pre><code>package main
+}</code></pre><h3 id="advanced-generic-pattern-generic-chainable-methods-builder-p">Advanced Generic Pattern: Generic Chainable Methods (Builder Pattern)</h3><p>By using generic parameters, you can write types that provide a fluent, chainable API for any data structure while ensuring static type check safety at compilation time.</p><pre><code>package main
 
 import "fmt"
 
@@ -290,7 +351,7 @@ func main() {
 		Collect()
 
 	fmt.Println(result) // Output: [20 30]
-}</code></pre><h2>11. Concurrency Patterns</h2><h3>Standard Concurrency: WaitGroup</h3><pre><code>var wg sync.WaitGroup
+}</code></pre><h2 id="11-concurrency-patterns">11. Concurrency Patterns</h2><h3 id="standard-concurrency-waitgroup">Standard Concurrency: WaitGroup</h3><pre><code>var wg sync.WaitGroup
 for i := range 5 {
     wg.Add(1)
     go func(workerID int) {
@@ -298,7 +359,7 @@ for i := range 5 {
         fmt.Println("worker", workerID)
     }(i)
 }
-wg.Wait()</code></pre><h3>Channels and Select</h3><pre><code>jobs := make(chan int)
+wg.Wait()</code></pre><h3 id="channels-and-select">Channels and Select</h3><pre><code>jobs := make(chan int)
 results := make(chan int)
 
 go func() {
@@ -317,7 +378,7 @@ go func() {
 
 for result := range results {
     fmt.Println(result)
-}</code></pre><h3>Context Interruption &amp; Management</h3><p>Always pass context.Contextas the first argument parameter for long-running workflows, API round-trips, and persistent transactions.</p><pre><code>ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+}</code></pre><h3 id="context-interruption-amp-management">Context Interruption &amp; Management</h3><p>Always pass context.Contextas the first argument parameter for long-running workflows, API round-trips, and persistent transactions.</p><pre><code>ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 defer cancel()
 
 select {
@@ -325,7 +386,7 @@ case &lt;-ctx.Done():
     return ctx.Err()
 case result := &lt;-ch:
     _ = result
-}</code></pre><h3>Structured Concurrency with errgroup (wg.Go)</h3><p>Standard sync.WaitGroup coordinates structural timing but does not handle error cascades or context cancellations out of the box. Using golang.org/x/sync/errgroup handles tracking tasks using a functional execution model .Go(), catching errors, and forwarding cross-context shutdowns automatically.</p><pre><code>package main
+}</code></pre><h3 id="structured-concurrency-with-errgroup-wggo">Structured Concurrency with errgroup (wg.Go)</h3><p>Standard sync.WaitGroup coordinates structural timing but does not handle error cascades or context cancellations out of the box. Using golang.org/x/sync/errgroup handles tracking tasks using a functional execution model .Go(), catching errors, and forwarding cross-context shutdowns automatically.</p><pre><code>package main
 
 import (
 	"context"
@@ -376,27 +437,27 @@ func main() {
 	} else {
 		fmt.Println("All fetches resolved nicely!")
 	}
-}</code></pre><h2>12. Testing, Fuzzing, and Security</h2><p>Execute testing runs using standard flags:</p><pre><code>go test ./...
+}</code></pre><h2 id="12-testing-fuzzing-and-security">12. Testing, Fuzzing, and Security</h2><p>Execute testing runs using standard flags:</p><pre><code>go test ./...
 go test -race ./...                  # Dynamic race checking
 go test -coverprofile=coverage.out   # Run code coverage metrics
-go tool cover -html=coverage.out     # Open visual interface breakdown</code></pre><h3>Unit Testing</h3><pre><code>func TestSum(t *testing.T) {
+go tool cover -html=coverage.out     # Open visual interface breakdown</code></pre><h3 id="unit-testing">Unit Testing</h3><pre><code>func TestSum(t *testing.T) {
     got := Sum([]int{1, 2, 3})
     if got != 6 {
         t.Fatalf("expected 6, got %d", got)
     }
-}</code></pre><h3>Fuzz Testing</h3><pre><code>func FuzzParseID(f *testing.F) {
+}</code></pre><h3 id="fuzz-testing">Fuzz Testing</h3><pre><code>func FuzzParseID(f *testing.F) {
     f.Add("123")
     f.Fuzz(func(t *testing.T, input string) {
         strconv.ParseInt(input, 10, 64)
     })
-}</code></pre><p><br /></p><p>Run fuzzing evaluations explicitly:</p><pre><code>go test -fuzz=FuzzParseID ./...</code></pre><h3>Security Profiling</h3><p>Utilize tools to automatically track vulnerability mappings against dependency databases:</p><pre><code>go install golang.org/x/vuln/cmd/govulncheck@latest
-govulncheck ./...</code></pre><h2>13. Modern System Standard Utilities</h2><h3>File Operations (ioutil modern replacements)</h3><pre><code>data, err := os.ReadFile("input.txt")
+}</code></pre><p><br /></p><p>Run fuzzing evaluations explicitly:</p><pre><code>go test -fuzz=FuzzParseID ./...</code></pre><h3 id="security-profiling">Security Profiling</h3><p>Utilize tools to automatically track vulnerability mappings against dependency databases:</p><pre><code>go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...</code></pre><h2 id="13-modern-system-standard-utilities">13. Modern System Standard Utilities</h2><h3 id="file-operations-ioutil-modern-replacements">File Operations (ioutil modern replacements)</h3><pre><code>data, err := os.ReadFile("input.txt")
 if err != nil { return err }
 
 err = os.WriteFile("output.txt", data, 00644)
 if err != nil { return err }
 
-entries, err := os.ReadDir(".")</code></pre><h3>Streaming File Transfers</h3><pre><code>func CopyFile(dstName, srcName string) error {
+entries, err := os.ReadDir(".")</code></pre><h3 id="streaming-file-transfers">Streaming File Transfers</h3><pre><code>func CopyFile(dstName, srcName string) error {
     src, err := os.Open(srcName)
     if err != nil { return err }
     defer src.Close()
@@ -407,17 +468,17 @@ entries, err := os.ReadDir(".")</code></pre><h3>Streaming File Transfers</h3><pr
 
     _, err = io.Copy(dst, src)
     return err
-}</code></pre><h3>JSON Encoding &amp; Decoding</h3><pre><code>type VCard struct {
+}</code></pre><h3 id="json-encoding-amp-decoding">JSON Encoding &amp; Decoding</h3><pre><code>type VCard struct {
     FirstName string `json:"first_name"`
     LastName  string `json:"last_name"`
 }
 
 b, err := json.Marshal(VCard{FirstName: "Jan", LastName: "Kersschot"})
 var card VCard
-err = json.Unmarshal(b, &amp;card)</code></pre><h3>Time Formats</h3><pre><code>now := time.Now()
+err = json.Unmarshal(b, &amp;card)</code></pre><h3 id="time-formats">Time Formats</h3><pre><code>now := time.Now()
 fmt.Println(now.Format("2006-01-02 15:04:05"))
 
-t, err := time.Parse(time.RFC3339, "2026-07-03T10:00:00Z")</code></pre><p>Format Reason why always 2006-01-02: (posix time format)</p><p>Example: <strong>2006-01-02 15:04:05</strong> is like 6 1 2 3 4 5 </p><table><thead><tr><th><p>Mon</p></th><th><p>Jan</p></th><th><p>2</p></th><th><p>15</p></th><th><p>04</p></th><th><p>05</p></th><th><p>-0700</p></th><th><p>2006</p></th></tr><tr><th><p>0</p></th><th><p>1</p></th><th><p>2</p></th><th><p>3</p></th><th><p>4</p></th><th><p>5</p></th><th><p>7(tz)</p></th><th><p>6</p></th></tr></thead></table><h2>14. HTTP Infrastructure</h2><h3>Server Creation</h3><pre><code>mux := http.NewServeMux()
+t, err := time.Parse(time.RFC3339, "2026-07-03T10:00:00Z")</code></pre><p>Format Reason why always 2006-01-02: (posix time format)</p><p>Example: <strong>2006-01-02 15:04:05</strong> is like 6 1 2 3 4 5 </p><table><thead><tr><th><p>Mon</p></th><th><p>Jan</p></th><th><p>2</p></th><th><p>15</p></th><th><p>04</p></th><th><p>05</p></th><th><p>-0700</p></th><th><p>2006</p></th></tr><tr><th><p>0</p></th><th><p>1</p></th><th><p>2</p></th><th><p>3</p></th><th><p>4</p></th><th><p>5</p></th><th><p>7(tz)</p></th><th><p>6</p></th></tr></thead></table><h2 id="14-http-infrastructure">14. HTTP Infrastructure</h2><h3 id="server-creation">Server Creation</h3><pre><code>mux := http.NewServeMux()
 mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("ok"))
@@ -428,13 +489,13 @@ server := &amp;http.Server{
     Handler:           mux,
     ReadHeaderTimeout: 5 * time.Second,
 }
-log.Fatal(server.ListenAndServe())</code></pre><h3>Client Execution</h3><pre><code>client := &amp;http.Client{Timeout: 10 * time.Second}
+log.Fatal(server.ListenAndServe())</code></pre><h3 id="client-execution">Client Execution</h3><pre><code>client := &amp;http.Client{Timeout: 10 * time.Second}
 req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://example.com", nil)
 if err != nil { return err }
 
 resp, err := client.Do(req)
 if err != nil { return err }
-defer resp.Body.Close()</code></pre><h2>15. Structural Production Layout &amp; Deployment</h2><p>Recommended production blueprint architectures for microservice layouts:</p><pre><code>myapp/
+defer resp.Body.Close()</code></pre><h2 id="15-structural-production-layout-amp-deployment">15. Structural Production Layout &amp; Deployment</h2><p>Recommended production blueprint architectures for microservice layouts:</p><pre><code>myapp/
 ├── cmd/
 │   └── api/
 │       └── main.go
@@ -446,7 +507,7 @@ defer resp.Body.Close()</code></pre><h2>15. Structural Production Layout &amp; D
 ├── pkg/
 │   └── optional-public-library/
 ├── go.mod
-└── go.sum</code></pre><h3>Minimal Distroless Dockerfile Production Template</h3><pre><code>FROM golang:1.26 AS build
+└── go.sum</code></pre><h3 id="minimal-distroless-dockerfile-production-template">Minimal Distroless Dockerfile Production Template</h3><pre><code>FROM golang:1.26 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
@@ -456,9 +517,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/app ./c
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /out/app /app
 USER nonroot:nonroot
-ENTRYPOINT ["/app"]</code></pre><h2>16. Build Tags</h2><p>Build tags constrain compilation targets based on environment conditions, operational requirements, or cross-compilation platforms.</p><pre><code>//go:build linux
+ENTRYPOINT ["/app"]</code></pre><h2 id="16-build-tags">16. Build Tags</h2><p>Build tags constrain compilation targets based on environment conditions, operational requirements, or cross-compilation platforms.</p><pre><code>//go:build linux
 package platform
-func Name() string { return "linux" }</code></pre><p>Filename suffixes such as _linux.<strong>go</strong>, _windows.<strong>go</strong>, _amd64.<strong>go</strong>, and _arm64.<strong>go</strong> are also automatically resolved by the Go compiler toolchain to filter platform-specific compilation units.</p><h2>17. Practical Cheat Sheet</h2><table><thead><tr><th><p>Task</p></th><th><p>Command</p></th></tr><tr><th><p>Create module</p></th><th><p>go mod init example.com/app</p></th></tr><tr><th><p>Run app</p></th><th><p>go run .</p></th></tr><tr><th><p>Build</p></th><th><p>go build ./...</p></th></tr><tr><th><p>Test all</p></th><th><p>go test ./...</p></th></tr><tr><th><p>Race detector</p></th><th><p>go test -race ./...</p></th></tr><tr><th><p>Format</p></th><th><p>go fmt ./...</p></th></tr><tr><th><p>Vet</p></th><th><p>go vet ./...</p></th></tr><tr><th><p>Add dependency</p></th><th><p>go get module@version</p></th></tr><tr><th><p>Clean dependencies</p></th><th><p>go mod tidy</p></th></tr><tr><th><p>Install CLI</p></th><th><p>go install module/cmd/tool@version</p></th></tr><tr><th><p>Workspace init</p></th><th><p>go work init ./module-a ./module-b</p></th></tr><tr><th><p>Disable workspace</p></th><th><p>GOWORK=off go test ./...</p></th></tr></thead></table>
+func Name() string { return "linux" }</code></pre><p>Filename suffixes such as _linux.<strong>go</strong>, _windows.<strong>go</strong>, _amd64.<strong>go</strong>, and _arm64.<strong>go</strong> are also automatically resolved by the Go compiler toolchain to filter platform-specific compilation units.</p><h2 id="17-practical-cheat-sheet">17. Practical Cheat Sheet</h2><table><thead><tr><th><p>Task</p></th><th><p>Command</p></th></tr><tr><th><p>Create module</p></th><th><p>go mod init example.com/app</p></th></tr><tr><th><p>Run app</p></th><th><p>go run .</p></th></tr><tr><th><p>Build</p></th><th><p>go build ./...</p></th></tr><tr><th><p>Test all</p></th><th><p>go test ./...</p></th></tr><tr><th><p>Race detector</p></th><th><p>go test -race ./...</p></th></tr><tr><th><p>Format</p></th><th><p>go fmt ./...</p></th></tr><tr><th><p>Vet</p></th><th><p>go vet ./...</p></th></tr><tr><th><p>Add dependency</p></th><th><p>go get module@version</p></th></tr><tr><th><p>Clean dependencies</p></th><th><p>go mod tidy</p></th></tr><tr><th><p>Install CLI</p></th><th><p>go install module/cmd/tool@version</p></th></tr><tr><th><p>Workspace init</p></th><th><p>go work init ./module-a ./module-b</p></th></tr><tr><th><p>Disable workspace</p></th><th><p>GOWORK=off go test ./...</p></th></tr></thead></table>
 </div>
+<a href="#" class="toc-back">&#8593; Top</a>
 </body>
 </html>

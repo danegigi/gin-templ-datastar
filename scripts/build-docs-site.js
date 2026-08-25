@@ -61,6 +61,59 @@ const PAGES = [
   },
 ];
 
+// Some docs (e.g. go-stdlib) never used Word heading styles — every section
+// title is just a bold paragraph like <p><strong>The fmt package</strong></p>.
+// Promote those to real <h2> so they can anchor a table of contents. A bold
+// paragraph is treated as a heading when it is the WHOLE paragraph, is short,
+// and doesn't read like a sentence.
+function promoteBoldHeadings(html) {
+  return html.replace(/<p>\s*<strong>([\s\S]*?)<\/strong>\s*<\/p>/gi, (m, inner) => {
+    const text = inner.replace(/<[^>]+>/g, "").trim();
+    const words = text.split(/\s+/).length;
+    const looksHeading =
+      text.length >= 3 && text.length <= 70 &&
+      words <= 9 &&
+      !/[.!?]$/.test(text) &&          // not a sentence
+      !/ - /.test(text);               // not a "Term - definition" line
+    return looksHeading ? `<h2>${text}</h2>` : m;
+  });
+}
+
+// ── Table of contents ───────────────────────────────────────────────────────
+// Assign an id to every h2/h3 and build a nested TOC that links to them.
+function slugify(text, used) {
+  let base = text.toLowerCase().replace(/<[^>]+>/g, "").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 60) || "section";
+  let s = base, n = 2;
+  while (used.has(s)) { s = `${base}-${n++}`; }
+  used.add(s);
+  return s;
+}
+
+function addTocAndIds(html) {
+  const used = new Set();
+  const entries = [];
+  const withIds = html.replace(/<(h2|h3)>([\s\S]*?)<\/\1>/gi, (m, tag, inner) => {
+    const textOnly = inner.replace(/<[^>]+>/g, "").trim();
+    if (!textOnly) return m;
+    const id = slugify(textOnly, used);
+    entries.push({ level: tag === "h2" ? 2 : 3, id, text: textOnly });
+    return `<${tag} id="${id}">${inner}</${tag}>`;
+  });
+
+  if (entries.length < 2) return { html: withIds, toc: "" }; // not worth a TOC
+
+  const items = entries.map((e) =>
+    `<li class="toc-l${e.level}"><a href="#${e.id}">${e.text}</a></li>`
+  ).join("\n");
+  const toc = `<nav class="toc" aria-label="Table of contents">
+  <p class="toc-title">Contents</p>
+  <ul>
+${items}
+  </ul>
+</nav>`;
+  return { html: withIds, toc };
+}
+
 // ── Code block extraction ───────────────────────────────────────────────────
 // Word stores code samples inside single-column tables ("code boxes"). mammoth
 // renders those as <table>…<br/>…</table>. Detect those and turn them into
@@ -196,6 +249,7 @@ const STYLE = `<style>
 :root{--bg:#0f1117;--surface:#1a1d27;--border:#2d3148;--text:#e2e4f0;--muted:#8b8fa8;--accent:#7c87ff;--code-bg:#1e2130;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.75;}
 .nav{position:sticky;top:0;z-index:10;background:rgba(15,17,23,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;}
 .nav a{color:var(--accent);text-decoration:none;font-weight:600;font-size:0.9rem;}
@@ -203,8 +257,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .nav .crumb{color:var(--muted);font-size:0.85rem;}
 .container{max-width:920px;margin:0 auto;padding:40px 36px 96px;}
 h1{font-size:2.5rem;font-weight:800;color:#fff;margin:28px 0 16px;line-height:1.2;letter-spacing:-0.01em;}
-h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
+h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);scroll-margin-top:70px;}
+h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;scroll-margin-top:70px;}
 h4,h5,h6{font-size:1rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
 p{margin-bottom:14px;color:#cdd0e0;}
 a{color:var(--accent);}
@@ -221,9 +275,20 @@ li{margin-bottom:6px;color:#cdd0e0;}
 blockquote{border-left:3px solid var(--accent);margin:18px 0;padding:12px 18px;background:rgba(124,135,255,.07);color:var(--muted);border-radius:0 6px 6px 0;}
 img{max-width:100%;border-radius:8px;}
 hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin:24px 0 36px;}
+.toc-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;}
+.toc ul{list-style:none;padding:0;margin:0;}
+.toc li{margin:2px 0;}
+.toc a{color:#c5caff;text-decoration:none;font-size:0.92rem;}
+.toc a:hover{color:var(--accent);text-decoration:underline;}
+.toc-l2{margin-left:0;}
+.toc-l3{margin-left:18px;}
+.toc-l3 a{color:var(--muted);font-size:0.88rem;}
+.toc-back{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
+.toc-back:hover{opacity:1;}
 </style>`;
 
-function pageShell(title, bodyHtml) {
+function pageShell(title, bodyHtml, toc) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,8 +304,10 @@ ${STYLE}
 </nav>
 <div class="container">
 <h1 class="page-title">${title}</h1>
+${toc}
 ${bodyHtml}
 </div>
+<a href="#" class="toc-back">&#8593; Top</a>
 </body>
 </html>`;
 }
@@ -255,8 +322,9 @@ ${bodyHtml}
     // Demote any document-internal <h1> to <h2> so the injected page title is
     // the single, largest heading; the doc's own top-level headings sit under it.
     const demoted = value.replace(/<(\/?)h1(\s[^>]*)?>/gi, "<$1h2$2>");
-    const body = scrub(collapseCodeParagraphs(formatCodeBlocks(demoted)));
-    fs.writeFileSync(path.join(DOCS, `${p.slug}.html`), pageShell(p.title, body));
+    const formatted = scrub(collapseCodeParagraphs(formatCodeBlocks(demoted)));
+    const { html: withIds, toc } = addTocAndIds(promoteBoldHeadings(formatted));
+    fs.writeFileSync(path.join(DOCS, `${p.slug}.html`), pageShell(p.title, withIds, toc));
     console.log(`Wrote docs/${p.slug}.html`);
   }
 
