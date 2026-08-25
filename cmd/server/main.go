@@ -55,7 +55,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("admin-v2 listening on :%s", port)
+	log.Printf("go-tut listening on :%s", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("server error: %v", err)
 	}

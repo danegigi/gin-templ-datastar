@@ -135,7 +135,7 @@ node scripts/build-tutorial.js
 └── TUTORIAL.html                     Rendered tutorial (generated)
 ```
 
-> Note: the Go module path is `github.com/danegigi/go-tut` (in `go.mod`). The compiled binary is still named `admin-v2` (from the Makefile) — rename the `BINARY` variable there if you'd like it to match.
+> Note: the Go module path is `github.com/danegigi/go-tut` (in `go.mod`) and the compiled binary is `bin/go-tut` (set by the `BINARY` variable in the Makefile).
 
 ---
 
@@ -201,8 +201,8 @@ go mod download
 make all
 
 # 5. Run
-./bin/admin-v2
-# → admin-v2 listening on :8080
+./bin/go-tut
+# → go-tut listening on :8080
 ```
 
 Open http://localhost:8080/login in your browser.
@@ -215,7 +215,7 @@ Open http://localhost:8080/login in your browser.
 make all        # generate → css → build  (default)
 make generate   # run templ code generation (*.templ → *_templ.go)
 make css        # rebuild Tailwind CSS (static/css/input.css → static/css/app.css)
-make build      # compile Go binary → bin/admin-v2
+make build      # compile Go binary → bin/go-tut
 make run        # all + start binary
 make dev        # generate + css + go run ./cmd/server (no binary written)
 make test       # go test ./...
@@ -249,7 +249,7 @@ The `.air.toml` config:
 ## Running the server
 
 ```bash
-make all && ./bin/admin-v2   # production build
+make all && ./bin/go-tut   # production build
 make dev                     # development (go run, no binary written)
 air                          # live reload
 ```

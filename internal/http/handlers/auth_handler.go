@@ -53,7 +53,7 @@ func (h *Handler) Logout(c *gin.Context) {
 // Ping is the health check handler.
 func (h *Handler) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"serviceName": "admin-v2",
+		"serviceName": "go-tut",
 		"status":      "ok",
 	})
 }

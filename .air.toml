@@ -1,4 +1,4 @@
-# air live-reload config for admin-v2
+# air live-reload config for go-tut
 # Install: go install github.com/air-verse/air@latest
 # Run:     air  (from the v2/ directory)
 
@@ -11,8 +11,8 @@ tmp_dir = ".air_tmp"
   pre_cmd = ["make generate css"]
 
   # Compile the binary into .air_tmp/
-  cmd = "go build -o .air_tmp/admin-v2 ./cmd/server"
-  bin = ".air_tmp/admin-v2"
+  cmd = "go build -o .air_tmp/go-tut ./cmd/server"
+  bin = ".air_tmp/go-tut"
 
   # Args forwarded to the binary (add flags here if needed)
   args_bin = []

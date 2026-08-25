@@ -1,7 +1,7 @@
-# Makefile for admin-v2
+# Makefile for go-tut
 # Usage: make [target]
 
-BINARY=bin/admin-v2
+BINARY=bin/go-tut
 TEMPL_CMD=$(shell which templ || echo $(HOME)/go/bin/templ)
 TAILWIND_CMD=./node_modules/.bin/tailwindcss
 
