@@ -288,7 +288,9 @@ func NewRouter(cfg config.Config, service *listings.Service, renderer web.Render
 }</code></pre><p>This makes the router easy to test because you can inject temporary repositories, fake renderers, or real Templ renderers.</p><h2 id="11-route-mounting">11. Route Mounting</h2><p>Routes should be readable at a glance.</p><pre><code>func (s *Server) mount(router *gin.Engine) {
     router.Static("/assets", filepath.Join(s.cfg.PublicDir, "assets"))
     router.GET("/styles.css", s.staticFile("styles.css", "text/css; charset=utf-8"))
-    router.GET("/site.webmanifest", s.staticFile("site.webmanifest",</code></pre><p>"application/manifest+json; charset=utf-8"))</p><pre><code>router.GET("/", s.home)
+    router.GET("/site.webmanifest", s.staticFile("site.webmanifest", 
+"application/manifest+json; charset=utf-8"))
+    router.GET("/", s.home)
     router.GET("/listings", s.listings)
     router.GET("/submit", s.submit)
     router.GET("/claim", s.claim)
@@ -413,15 +415,21 @@ func NewRouter(cfg config.Config, service *listings.Service, renderer web.Render
         case "select":
             @SelectField(field)
         case "checkbox":
-            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{</code></pre><p>field.Label }&lt;/span&gt;&lt;/label&gt;</p><pre><code>default:
+            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{ 
+field.Label }&lt;/span&gt;&lt;/label&gt;
+        default:
             @InputField(field)
     }
 }</code></pre><p>This keeps the CMS extensible. Adding a new field type becomes a focused component change.</p><h2 id="dynamic-attributes">Dynamic Attributes</h2><p>Use `{ ... }` inside attributes when the value changes per record.</p><p>&lt;img class="listing-photo-img" src={ listingImageURL(row) } alt=""/&gt;</p><p>&lt;button aria-label={ "Save " + row.Address }&gt;♡&lt;/button&gt;</p><p>&lt;span class={ "status-pill " + string(row.Status) }&gt;{ statusLabel(row.Status) }&lt;/span&gt;</p><p>Dynamic attributes are ideal for classes, form values, ARIA labels, image sources, IDs, and data attributes.</p><pre><code>For links built from dynamic values, use `templ.URL`:
 go
 &lt;a href={ templ.URL("/listings/" + row.ID) }&gt;View details&lt;/a&gt;</code></pre><p>That makes intent clear: this expression is meant to be used as a URL.</p><h2 id="forms-and-required-fields">Forms And Required Fields</h2><p>Templ works well for HTML forms because forms are mostly structured HTML with a few dynamic values.</p><pre><code>templ InputField(field cms.Field) {
     if field.Required {
-        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={</code></pre><p>field.Name } placeholder={ field.Placeholder } required/&gt;&lt;/label&gt;</p><pre><code>} else {
-        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={</code></pre><p>field.Name } placeholder={ field.Placeholder }/&gt;&lt;/label&gt;</p><pre><code>}
+        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={ 
+field.Name } placeholder={ field.Placeholder } required/&gt;&lt;/label&gt;
+    } else {
+        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={ 
+field.Name } placeholder={ field.Placeholder }/&gt;&lt;/label&gt;
+    }
 }</code></pre><p>In Go templates, boolean attributes such as `required` are easiest to handle with separate branches. This keeps generated HTML explicit and easy to inspect.</p><h2 id="helper-functions">Helper Functions</h2><p>Keep helper functions in normal `.go` files in the same package as your `.templ` files.</p><pre><code>package web
 func listingImageURL(row listings.Listing) string {
     if row.Photo != "" {
@@ -438,7 +446,9 @@ go run ./cmd/server</code></pre><p>If generation succeeds but Go tests fail, the
     ListingDetail(*gin.Context, listings.Listing)
 }</code></pre><p>Implement it with Templ:</p><pre><code>type TemplRenderer struct{}
 func NewTemplRenderer() *TemplRenderer { return &amp;TemplRenderer{} }
-func (r *TemplRenderer) Listings(c *gin.Context, all []listings.Listing, visible</code></pre><p>[]listings.Listing) {</p><pre><code>r.render(c, ListingsPage(all, visible))
+func (r *TemplRenderer) Listings(c *gin.Context, all []listings.Listing, visible 
+[]listings.Listing) {
+    r.render(c, ListingsPage(all, visible))
 }
 func (r *TemplRenderer) render(c *gin.Context, component templ.Component) {
     c.Status(http.StatusOK)
@@ -454,14 +464,18 @@ func (r *TemplRenderer) render(c *gin.Context, component templ.Component) {
                 if row.Featured {
                     &lt;span class="status-pill warning"&gt;featured&lt;/span&gt;
                 }
-                &lt;span class={ "status-pill " + string(row.Status) }&gt;{</code></pre><p>statusLabel(row.Status) }&lt;/span&gt;</p><pre><code>&lt;span class="status-pill warning"&gt;street sign&lt;/span&gt;
+                &lt;span class={ "status-pill " + string(row.Status) }&gt;{ 
+statusLabel(row.Status) }&lt;/span&gt;
+                &lt;span class="status-pill warning"&gt;street sign&lt;/span&gt;
             &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class="listing-body"&gt;
             &lt;p class="listing-price"&gt;{ row.Price }&lt;/p&gt;
             &lt;h3&gt;{ row.Address }&lt;/h3&gt;
             &lt;p class="meta"&gt;{ row.City }, { row.Country }&lt;/p&gt;
-            &lt;a class="secondary-action details-button" href={ templ.URL("/listings/" +</code></pre><p>row.ID) }&gt;View details&lt;/a&gt;</p><pre><code>&lt;/div&gt;
+            &lt;a class="secondary-action details-button" href={ templ.URL("/listings/" + 
+row.ID) }&gt;View details&lt;/a&gt;
+        &lt;/div&gt;
     &lt;/article&gt;
 }</code></pre><p>Keep helpers in Go files beside the templates:</p><pre><code>func statusLabel(status listings.Status) string {
     return strings.ReplaceAll(string(status), "_", " ")
@@ -482,7 +496,9 @@ func listingImageURL(row listings.Listing) string {
             &lt;form class="submission-form" method="post" action="/listings"&gt;
                 &lt;label&gt;&lt;span&gt;Address&lt;/span&gt;&lt;input name="address" required/&gt;&lt;/label&gt;
                 &lt;label&gt;&lt;span&gt;City&lt;/span&gt;&lt;input name="city" required/&gt;&lt;/label&gt;
-                &lt;label&gt;&lt;span&gt;Mode&lt;/span&gt;&lt;select name="mode"&gt;&lt;option value="sale"&gt;For</code></pre><p>sale&lt;/option&gt;&lt;option value="lease"&gt;For lease&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</p><pre><code>&lt;button class="primary-action" type="submit"&gt;Publish sighting&lt;/button&gt;
+                &lt;label&gt;&lt;span&gt;Mode&lt;/span&gt;&lt;select name="mode"&gt;&lt;option value="sale"&gt;For 
+sale&lt;/option&gt;&lt;option value="lease"&gt;For lease&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+                &lt;button class="primary-action" type="submit"&gt;Publish sighting&lt;/button&gt;
             &lt;/form&gt;
         &lt;/main&gt;
     }
@@ -522,7 +538,9 @@ type Page struct {
         Fields: []Field{
             {Name: "name", Label: "Name", Required: true},
             {Name: "email", Label: "Email", Type: "email", Required: true},
-            {Name: "status", Label: "Status", Type: "select", Options: []string{"active",</code></pre><p>"invited", "suspended"}},</p><pre><code>},
+            {Name: "status", Label: "Status", Type: "select", Options: []string{"active", 
+"invited", "suspended"}},
+        },
     },
 }</code></pre><p>This lets the CMS grow by adding definitions instead of route boilerplate.</p><h2 id="19-cms-form-components">19. CMS Form Components</h2><p>A generic CMS page component can render any page definition.</p><pre><code>templ CMSPage(page cms.Page, saved bool) {
     @Shell(page.Title) {
@@ -548,7 +566,9 @@ type Page struct {
         case "select":
             @SelectField(field)
         case "checkbox":
-            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{</code></pre><p>field.Label }&lt;/span&gt;&lt;/label&gt;</p><pre><code>default:
+            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{ 
+field.Label }&lt;/span&gt;&lt;/label&gt;
+        default:
             @InputField(field)
     }
 }</code></pre><p>This is a compact pattern for internal tools and admin systems.</p><h2 id="20-middleware">20. Middleware</h2><p>Gin middleware wraps requests. Start with logging and recovery:</p><pre><code>router := gin.New()

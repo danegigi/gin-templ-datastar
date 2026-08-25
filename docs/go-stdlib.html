@@ -1118,7 +1118,11 @@ value, exists := cache.Load("user:1")
 if exists {
 	fmt.Println(value)
 }</code></pre><p>---</p><h2 id="20-syncatomic-atomic-values">20. "sync/atomic": Atomic Values</h2><p>Atomic operations are useful for small pieces of shared state, such as counters and flags.</p><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"sync"</p><p>	"sync/atomic"</p><pre><code>)
+import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+)
 func main() {
 	var counter atomic.Int64
 	var wg sync.WaitGroup
@@ -1126,7 +1130,9 @@ func main() {
 		wg.Go(func() {
 			counter.Add(1)
 		})
-	}</code></pre><p>	wg.Wait()</p><pre><code>fmt.Println(counter.Load())
+	}
+	wg.Wait()
+	fmt.Println(counter.Load())
 }</code></pre><p>Boolean flag:</p><p>var ready atomic.Bool</p><p>ready.Store(true)</p><p>if ready.Load() {</p><pre><code>fmt.Println("Application is ready")
 }</code></pre><p>Use a mutex when multiple related values must be updated together.</p><p>---</p><h2 id="21-channels-and-select">21. Channels and "select"</h2><p>Channels are part of the Go language, but their behavior is closely connected to the standard library’s concurrency tools.</p><p>Sending and receiving</p><pre><code>package main
 import "fmt"
@@ -1142,7 +1148,9 @@ messages &lt;- "first"
 messages &lt;- "second"
 fmt.Println(&lt;-messages)
 fmt.Println(&lt;-messages)</code></pre><p>Closing a channel</p><p>The sender normally closes a channel.</p><pre><code>jobs := make(chan int)
-go func() {</code></pre><p>	defer close(jobs)</p><pre><code>for i := 1; i &lt;= 5; i++ {
+go func() {
+	defer close(jobs)
+	for i := 1; i &lt;= 5; i++ {
 		jobs &lt;- i
 	}
 }()
@@ -1152,7 +1160,9 @@ for job := range jobs {
 	fmt.Println(message)
 case &lt;-time.After(2 * time.Second):
 	fmt.Println("Timed out")
-}</code></pre><p>Worker pool</p><p>func worker(</p><p>	id int,</p><pre><code>jobs &lt;-chan int,
+}</code></pre><p>Worker pool</p><pre><code>func worker(
+	id int,
+	jobs &lt;-chan int,
 	results chan&lt;- int,
 ) {
 	for job := range jobs {
@@ -1170,7 +1180,9 @@ func main() {
 	}
 	for job := 1; job &lt;= jobCount; job++ {
 		jobs &lt;- job
-	}</code></pre><p>	close(jobs)</p><pre><code>for i := 0; i &lt; jobCount; i++ {
+	}
+	close(jobs)
+	for i := 0; i &lt; jobCount; i++ {
 		fmt.Println("Result:", &lt;-results)
 	}
 }</code></pre><p>---</p><h2 id="22-log-and-logslog-application-logging">22. "log" and "log/slog": Application Logging</h2><p>Basic "log"</p><pre><code>package main
@@ -1180,11 +1192,16 @@ func main() {
 	log.Printf("Listening on port %d", 8080)
 }</code></pre><p>Fatal logging:</p><p>if err != nil {</p><pre><code>log.Fatal(err)
 }</code></pre><p>"log.Fatal" logs the message and exits the program. Deferred functions will not run after it calls "os.Exit".</p><p>Structured logging with "log/slog"</p><pre><code>package main
-import (</code></pre><p>	"log/slog"</p><p>	"os"</p><pre><code>)
+import (
+	"log/slog"
+	"os"
+)
 func main() {
 	logger := slog.New(
 		slog.NewJSONHandler(os.Stdout, nil),
-	)</code></pre><p>	logger.Info(</p><pre><code>"user created",
+	)
+	logger.Info(
+		"user created",
 		"user_id", 1001,
 		"email", "Ginad@example.com",
 	)
@@ -1194,9 +1211,16 @@ func main() {
   "msg": "user created",
   "user_id": 1001,
   "email": "Ginad@example.com"
-}</code></pre><p>Log levels</p><p>logger.Debug("database query", "query", query)</p><p>logger.Info("request completed", "status", 200)</p><p>logger.Warn("slow request", "duration", duration)</p><p>logger.Error("request failed", "error", err)</p><p>Adding permanent attributes</p><p>requestLogger := logger.With(</p><p>	"request_id", requestID,</p><p>	"method", r.Method,</p><p>	"path", r.URL.Path,</p><p>)</p><p>requestLogger.Info("request started")</p><p>Logging errors</p><p>Use:</p><p>logger.Error("failed to load user", "error", err)</p><p>Instead of converting everything into one formatted string:</p><p>logger.Error(fmt.Sprintf("failed to load user: %v", err))</p><p>Structured fields are easier for log-processing systems to query.</p><p>---</p><h2 id="23-flag-command-line-flags">23. "flag": Command-Line Flags</h2><pre><code>The "flag" package parses command-line options.
+}</code></pre><p>Log levels</p><p>logger.Debug("database query", "query", query)</p><p>logger.Info("request completed", "status", 200)</p><p>logger.Warn("slow request", "duration", duration)</p><p>logger.Error("request failed", "error", err)</p><p>Adding permanent attributes</p><pre><code>requestLogger := logger.With(
+	"request_id", requestID,
+	"method", r.Method,
+	"path", r.URL.Path,
+)</code></pre><p>requestLogger.Info("request started")</p><p>Logging errors</p><p>Use:</p><p>logger.Error("failed to load user", "error", err)</p><p>Instead of converting everything into one formatted string:</p><p>logger.Error(fmt.Sprintf("failed to load user: %v", err))</p><p>Structured fields are easier for log-processing systems to query.</p><p>---</p><h2 id="23-flag-command-line-flags">23. "flag": Command-Line Flags</h2><pre><code>The "flag" package parses command-line options.
 package main
-import (</code></pre><p>	"flag"</p><p>	"fmt"</p><pre><code>)
+import (
+	"flag"
+	"fmt"
+)
 func main() {
 	name := flag.String(
 		"name",
@@ -1212,7 +1236,10 @@ func main() {
 		"verbose",
 		false,
 		"enable verbose output",
-	)</code></pre><p>	flag.Parse()</p><p>	if *verbose {</p><pre><code>fmt.Println("Verbose mode enabled")
+	)
+	flag.Parse()
+	if *verbose {
+		fmt.Println("Verbose mode enabled")
 	}
 	for i := 0; i &lt; *count; i++ {
 		fmt.Println("Hello,", *name)
@@ -1221,24 +1248,40 @@ func main() {
 for _, file := range files {
 	fmt.Println(file)
 }</code></pre><p>---</p><h2 id="24-regexp-regular-expressions">24. "regexp": Regular Expressions</h2><p>The "regexp" package provides regular-expression matching.</p><p>Simple matching</p><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"regexp"</p><pre><code>)
+import (
+	"fmt"
+	"regexp"
+)
 func main() {
 	matched, err := regexp.MatchString(
 		`^[a-zA-Z0-9_]+$`,
 		"user_123",
-	)</code></pre><p>	if err != nil {</p><pre><code>fmt.Println(err)
+	)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	fmt.Println(matched)
-}</code></pre><p>Compile once, reuse many times</p><p>var usernamePattern = regexp.MustCompile(</p><p>	`^[a-zA-Z0-9_]{3,20}$`,</p><pre><code>)
+}</code></pre><p>Compile once, reuse many times</p><pre><code>var usernamePattern = regexp.MustCompile(
+	`^[a-zA-Z0-9_]{3,20}$`,
+)
 func validUsername(username string) bool {
 	return usernamePattern.MatchString(username)
 }</code></pre><p>"regexp.MustCompile" panics if the pattern is invalid, so it is appropriate for constant patterns checked during development.</p><p>Finding values</p><pre><code>pattern := regexp.MustCompile(`\d+`)
-matches := pattern.FindAllString(</code></pre><p>	"Order 123 contains 4 products",</p><p>	-1,</p><pre><code>)
+matches := pattern.FindAllString(
+	"Order 123 contains 4 products",
+	-1,
+)
 fmt.Println(matches)</code></pre><p>Output:</p><p>[123 4]</p><p>Replacing matches</p><pre><code>pattern := regexp.MustCompile(`\s+`)
-result := pattern.ReplaceAllString(</code></pre><p>	"Go    standard   library",</p><p>	" ",</p><pre><code>)
+result := pattern.ReplaceAllString(
+	"Go    standard   library",
+	" ",
+)
 fmt.Println(result)</code></pre><p>For simple prefix, suffix, containment, splitting, or replacement operations, prefer the "strings" package.</p><p>---</p><h2 id="25-math-and-mathrandv2">25. "math" and "math/rand/v2"</h2><p>"math"</p><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"math"</p><pre><code>)
+import (
+	"fmt"
+	"math"
+)
 func main() {
 	fmt.Println(math.Abs(-10.5))
 	fmt.Println(math.Ceil(10.2))
@@ -1249,14 +1292,21 @@ func main() {
 	fmt.Println(math.Sqrt(81))
 	fmt.Println(math.Pow(2, 8))
 }</code></pre><p>Random values</p><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"math/rand/v2"</p><pre><code>)
+import (
+	"fmt"
+	"math/rand/v2"
+)
 func main() {
 	value := rand.IntN(100)
 	fmt.Println(value)
 }</code></pre><p>Random item:</p><pre><code>names := []string{"Ginad", "Gigi", "Gane"}
 name := names[rand.IntN(len(names))]
 fmt.Println(name)</code></pre><p>Shuffle:</p><p>rand.Shuffle(len(names), func(i, j int) {</p><p>	names[i], names[j] = names[j], names[i]</p><p>})</p><p>Do not use "math/rand/v2" for passwords, access tokens, API keys, reset links, or other security-sensitive values. Use "crypto/rand".</p><p>---</p><h2 id="26-cryptorand-secure-random-values">26. "crypto/rand": Secure Random Values</h2><p>Generate secure random bytes:</p><pre><code>package main
-import (</code></pre><p>	"crypto/rand"</p><p>	"encoding/hex"</p><p>	"fmt"</p><pre><code>)
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+)
 func generateToken(byteLength int) (string, error) {
 	data := make([]byte, byteLength)
 	if _, err := rand.Read(data); err != nil {
@@ -1268,11 +1318,17 @@ func generateToken(byteLength int) (string, error) {
 	return hex.EncodeToString(data), nil
 }
 func main() {
-	token, err := generateToken(32)</code></pre><p>	if err != nil {</p><pre><code>panic(err)
+	token, err := generateToken(32)
+	if err != nil {
+		panic(err)
 	}
 	fmt.Println(token)
 }</code></pre><p>Thirty-two random bytes become a 64-character hexadecimal string.</p><p>Use secure randomness for:</p><p>- Session tokens</p><p>- Password reset tokens</p><p>- Verification codes</p><p>- API secrets</p><p>- Nonces</p><p>- Cryptographic keys</p><p>---</p><h2 id="27-cryptosha256-and-encodinghex">27. "crypto/sha256" and "encoding/hex"</h2><p>Hashing data:</p><pre><code>package main
-import (</code></pre><p>	"crypto/sha256"</p><p>	"encoding/hex"</p><p>	"fmt"</p><pre><code>)
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+)
 func main() {
 	input := []byte("hello")
 	hash := sha256.Sum256(input)
@@ -1285,34 +1341,61 @@ if _, err := io.Copy(hasher, file); err != nil {
 }
 checksum := hex.EncodeToString(hasher.Sum(nil))
 fmt.Println(checksum)</code></pre><p>Do not use plain SHA-256 to store user passwords. Passwords need a dedicated password-hashing algorithm such as bcrypt, scrypt, or Argon2, which are not all provided directly by the core standard library.</p><p>---</p><h2 id="28-encodingbase64">28. "encoding/base64"</h2><p>Base64 converts binary data into text.</p><pre><code>package main
-import (</code></pre><p>	"encoding/base64"</p><p>	"fmt"</p><pre><code>)
+import (
+	"encoding/base64"
+	"fmt"
+)
 func main() {
 	original := []byte("Hello, Go!")
 	encoded := base64.StdEncoding.EncodeToString(original)
 	fmt.Println(encoded)
-	decoded, err := base64.StdEncoding.DecodeString(encoded)</code></pre><p>	if err != nil {</p><pre><code>fmt.Println(err)
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	fmt.Println(string(decoded))
-}</code></pre><p>URL-safe Base64:</p><p>encoded := base64.RawURLEncoding.EncodeToString(data)</p><p>Base64 is encoding, not encryption. Anyone can decode it.</p><p>---</p><h2 id="29-databasesql-database-access">29. "database/sql": Database Access</h2><p>The "database/sql" package defines a common interface for relational databases.</p><p>A separate database driver is still required.</p><p>Conceptual example:</p><p>import (</p><p>	"context"</p><p>	"database/sql"</p><p>	_ "github.com/jackc/pgx/v5/stdlib"</p><p>)</p><p>Opening a database:</p><p>db, err := sql.Open("pgx", databaseURL)</p><p>if err != nil {</p><pre><code>return err
-}</code></pre><p>defer db.Close()</p><p>"sql.Open" may not immediately connect. Use "PingContext":</p><p>ctx, cancel := context.WithTimeout(</p><p>	context.Background(),</p><p>	5*time.Second,</p><p>)</p><p>defer cancel()</p><pre><code>if err := db.PingContext(ctx); err != nil {
+}</code></pre><p>URL-safe Base64:</p><p>encoded := base64.RawURLEncoding.EncodeToString(data)</p><p>Base64 is encoding, not encryption. Anyone can decode it.</p><p>---</p><h2 id="29-databasesql-database-access">29. "database/sql": Database Access</h2><p>The "database/sql" package defines a common interface for relational databases.</p><p>A separate database driver is still required.</p><p>Conceptual example:</p><pre><code>import (
+	"context"
+	"database/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
+)</code></pre><p>Opening a database:</p><p>db, err := sql.Open("pgx", databaseURL)</p><p>if err != nil {</p><pre><code>return err
+}</code></pre><p>defer db.Close()</p><p>"sql.Open" may not immediately connect. Use "PingContext":</p><pre><code>ctx, cancel := context.WithTimeout(
+	context.Background(),
+	5*time.Second,
+)</code></pre><p>defer cancel()</p><pre><code>if err := db.PingContext(ctx); err != nil {
 	return fmt.Errorf("connect to database: %w", err)
-}</code></pre><p>Querying one row</p><p>type User struct {</p><p>	ID    int64</p><p>	Name  string</p><p>	Email string</p><pre><code>}
-func findUser(</code></pre><p>	ctx context.Context,</p><p>	db *sql.DB,</p><p>	id int64,</p><p>) (User, error) {</p><pre><code>const query = `
+}</code></pre><p>Querying one row</p><pre><code>type User struct {
+	ID    int64
+	Name  string
+	Email string
+}
+func findUser(
+	ctx context.Context,
+	db *sql.DB,
+	id int64,
+) (User, error) {
+	const query = `
 		SELECT id, name, email
 		FROM users
-		WHERE id = $1</code></pre><p>	`</p><pre><code>var user User
+		WHERE id = $1
+	`
+	var user User
 	err := db.QueryRowContext(ctx, query, id).Scan(
 		&amp;user.ID,
 		&amp;user.Name,
 		&amp;user.Email,
-	)</code></pre><p>	if err != nil {</p><pre><code>if errors.Is(err, sql.ErrNoRows) {
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return User{}, ErrUserNotFound
 		}
 		return User{}, fmt.Errorf("query user: %w", err)
 	}
 	return user, nil
-}</code></pre><p>Querying multiple rows</p><p>rows, err := db.QueryContext(</p><p>	ctx,</p><pre><code>`SELECT id, name, email FROM users`,
+}</code></pre><p>Querying multiple rows</p><pre><code>rows, err := db.QueryContext(
+	ctx,
+	`SELECT id, name, email FROM users`,
 )</code></pre><p>if err != nil {</p><pre><code>return nil, err
 }</code></pre><p>defer rows.Close()</p><p>var users []User</p><p>for rows.Next() {</p><pre><code>var user User
 	if err := rows.Scan(
@@ -1324,7 +1407,11 @@ func findUser(</code></pre><p>	ctx context.Context,</p><p>	db *sql.DB,</p><p>	id
 	}</code></pre><p>	users = append(users, user)</p><pre><code>}
 if err := rows.Err(); err != nil {
 	return nil, err
-}</code></pre><p>Executing a statement</p><p>result, err := db.ExecContext(</p><p>	ctx,</p><p>	`DELETE FROM users WHERE id = $1`,</p><p>	id,</p><p>)</p><p>if err != nil {</p><pre><code>return err
+}</code></pre><p>Executing a statement</p><pre><code>result, err := db.ExecContext(
+	ctx,
+	`DELETE FROM users WHERE id = $1`,
+	id,
+)</code></pre><p>if err != nil {</p><pre><code>return err
 }
 affected, err := result.RowsAffected()</code></pre><p>Transaction</p><p>tx, err := db.BeginTx(ctx, nil)</p><p>if err != nil {</p><pre><code>return err
 }</code></pre><p>defer tx.Rollback()</p><p>_, err = tx.ExecContext(</p><p>	ctx,</p><pre><code>`UPDATE accounts
@@ -1338,9 +1425,17 @@ if err := tx.Commit(); err != nil {
 	return err
 }</code></pre><p>The deferred rollback is safe after a successful commit.</p><p>---</p><h2 id="30-htmltemplate-safe-html-templates">30. "html/template": Safe HTML Templates</h2><pre><code>The "html/template" package generates HTML with contextual escaping.
 package main
-import (</code></pre><p>	"html/template"</p><p>	"net/http"</p><pre><code>)
-type PageData struct {</code></pre><p>	Title string</p><p>	Name  string</p><pre><code>}
-var pageTemplate = template.Must(</code></pre><p>	template.ParseFiles("templates/index.html"),</p><pre><code>)
+import (
+	"html/template"
+	"net/http"
+)
+type PageData struct {
+	Title string
+	Name  string
+}
+var pageTemplate = template.Must(
+	template.ParseFiles("templates/index.html"),
+)
 func handler(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
 		Title: "Home",
@@ -1357,24 +1452,38 @@ func handler(w http.ResponseWriter, r *http.Request) {
         &lt;li&gt;{{.Name}}&lt;/li&gt;
     {{else}}
         &lt;li&gt;No users found&lt;/li&gt;
-    {{end}}</code></pre><p>&lt;/ul&gt;</p><p>Conditions</p><p>{{if .LoggedIn}}</p><p>    &lt;p&gt;Welcome back.&lt;/p&gt;</p><p>{{else}}</p><p>    &lt;a href="/login"&gt;Sign in&lt;/a&gt;</p><p>{{end}}</p><p>Template functions</p><p>functions := template.FuncMap{</p><p>	"uppercase": strings.ToUpper,</p><pre><code>}
-tmpl := template.Must(</code></pre><p>	template.New("page.html").</p><pre><code>Funcs(functions).
+    {{end}}</code></pre><p>&lt;/ul&gt;</p><p>Conditions</p><p>{{if .LoggedIn}}</p><p>    &lt;p&gt;Welcome back.&lt;/p&gt;</p><p>{{else}}</p><p>    &lt;a href="/login"&gt;Sign in&lt;/a&gt;</p><p>{{end}}</p><p>Template functions</p><pre><code>functions := template.FuncMap{
+	"uppercase": strings.ToUpper,
+}
+tmpl := template.Must(
+	template.New("page.html").
+		Funcs(functions).
 		ParseFiles("templates/page.html"),
 )</code></pre><p>Usage:</p><p>&lt;h1&gt;{{uppercase .Title}}&lt;/h1&gt;</p><p>Prefer "html/template" over "text/template" when generating HTML because it performs HTML-aware escaping.</p><p>---</p><h2 id="31-embed-embedding-files-in-a-binary">31. "embed": Embedding Files in a Binary</h2><p>The "embed" package can include files in the compiled application.</p><pre><code>package main
-import (</code></pre><p>	"embed"</p><p>	"fmt"</p><p>)</p><p>//go:embed templates/index.html</p><pre><code>var indexHTML string
+import (
+	"embed"
+	"fmt"
+)</code></pre><p>//go:embed templates/index.html</p><pre><code>var indexHTML string
 func main() {
 	fmt.Println(indexHTML)
 }</code></pre><p>Embedding multiple files:</p><p>//go:embed templates/*.html static/*</p><p>var content embed.FS</p><p>Using embedded static files with HTTP:</p><p>staticFS, err := fs.Sub(content, "static")</p><p>if err != nil {</p><pre><code>log.Fatal(err)
 }
 fileServer := http.FileServer(http.FS(staticFS))
-mux.Handle("GET /static/", http.StripPrefix(</code></pre><p>	"/static/",</p><p>	fileServer,</p><p>))</p><p>Embedding templates:</p><p>//go:embed templates/*.html</p><pre><code>var templateFiles embed.FS
-var templates = template.Must(</code></pre><p>	template.ParseFS(templateFiles, "templates/*.html"),</p><p>)</p><p>---</p><h2 id="32-testing-unit-tests">32. "testing": Unit Tests</h2><p>Go has built-in testing support.</p><p>Application code:</p><pre><code>package calculator
+mux.Handle("GET /static/", http.StripPrefix(
+	"/static/",
+	fileServer,
+))</code></pre><p>Embedding templates:</p><p>//go:embed templates/*.html</p><pre><code>var templateFiles embed.FS
+var templates = template.Must(
+	template.ParseFS(templateFiles, "templates/*.html"),
+)</code></pre><p>---</p><h2 id="32-testing-unit-tests">32. "testing": Unit Tests</h2><p>Go has built-in testing support.</p><p>Application code:</p><pre><code>package calculator
 func Add(a, b int) int {
 	return a + b
 }</code></pre><p>Test file:</p><pre><code>package calculator
 import "testing"
 func TestAdd(t *testing.T) {
-	result := Add(2, 3)</code></pre><p>	if result != 5 {</p><pre><code>t.Fatalf(
+	result := Add(2, 3)
+	if result != 5 {
+		t.Fatalf(
 			"Add(2, 3) = %d; want 5",
 			result,
 		)
@@ -1420,12 +1529,21 @@ func TestAdd(t *testing.T) {
 		})
 	}
 }</code></pre><p>Testing errors</p><pre><code>func TestFindUserNotFound(t *testing.T) {
-	_, err := FindUser(999)</code></pre><p>	if !errors.Is(err, ErrUserNotFound) {</p><pre><code>t.Fatalf(
+	_, err := FindUser(999)
+	if !errors.Is(err, ErrUserNotFound) {
+		t.Fatalf(
 			"expected ErrUserNotFound; got %v",
 			err,
 		)
 	}
-}</code></pre><p>Test helpers</p><p>func assertEqual[T comparable](</p><p>	t *testing.T,</p><p>	got T,</p><p>	want T,</p><p>) {</p><p>	t.Helper()</p><p>	if got != want {</p><pre><code>t.Fatalf("got %v; want %v", got, want)
+}</code></pre><p>Test helpers</p><pre><code>func assertEqual[T comparable](
+	t *testing.T,
+	got T,
+	want T,
+) {
+	t.Helper()
+	if got != want {
+		t.Fatalf("got %v; want %v", got, want)
 	}
 }</code></pre><p>"t.Helper()" makes test failures point to the calling line.</p><p>---</p><h2 id="33-nethttphttptest-testing-http-handlers">33. "net/http/httptest": Testing HTTP Handlers</h2><p>The standard library includes HTTP testing utilities.</p><p>Testing a handler</p><pre><code>func helloHandler(
 	w http.ResponseWriter,
@@ -1440,7 +1558,11 @@ func TestAdd(t *testing.T) {
 		"/hello",
 		nil,
 	)
-	recorder := httptest.NewRecorder()</code></pre><p>	helloHandler(recorder, request)</p><p>	response := recorder.Result()</p><p>	defer response.Body.Close()</p><pre><code>if response.StatusCode != http.StatusOK {
+	recorder := httptest.NewRecorder()
+	helloHandler(recorder, request)
+	response := recorder.Result()
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
 		t.Fatalf(
 			"status = %d; want %d",
 			response.StatusCode,
@@ -1450,20 +1572,29 @@ func TestAdd(t *testing.T) {
 	var body map[string]string
 	if err := json.NewDecoder(response.Body).Decode(&amp;body); err != nil {
 		t.Fatal(err)
-	}</code></pre><p>	if body["message"] != "hello" {</p><pre><code>t.Fatalf(
+	}
+	if body["message"] != "hello" {
+		t.Fatalf(
 			"message = %q; want hello",
 			body["message"],
 		)
 	}
 }</code></pre><p>Testing against a complete server</p><pre><code>server := httptest.NewServer(
 	http.HandlerFunc(helloHandler),
-)</code></pre><p>defer server.Close()</p><p>response, err := http.Get(server.URL)</p><p>if err != nil {</p><p>	t.Fatal(err)</p><p>}</p><p>defer response.Body.Close()</p><p>This is useful for testing HTTP clients.</p><p>---</p><h2 id="34-benchmarks">34. Benchmarks</h2><p>func BenchmarkBuildString(b *testing.B) {</p><p>	for b.Loop() {</p><pre><code>var builder strings.Builder
+)</code></pre><p>defer server.Close()</p><p>response, err := http.Get(server.URL)</p><p>if err != nil {</p><p>	t.Fatal(err)</p><p>}</p><p>defer response.Body.Close()</p><p>This is useful for testing HTTP clients.</p><p>---</p><h2 id="34-benchmarks">34. Benchmarks</h2><pre><code>func BenchmarkBuildString(b *testing.B) {
+	for b.Loop() {
+		var builder strings.Builder
 		for j := 0; j &lt; 100; j++ {
 			builder.WriteString("hello")
 		}
 		_ = builder.String()
 	}
-}</code></pre><p>Run:</p><p>go test -bench=. ./...</p><p>Include memory statistics:</p><p>go test -bench=. -benchmem ./...</p><p>Do not optimize code only because a benchmark looks interesting. Benchmark the real operation and compare alternatives.</p><p>---</p><h2 id="35-fuzz-testing">35. Fuzz Testing</h2><p>Fuzz tests help find unexpected input that causes failures.</p><p>func FuzzParseNumber(f *testing.F) {</p><p>	f.Add("123")</p><p>	f.Add("-50")</p><p>	f.Add("invalid")</p><p>	f.Fuzz(func(t *testing.T, input string) {</p><pre><code>number, err := strconv.Atoi(input)
+}</code></pre><p>Run:</p><p>go test -bench=. ./...</p><p>Include memory statistics:</p><p>go test -bench=. -benchmem ./...</p><p>Do not optimize code only because a benchmark looks interesting. Benchmark the real operation and compare alternatives.</p><p>---</p><h2 id="35-fuzz-testing">35. Fuzz Testing</h2><p>Fuzz tests help find unexpected input that causes failures.</p><pre><code>func FuzzParseNumber(f *testing.F) {
+	f.Add("123")
+	f.Add("-50")
+	f.Add("invalid")
+	f.Fuzz(func(t *testing.T, input string) {
+		number, err := strconv.Atoi(input)
 		if err != nil {
 			return
 		}
@@ -1481,7 +1612,10 @@ func TestAdd(t *testing.T) {
 		}
 	})
 }</code></pre><p>Run:</p><p>go test -fuzz=FuzzParseNumber</p><p>---</p><h2 id="36-runtime-runtime-information">36. "runtime": Runtime Information</h2><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"runtime"</p><pre><code>)
+import (
+	"fmt"
+	"runtime"
+)
 func main() {
 	fmt.Println("Operating system:", runtime.GOOS)
 	fmt.Println("Architecture:", runtime.GOARCH)
@@ -1491,9 +1625,20 @@ func main() {
 }</code></pre><p>Memory statistics:</p><p>var stats runtime.MemStats</p><p>runtime.ReadMemStats(&amp;stats)</p><pre><code>fmt.Println("Allocated bytes:", stats.Alloc)
 fmt.Println("Total allocated:", stats.TotalAlloc)
 fmt.Println("Heap objects:", stats.HeapObjects)</code></pre><p>Most applications should not manually call the garbage collector or change runtime internals without a measured reason.</p><p>---</p><h2 id="37-ossignal-graceful-shutdown">37. "os/signal": Graceful Shutdown</h2><p>Servers should stop accepting traffic and allow active requests to finish.</p><pre><code>package main
-import (</code></pre><p>	"context"</p><p>	"errors"</p><p>	"log"</p><p>	"net/http"</p><p>	"os"</p><p>	"os/signal"</p><p>	"syscall"</p><p>	"time"</p><pre><code>)
+import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
 func main() {
-	mux := http.NewServeMux()</code></pre><p>	mux.HandleFunc("GET /", func(</p><pre><code>w http.ResponseWriter,
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /", func(
+		w http.ResponseWriter,
 		r *http.Request,
 	) {
 		w.Write([]byte("Hello"))
@@ -1512,7 +1657,10 @@ func main() {
 		context.Background(),
 		os.Interrupt,
 		syscall.SIGTERM,
-	)</code></pre><p>	defer stop()</p><p>	select {</p><pre><code>case err := &lt;-serverErrors:
+	)
+	defer stop()
+	select {
+	case err := &lt;-serverErrors:
 		if err != nil &amp;&amp;
 			!errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err)
@@ -1523,34 +1671,84 @@ func main() {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		10*time.Second,
-	)</code></pre><p>	defer cancel()</p><pre><code>if err := server.Shutdown(ctx); err != nil {
+	)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("graceful shutdown failed: %v", err)
 		if closeErr := server.Close(); closeErr != nil {
 			log.Printf("forced shutdown failed: %v", closeErr)
 		}
 	}
 	log.Println("server stopped")
-}</code></pre><p>---</p><h2 id="38-compressgzip-compressing-data">38. "compress/gzip": Compressing Data</h2><p>Compressing a file</p><p>func compressFile(</p><p>	sourcePath string,</p><p>	destinationPath string,</p><p>) error {</p><p>	source, err := os.Open(sourcePath)</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer source.Close()</p><p>	destination, err := os.Create(destinationPath)</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer destination.Close()</p><p>	writer := gzip.NewWriter(destination)</p><p>	defer writer.Close()</p><p>	_, err = io.Copy(writer, source)</p><pre><code>return err
-}</code></pre><p>Decompressing</p><p>func decompressFile(</p><p>	sourcePath string,</p><p>	destinationPath string,</p><p>) error {</p><p>	source, err := os.Open(sourcePath)</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer source.Close()</p><p>	reader, err := gzip.NewReader(source)</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer reader.Close()</p><p>	destination, err := os.Create(destinationPath)</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer destination.Close()</p><p>	_, err = io.Copy(destination, reader)</p><pre><code>return err
+}</code></pre><p>---</p><h2 id="38-compressgzip-compressing-data">38. "compress/gzip": Compressing Data</h2><p>Compressing a file</p><pre><code>func compressFile(
+	sourcePath string,
+	destinationPath string,
+) error {
+	source, err := os.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	destination, err := os.Create(destinationPath)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	writer := gzip.NewWriter(destination)
+	defer writer.Close()
+	_, err = io.Copy(writer, source)
+	return err
+}</code></pre><p>Decompressing</p><pre><code>func decompressFile(
+	sourcePath string,
+	destinationPath string,
+) error {
+	source, err := os.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	reader, err := gzip.NewReader(source)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	destination, err := os.Create(destinationPath)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, reader)
+	return err
 }</code></pre><p>---</p><h2 id="39-archivezip-zip-archives">39. "archive/zip": ZIP Archives</h2><p>Creating a ZIP file</p><pre><code>func createArchive(path string) error {
-	file, err := os.Create(path)</code></pre><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	defer file.Close()</p><p>	archive := zip.NewWriter(file)</p><p>	defer archive.Close()</p><p>	writer, err := archive.Create("hello.txt")</p><p>	if err != nil {</p><pre><code>return err
-	}</code></pre><p>	_, err = writer.Write([]byte("Hello from ZIP"))</p><pre><code>return err
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	archive := zip.NewWriter(file)
+	defer archive.Close()
+	writer, err := archive.Create("hello.txt")
+	if err != nil {
+		return err
+	}
+	_, err = writer.Write([]byte("Hello from ZIP"))
+	return err
 }</code></pre><p>Reading a ZIP file</p><p>reader, err := zip.OpenReader("archive.zip")</p><p>if err != nil {</p><pre><code>return err
 }</code></pre><p>defer reader.Close()</p><pre><code>for _, file := range reader.File {
 	fmt.Println(file.Name)
 }</code></pre><p>When extracting ZIP files, validate output paths to prevent path traversal attacks such as entries containing "../".</p><p>---</p><h2 id="40-reflect-runtime-type-inspection">40. "reflect": Runtime Type Inspection</h2><p>Reflection can inspect values and types at runtime.</p><pre><code>package main
-import (</code></pre><p>	"fmt"</p><p>	"reflect"</p><pre><code>)
+import (
+	"fmt"
+	"reflect"
+)
 func main() {
 	value := 42
 	fmt.Println(reflect.TypeOf(value))
 	fmt.Println(reflect.ValueOf(value))
-}</code></pre><p>Inspecting a struct:</p><p>type User struct {</p><p>	ID   int    `json:"id"`</p><p>	Name string `json:"name"`</p><pre><code>}
+}</code></pre><p>Inspecting a struct:</p><pre><code>type User struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 func inspect(value any) {
 	valueType := reflect.TypeOf(value)
 	for i := 0; i &lt; valueType.NumField(); i++ {
@@ -1562,28 +1760,64 @@ func inspect(value any) {
 		)
 	}
 }</code></pre><p>Reflection is useful for:</p><p>- Serialization libraries</p><p>- Validation libraries</p><p>- Dependency injection</p><p>- Object mapping</p><p>- Framework internals</p><p>For normal application logic, interfaces, generics, and explicit code are usually easier to understand and maintain.</p><p>---</p><h2 id="41-complete-example-small-json-api">41. Complete Example: Small JSON API</h2><p>This example combines several commonly used standard-library packages.</p><pre><code>package main
-import (</code></pre><p>	"context"</p><p>	"encoding/json"</p><p>	"errors"</p><p>	"log/slog"</p><p>	"net/http"</p><p>	"os"</p><p>	"os/signal"</p><p>	"strconv"</p><p>	"sync"</p><p>	"syscall"</p><p>	"time"</p><pre><code>)
-type User struct {</code></pre><p>	ID   int64  `json:"id"`</p><p>	Name string `json:"name"`</p><pre><code>}
-type CreateUserRequest struct {</code></pre><p>	Name string `json:"name"`</p><pre><code>}
-type UserStore struct {</code></pre><p>	mu     sync.RWMutex</p><p>	nextID int64</p><p>	users  map[int64]User</p><pre><code>}
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"sync"
+	"syscall"
+	"time"
+)
+type User struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+type CreateUserRequest struct {
+	Name string `json:"name"`
+}
+type UserStore struct {
+	mu     sync.RWMutex
+	nextID int64
+	users  map[int64]User
+}
 func NewUserStore() *UserStore {
 	return &amp;UserStore{
 		nextID: 1,
 		users:  make(map[int64]User),
 	}
 }
-func (s *UserStore) Create(name string) User {</code></pre><p>	s.mu.Lock()</p><p>	defer s.mu.Unlock()</p><pre><code>user := User{
+func (s *UserStore) Create(name string) User {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	user := User{
 		ID:   s.nextID,
 		Name: name,
-	}</code></pre><p>	s.users[user.ID] = user</p><p>	s.nextID++</p><pre><code>return user
+	}
+	s.users[user.ID] = user
+	s.nextID++
+	return user
 }
-func (s *UserStore) Find(id int64) (User, bool) {</code></pre><p>	s.mu.RLock()</p><p>	defer s.mu.RUnlock()</p><pre><code>user, exists := s.users[id]
+func (s *UserStore) Find(id int64) (User, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	user, exists := s.users[id]
 	return user, exists
 }
 type Application struct {
-	logger *slog.Logger</code></pre><p>	store  *UserStore</p><pre><code>}
+	logger *slog.Logger
+	store  *UserStore
+}
 func (app *Application) routes() http.Handler {
-	mux := http.NewServeMux()</code></pre><p>	mux.HandleFunc("GET /health", app.health)</p><p>	mux.HandleFunc("POST /users", app.createUser)</p><p>	mux.HandleFunc("GET /users/{id}", app.getUser)</p><pre><code>return app.loggingMiddleware(mux)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", app.health)
+	mux.HandleFunc("POST /users", app.createUser)
+	mux.HandleFunc("GET /users/{id}", app.getUser)
+	return app.loggingMiddleware(mux)
 }
 func (app *Application) health(
 	w http.ResponseWriter,
@@ -1600,12 +1834,16 @@ func (app *Application) createUser(
 	var request CreateUserRequest
 	decoder := json.NewDecoder(
 		http.MaxBytesReader(w, r.Body, 1&lt;&lt;20),
-	)</code></pre><p>	decoder.DisallowUnknownFields()</p><pre><code>if err := decoder.Decode(&amp;request); err != nil {
+	)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&amp;request); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "invalid request body",
 		})
 		return
-	}</code></pre><p>	if request.Name == "" {</p><pre><code>writeJSON(w, http.StatusBadRequest, map[string]string{
+	}
+	if request.Name == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "name is required",
 		})
 		return
@@ -1621,12 +1859,16 @@ func (app *Application) getUser(
 		r.PathValue("id"),
 		10,
 		64,
-	)</code></pre><p>	if err != nil {</p><pre><code>writeJSON(w, http.StatusBadRequest, map[string]string{
+	)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "invalid user ID",
 		})
 		return
 	}
-	user, exists := app.store.Find(id)</code></pre><p>	if !exists {</p><pre><code>writeJSON(w, http.StatusNotFound, map[string]string{
+	user, exists := app.store.Find(id)
+	if !exists {
+		writeJSON(w, http.StatusNotFound, map[string]string{
 			"error": "user not found",
 		})
 		return
@@ -1651,7 +1893,13 @@ func (app *Application) loggingMiddleware(
 	})
 }
 func writeJSON(
-	w http.ResponseWriter,</code></pre><p>	status int,</p><p>	value any,</p><p>) {</p><p>	w.Header().Set("Content-Type", "application/json")</p><p>	w.WriteHeader(status)</p><pre><code>if err := json.NewEncoder(w).Encode(value); err != nil {
+	w http.ResponseWriter,
+	status int,
+	value any,
+) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(value); err != nil {
 		slog.Error("encode JSON response", "error", err)
 	}
 }
@@ -1683,7 +1931,10 @@ func main() {
 		context.Background(),
 		os.Interrupt,
 		syscall.SIGTERM,
-	)</code></pre><p>	defer stop()</p><p>	select {</p><pre><code>case err := &lt;-serverErrors:
+	)
+	defer stop()
+	select {
+	case err := &lt;-serverErrors:
 		if err != nil &amp;&amp;
 			!errors.Is(err, http.ErrServerClosed) {
 			logger.Error(
@@ -1698,15 +1949,28 @@ func main() {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		10*time.Second,
-	)</code></pre><p>	defer cancel()</p><pre><code>if err := server.Shutdown(ctx); err != nil {
+	)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
 		logger.Error(
 			"graceful shutdown failed",
 			"error", err,
 		)
-	}</code></pre><p>	logger.Info("server stopped")</p><p>}</p><p>Run:</p><p>go run .</p><p>Create a user:</p><pre><code>curl -X POST http://localhost:8080/users \
+	}
+	logger.Info("server stopped")
+}</code></pre><p>Run:</p><p>go run .</p><p>Create a user:</p><pre><code>curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
   -d '{"name":"Ginad"}'</code></pre><p>Retrieve the user:</p><p>curl http://localhost:8080/users/1</p><p>Check health:</p><p>curl http://localhost:8080/health</p><p>---</p><h2 id="42-recommended-learning-order">42. Recommended Learning Order</h2><p>Learn these packages first:</p><p>1. "fmt"</p><p>2. "errors"</p><p>3. "strings"</p><p>4. "strconv"</p><p>5. "slices"</p><p>6. "time"</p><p>7. "os"</p><p>8. "path/filepath"</p><p>9. "io"</p><p>10. "bufio"</p><p>11. "encoding/json"</p><p>12. "net/url"</p><p>13. "net/http"</p><p>14. "context"</p><p>15. "sync"</p><p>16. "log/slog"</p><p>17. "testing"</p><p>18. "net/http/httptest"</p><p>Then continue with:</p><p>1. "database/sql"</p><p>2. "html/template"</p><p>3. "embed"</p><p>4. "crypto/rand"</p><p>5. "crypto/sha256"</p><p>6. "encoding/base64"</p><p>7. "regexp"</p><p>8. "compress/gzip"</p><p>9. "archive/zip"</p><p>10. "runtime"</p><p>11. "os/signal"</p><p>12. "reflect"</p><p>---</p><h2 id="43-standard-library-best-practices">43. Standard-Library Best Practices</h2><p>Close resources</p><p>file, err := os.Open(path)</p><p>if err != nil {</p><pre><code>return err
-}</code></pre><p>defer file.Close()</p><p>The same applies to:</p><p>- HTTP response bodies</p><p>- Database rows</p><p>- ZIP readers</p><p>- Gzip readers</p><p>- Files</p><p>Wrap errors with context</p><p>Good:</p><p>return fmt.Errorf("read configuration file: %w", err)</p><p>Less useful:</p><p>return err</p><p>Set network timeouts</p><p>client := &amp;http.Client{</p><p>	Timeout: 10 * time.Second,</p><p>}</p><p>Also configure server timeouts.</p><p>Use context for cancellation</p><p>func LoadUser(</p><p>	ctx context.Context,</p><p>	id int64,</p><p>) (User, error)</p><p>Limit untrusted input</p><p>reader := http.MaxBytesReader(</p><p>	w,</p><p>	r.Body,</p><p>	1&lt;&lt;20,</p><p>)</p><p>Prefer streaming for large data</p><p>Prefer:</p><p>io.Copy(destination, source)</p><p>Over reading an entire large file into memory.</p><p>Protect shared state</p><p>Use:</p><p>- "sync.Mutex"</p><p>- "sync.RWMutex"</p><p>- Channels</p><p>- Atomic values</p><p>Do not concurrently modify a regular map without synchronization.</p><p>Use secure randomness for secrets</p><p>Use:</p><p>crypto/rand</p><p>Not:</p><p>math/rand/v2</p><p>Use structured logs</p><p>logger.Error(</p><p>	"failed to save user",</p><p>	"user_id", id,</p><p>	"error", err,</p><p>)</p><p>Test behavior</p><p>Focus tests on observable behavior rather than internal implementation details.</p><p>---</p><h2 id="44-package-cheat-sheet">44. Package Cheat Sheet</h2><p>Task - Package</p><p>Print formatted output - "fmt"</p><p>Create and inspect errors - "errors"</p><p>Manipulate strings - "strings"</p><p>Convert strings and numbers - "strconv"</p><p>Work with generic slices - "slices"</p><p>Work with generic maps - "maps"</p><p>Sort collections - "slices", "sort"</p><p>Work with dates and durations - "time"</p><p>Read files and environment variables - "os"</p><p>Build file paths - "path/filepath"</p><p>Stream data - "io"</p><p>Buffered reading and writing - "bufio"</p><p>Work with byte slices - "bytes"</p><p>Encode and decode JSON - "encoding/json"</p><p>Parse URLs - "net/url"</p><p>Build HTTP clients and servers - "net/http"</p><p>Handle cancellation and deadlines - "context"</p><p>Synchronize goroutines - "sync"</p><p>Atomic counters and flags - "sync/atomic"</p><p>Structured logging - "log/slog"</p><p>Parse CLI flags - "flag"</p><p>Use regular expressions - "regexp"</p><p>Mathematical operations - "math"</p><p>Non-secure randomness - "math/rand/v2"</p><p>Secure randomness - "crypto/rand"</p><p>Hash data - "crypto/sha256"</p><p>Encode binary data as text - "encoding/base64", "encoding/hex"</p><p>Access relational databases - "database/sql"</p><p>Generate safe HTML - "html/template"</p><p>Embed application files - "embed"</p><p>Write unit tests - "testing"</p><p>Test HTTP handlers - "net/http/httptest"</p><p>Graceful shutdown - "os/signal"</p><p>Compress data - "compress/gzip"</p><p>Create ZIP archives - "archive/zip"</p><p>Inspect runtime information - "runtime"</p><p>Runtime type inspection - "reflect"</p><p>---</p><h2 id="45-further-reading">45. Further Reading</h2><p>- Go standard-library package index: "https://pkg.go.dev/std"</p><p>- Official Go documentation: "https://go.dev/doc/"</p><p>- Effective Go: "https://go.dev/doc/effective_go"</p><p>- Go package documentation: "https://pkg.go.dev"</p><p>- Go source-code organization: "https://go.dev/doc/code"</p><p>- Go module organization: "https://go.dev/doc/modules/layout”</p>
+}</code></pre><p>defer file.Close()</p><p>The same applies to:</p><p>- HTTP response bodies</p><p>- Database rows</p><p>- ZIP readers</p><p>- Gzip readers</p><p>- Files</p><p>Wrap errors with context</p><p>Good:</p><p>return fmt.Errorf("read configuration file: %w", err)</p><p>Less useful:</p><p>return err</p><p>Set network timeouts</p><pre><code>client := &amp;http.Client{
+	Timeout: 10 * time.Second,
+}</code></pre><p>Also configure server timeouts.</p><p>Use context for cancellation</p><pre><code>func LoadUser(
+	ctx context.Context,
+	id int64,
+) (User, error)</code></pre><p>Limit untrusted input</p><pre><code>reader := http.MaxBytesReader(
+	w,
+	r.Body,
+	1&lt;&lt;20,
+)</code></pre><p>Prefer streaming for large data</p><p>Prefer:</p><p>io.Copy(destination, source)</p><p>Over reading an entire large file into memory.</p><p>Protect shared state</p><p>Use:</p><p>- "sync.Mutex"</p><p>- "sync.RWMutex"</p><p>- Channels</p><p>- Atomic values</p><p>Do not concurrently modify a regular map without synchronization.</p><p>Use secure randomness for secrets</p><p>Use:</p><p>crypto/rand</p><p>Not:</p><p>math/rand/v2</p><p>Use structured logs</p><p>logger.Error(</p><p>	"failed to save user",</p><p>	"user_id", id,</p><p>	"error", err,</p><p>)</p><p>Test behavior</p><p>Focus tests on observable behavior rather than internal implementation details.</p><p>---</p><h2 id="44-package-cheat-sheet">44. Package Cheat Sheet</h2><p>Task - Package</p><p>Print formatted output - "fmt"</p><p>Create and inspect errors - "errors"</p><p>Manipulate strings - "strings"</p><p>Convert strings and numbers - "strconv"</p><p>Work with generic slices - "slices"</p><p>Work with generic maps - "maps"</p><p>Sort collections - "slices", "sort"</p><p>Work with dates and durations - "time"</p><p>Read files and environment variables - "os"</p><p>Build file paths - "path/filepath"</p><p>Stream data - "io"</p><p>Buffered reading and writing - "bufio"</p><p>Work with byte slices - "bytes"</p><p>Encode and decode JSON - "encoding/json"</p><p>Parse URLs - "net/url"</p><p>Build HTTP clients and servers - "net/http"</p><p>Handle cancellation and deadlines - "context"</p><p>Synchronize goroutines - "sync"</p><p>Atomic counters and flags - "sync/atomic"</p><p>Structured logging - "log/slog"</p><p>Parse CLI flags - "flag"</p><p>Use regular expressions - "regexp"</p><p>Mathematical operations - "math"</p><p>Non-secure randomness - "math/rand/v2"</p><p>Secure randomness - "crypto/rand"</p><p>Hash data - "crypto/sha256"</p><p>Encode binary data as text - "encoding/base64", "encoding/hex"</p><p>Access relational databases - "database/sql"</p><p>Generate safe HTML - "html/template"</p><p>Embed application files - "embed"</p><p>Write unit tests - "testing"</p><p>Test HTTP handlers - "net/http/httptest"</p><p>Graceful shutdown - "os/signal"</p><p>Compress data - "compress/gzip"</p><p>Create ZIP archives - "archive/zip"</p><p>Inspect runtime information - "runtime"</p><p>Runtime type inspection - "reflect"</p><p>---</p><h2 id="45-further-reading">45. Further Reading</h2><p>- Go standard-library package index: "https://pkg.go.dev/std"</p><p>- Official Go documentation: "https://go.dev/doc/"</p><p>- Effective Go: "https://go.dev/doc/effective_go"</p><p>- Go package documentation: "https://pkg.go.dev"</p><p>- Go source-code organization: "https://go.dev/doc/code"</p><p>- Go module organization: "https://go.dev/doc/modules/layout”</p>
 </div>
 <a href="#" class="toc-back">&#8593; Top</a>
 </body>

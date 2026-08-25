@@ -225,28 +225,46 @@ function collapseCodeParagraphs(html) {
   const parts = html.split(/(<p>[\s\S]*?<\/p>)/g).filter((s) => s !== "");
   const out = [];
   let i = 0;
+
+  // Net bracket depth of a code line: +1 per unclosed ( { [ , -1 per ) } ].
+  const bracketDelta = (t) => {
+    const open = (t.match(/[([{]/g) || []).length;
+    const close = (t.match(/[)\]}]/g) || []).length;
+    return open - close;
+  };
+
   while (i < parts.length) {
     const part = parts[i];
     const pm = part.match(/^<p>([\s\S]*?)<\/p>$/);
     if (pm) {
       const text = stripTags(pm[1]);
-      // A lone fence label starts a code run.
       const fenceStarts = FENCE.test(text.trim());
       if (fenceStarts || isCodeLine(text)) {
         const lines = [];
-        if (!fenceStarts) lines.push(text); // the current line is code too
+        if (!fenceStarts) lines.push(text);
+        // Track bracket depth: while >0 we are INSIDE a multi-line construct
+        // (import ( … ), a struct literal, a multi-line call) and MUST keep
+        // consuming every line until it balances — even lines that don't look
+        // like code on their own, e.g. an import path "net/http".
+        let depth = fenceStarts ? 0 : bracketDelta(text);
         let j = i + 1;
-        // consume following <p> lines that still look like code
         while (j < parts.length) {
           const nm = parts[j].match(/^<p>([\s\S]*?)<\/p>$/);
           if (!nm) break;
           const t = stripTags(nm[1]);
-          if (t.trim() === "" || isCodeLine(t) || /^[\})\];]/.test(t.trim())) {
+          const inBlock = depth > 0;
+          if (inBlock || t.trim() === "" || isCodeLine(t) || /^[\})\];]/.test(t.trim())) {
             lines.push(t);
+            depth += bracketDelta(t);
+            if (depth < 0) depth = 0;
             j++;
+            // If we just balanced an import/paren block, allow the run to end
+            // naturally on the next non-code line (loop condition handles it).
           } else break;
         }
         if (lines.length >= 2 || (fenceStarts && lines.length >= 1)) {
+          // Trim trailing blank lines.
+          while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
           const code = lines.join("\n").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
           out.push(`<pre><code>${code.trim()}</code></pre>`);
           i = j;

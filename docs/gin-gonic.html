@@ -313,7 +313,11 @@ templ DatastarCounter() {
     c.Header("Connection", "keep-alive")
     // Datastar SSE events are text/event-stream messages.
     // Prefer the official SDK for production formatting.
-    c.Writer.WriteString("event: datastar-patch-signals</code></pre><p>")</p><p>    c.Writer.WriteString("data: signals {"count": 1}</p><p>")</p><pre><code>c.Writer.Flush()
+    c.Writer.WriteString("event: datastar-patch-signals
+")
+    c.Writer.WriteString("data: signals {"count": 1}
+")
+    c.Writer.Flush()
 }</code></pre><h2 id="datastar-go-sdk-pattern">Datastar Go SDK pattern</h2><pre><code>import (
     datastar "github.com/starfederation/datastar-go/datastar"
 )
@@ -371,7 +375,13 @@ func sendDatastarPatch(c *gin.Context, selector string, html string) {
     c.Header("Connection", "keep-alive")
     // Use the official Datastar SDK in real code. This helper is shown
     // to make the SSE shape easy to understand.
-    fmt.Fprintf(c.Writer, "event: datastar-patch-elements</code></pre><p>")</p><p>    fmt.Fprintf(c.Writer, "data: selector %s</p><p>", selector)</p><p>    fmt.Fprintf(c.Writer, "data: elements %s</p><p>", html)</p><pre><code>c.Writer.Flush()
+    fmt.Fprintf(c.Writer, "event: datastar-patch-elements
+")
+    fmt.Fprintf(c.Writer, "data: selector %s
+", selector)
+    fmt.Fprintf(c.Writer, "data: elements %s
+", html)
+    c.Writer.Flush()
 }</code></pre><h2 id="13-middleware-and-groups">13. Middleware and groups</h2><pre><code>func requestID() gin.HandlerFunc {
     return func(c *gin.Context) {
         id := c.GetHeader("X-Request-ID")
