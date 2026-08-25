@@ -110,8 +110,24 @@ function stripTags(s) {
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 function isCodeLine(text) {
+  const t = text.trim();
+  if (t === "") return false;
   if (/^\s{2,}\S/.test(text)) return true;                 // indented
-  return /(func |package |import |:=|fmt\.|gin\.|router\.|c\.\w+\(|templ |http\.Status|<-|return |var |const |type \w+ (struct|interface)|SELECT |INSERT |UPDATE |DELETE |go build|go run|go get|\bgo mod\b|=\s*&?\w+\{)/.test(text);
+  // Standalone structural lines (closing braces/parens, opening a block).
+  if (/^[\})\];]+[,;]?$/.test(t)) return true;
+  if (/^(\{|\(|\[)$/.test(t)) return true;
+  // KEY=VALUE env / config lines (all-caps key).
+  if (/^[A-Z][A-Z0-9_]*=/.test(t)) return true;
+  // Shell commands.
+  if (/^(curl|go|npm|npx|air|templ|make|cd|export|git|docker|sqlite3|psql|mysql)\b/.test(t)) return true;
+  // Go / templ / SQL code tokens.
+  if (/(func |package |import |:=|fmt\.|gin\.|router\.|c\.\w+\(|templ\.|http\.\w|log\.\w|<-|return |var \w+ |const \w+ |type \w+ (struct|interface)|=\s*&?\w+\{|\}\s*\{|SELECT |INSERT |UPDATE |DELETE )/.test(t)) {
+    // …but not a prose sentence that merely mentions a token: prose ends in a
+    // period/colon and contains several spaces of ordinary words.
+    const looksProse = /[.:]$/.test(t) && t.split(" ").length > 8 && !/[{};=]/.test(t);
+    return !looksProse;
+  }
+  return false;
 }
 function collapseCodeParagraphs(html) {
   // Split into a flat list of top-level <p>…</p> and everything-else chunks.
@@ -139,7 +155,7 @@ function collapseCodeParagraphs(html) {
             j++;
           } else break;
         }
-        if (lines.length >= 2) {
+        if (lines.length >= 2 || (fenceStarts && lines.length >= 1)) {
           const code = lines.join("\n").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
           out.push(`<pre><code>${code.trim()}</code></pre>`);
           i = j;
@@ -182,16 +198,17 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .nav a:hover{text-decoration:underline;}
 .nav .crumb{color:var(--muted);font-size:0.85rem;}
 .container{max-width:920px;margin:0 auto;padding:40px 36px 96px;}
-h1{font-size:2rem;font-weight:700;color:#fff;margin:28px 0 12px;line-height:1.25;}
-h2{font-size:1.3rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-h3{font-size:1.05rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
-h4,h5,h6{font-size:0.95rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
+h1{font-size:2.5rem;font-weight:800;color:#fff;margin:28px 0 16px;line-height:1.2;letter-spacing:-0.01em;}
+h2{font-size:1.45rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:1.15rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
+h4,h5,h6{font-size:1rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
 p{margin-bottom:14px;color:#cdd0e0;}
 a{color:var(--accent);}
 strong{color:#eef0fb;}
-code{background:#252836;color:#c5caff;padding:2px 6px;border-radius:4px;font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;font-size:0.86em;}
+code{background:#252836;color:#c5caff;padding:2px 6px;border-radius:4px;font-family:"JetBrains Mono","Fira Code",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.9em;font-weight:400;}
 pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:18px 22px;overflow-x:auto;margin:18px 0;}
-pre code{background:none;padding:0;color:#dde1f7;font-size:0.86em;line-height:1.6;white-space:pre;}
+pre code{background:none;padding:0;color:#e6e9f5;font-size:0.95rem;line-height:1.7;white-space:pre;font-weight:400;}
+pre code strong, pre code b{font-weight:400;color:inherit;}
 table{width:100%;border-collapse:collapse;margin:20px 0;font-size:0.9em;}
 th{background:#252836;color:var(--accent);text-align:left;padding:10px 14px;font-weight:600;font-size:0.8em;border-bottom:2px solid var(--border);}
 td{padding:9px 14px;border-bottom:1px solid var(--border);color:#cdd0e0;vertical-align:top;}
@@ -217,6 +234,7 @@ ${STYLE}
   <span class="crumb">${title}</span>
 </nav>
 <div class="container">
+<h1 class="page-title">${title}</h1>
 ${bodyHtml}
 </div>
 </body>
@@ -230,7 +248,10 @@ ${bodyHtml}
   for (const p of PAGES) {
     if (!p.src) continue; // tutorial.html is produced by build-tutorial.js
     const { value } = await mammoth.convertToHtml({ path: p.src });
-    const body = scrub(collapseCodeParagraphs(formatCodeBlocks(value)));
+    // Demote any document-internal <h1> to <h2> so the injected page title is
+    // the single, largest heading; the doc's own top-level headings sit under it.
+    const demoted = value.replace(/<(\/?)h1(\s[^>]*)?>/gi, "<$1h2$2>");
+    const body = scrub(collapseCodeParagraphs(formatCodeBlocks(demoted)));
     fs.writeFileSync(path.join(DOCS, `${p.slug}.html`), pageShell(p.title, body));
     console.log(`Wrote docs/${p.slug}.html`);
   }
@@ -250,7 +271,7 @@ ${bodyHtml}
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>gin-templ-datastar — Tutorials</title>
+<title>Golang Tutorial</title>
 ${STYLE}
 <style>
 .hero{padding:56px 0 28px;text-align:center;}
@@ -269,8 +290,8 @@ ${STYLE}
 <body>
 <div class="container">
   <div class="hero">
-    <h1>gin-templ-datastar</h1>
-    <p>A server-rendered Go stack — Gin, templ, Datastar, and Tailwind CSS — with a full set of learning guides. Pick a topic to begin.</p>
+    <h1>Golang Tutorial</h1>
+    <p>A hands-on guide to server-rendered Go — the language basics, the standard library, Gin, templ, Datastar, and Ent/SQL. Pick a topic to begin.</p>
   </div>
   <div class="grid">
 ${cards}
