@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/grandshipper/admin-v2/internal/models"
-	"github.com/grandshipper/admin-v2/internal/views/layouts"
+	"github.com/danegigi/go-tut/internal/models"
+	"github.com/danegigi/go-tut/internal/views/layouts"
 )
 
 type AccountsData struct {

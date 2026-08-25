@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/grandshipper/admin-v2/internal/store"
+	"github.com/danegigi/go-tut/internal/store"
 )
 
 // Deps holds all handler dependencies.

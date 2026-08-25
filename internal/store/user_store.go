@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grandshipper/admin-v2/internal/models"
+	"github.com/danegigi/go-tut/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 

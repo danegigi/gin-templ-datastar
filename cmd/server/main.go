@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/grandshipper/admin-v2/internal/http/handlers"
-	"github.com/grandshipper/admin-v2/internal/middleware"
-	"github.com/grandshipper/admin-v2/internal/store"
+	"github.com/danegigi/go-tut/internal/http/handlers"
+	"github.com/danegigi/go-tut/internal/middleware"
+	"github.com/danegigi/go-tut/internal/store"
 	"github.com/joho/godotenv"
 )
 

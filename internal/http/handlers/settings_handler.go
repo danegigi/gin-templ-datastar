@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/grandshipper/admin-v2/internal/views/pages"
+	"github.com/danegigi/go-tut/internal/views/pages"
 )
 
 // GetSettings renders the settings page (countries list).

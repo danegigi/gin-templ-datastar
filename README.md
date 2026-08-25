@@ -127,7 +127,7 @@ node scripts/build-tutorial.js
 │
 ├── .air.toml                         air live-reload config
 ├── .env.example                      Environment variable template
-├── go.mod                            Module: github.com/grandshipper/admin-v2
+├── go.mod                            Module: github.com/danegigi/go-tut
 ├── Makefile                          Build targets
 ├── package.json                      Node deps (Tailwind CSS + tutorial renderer)
 ├── tailwind.config.js
@@ -135,7 +135,7 @@ node scripts/build-tutorial.js
 └── TUTORIAL.html                     Rendered tutorial (generated)
 ```
 
-> Note: the Go module path is `github.com/grandshipper/admin-v2` (in `go.mod`). Rename it with a find-and-replace across imports if you fork this for a different project.
+> Note: the Go module path is `github.com/danegigi/go-tut` (in `go.mod`). The compiled binary is still named `admin-v2` (from the Makefile) — rename the `BINARY` variable there if you'd like it to match.
 
 ---
 

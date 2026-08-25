@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/grandshipper/admin-v2/internal/middleware"
-	"github.com/grandshipper/admin-v2/internal/views/pages"
+	"github.com/danegigi/go-tut/internal/middleware"
+	"github.com/danegigi/go-tut/internal/views/pages"
 	"golang.org/x/crypto/bcrypt"
 )
 

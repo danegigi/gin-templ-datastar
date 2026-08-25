@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/grandshipper/admin-v2/internal/models"
-	"github.com/grandshipper/admin-v2/internal/views/pages"
+	"github.com/danegigi/go-tut/internal/models"
+	"github.com/danegigi/go-tut/internal/views/pages"
 )
 
 // dashboardRange returns the default 30-day window used by every dashboard fragment.

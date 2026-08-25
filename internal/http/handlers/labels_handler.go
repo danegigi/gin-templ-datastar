@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/grandshipper/admin-v2/internal/models"
-	"github.com/grandshipper/admin-v2/internal/store"
-	"github.com/grandshipper/admin-v2/internal/views/pages"
+	"github.com/danegigi/go-tut/internal/models"
+	"github.com/danegigi/go-tut/internal/store"
+	"github.com/danegigi/go-tut/internal/views/pages"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/invoice"
 	"golang.org/x/sync/errgroup"

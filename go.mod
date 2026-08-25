@@ -1,4 +1,4 @@
-module github.com/grandshipper/admin-v2
+module github.com/danegigi/go-tut
 
 go 1.26.4
 
