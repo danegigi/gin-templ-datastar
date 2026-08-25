@@ -1,0 +1,287 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/grandshipper/admin-v2/internal/models"
+	"github.com/grandshipper/admin-v2/internal/views/layouts"
+)
+
+// ---------------------
+// LABELS PAGE
+// ---------------------
+
+type LabelsReportData struct {
+	Reports    map[string]models.LabelReport
+	StartDate  string
+	EndDate    string
+	Services   []int
+	Flash      string
+}
+
+templ LabelsReport(d LabelsReportData) {
+	@layouts.Dashboard("Labels Report") {
+		<!-- Filter form -->
+		<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+			<form method="post" action="/labels/report" class="flex flex-wrap gap-4 items-end">
+				<div>
+					<label class="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+					<input type="date" name="start_date" value={ d.StartDate }
+						class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+					<input type="date" name="end_date" value={ d.EndDate }
+						class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+				</div>
+				<div>
+					<label class="block text-xs font-medium text-gray-600 mb-1">Services</label>
+					<div class="flex gap-2 flex-wrap">
+						@serviceCheckbox("PM (2)", 2, d.Services)
+						@serviceCheckbox("EM (3)", 3, d.Services)
+						@serviceCheckbox("FCPIS (4)", 4, d.Services)
+						@serviceCheckbox("EMI (5)", 5, d.Services)
+						@serviceCheckbox("PMI (6)", 6, d.Services)
+						@serviceCheckbox("MEDIA (8)", 8, d.Services)
+						@serviceCheckbox("GA (13)", 13, d.Services)
+					</div>
+				</div>
+				<button type="submit"
+					class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+					Run Report
+				</button>
+			</form>
+		</div>
+		<!-- Results table -->
+		if len(d.Reports) > 0 {
+			<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+				<div class="px-5 py-4 border-b border-gray-100">
+					<h3 class="text-sm font-semibold text-gray-700">Label Report Results</h3>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="min-w-full text-sm">
+						<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+							<tr>
+								<th class="px-4 py-3 text-left">Service</th>
+								<th class="px-4 py-3 text-right">Labels</th>
+								<th class="px-4 py-3 text-right">Total Spent</th>
+								<th class="px-4 py-3 text-right">Insurance</th>
+								<th class="px-4 py-3 text-right">Revenue</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-100">
+							for _, r := range d.Reports {
+								<tr class="hover:bg-gray-50">
+									<td class="px-4 py-3 font-medium font-mono text-xs">{ r.Name }</td>
+									<td class="px-4 py-3 text-right tabular-nums">{ fmt.Sprintf("%d", r.TotalLabels) }</td>
+									<td class="px-4 py-3 text-right tabular-nums">{ fmt.Sprintf("$%.2f", r.TotalSpent) }</td>
+									<td class="px-4 py-3 text-right tabular-nums">{ fmt.Sprintf("$%.2f", r.InsuranceSpent) }</td>
+									<td class="px-4 py-3 text-right tabular-nums">{ fmtRevenue(r.TotalRevenue) }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		}
+	}
+}
+
+templ serviceCheckbox(label string, val int, selected []int) {
+	<label class="flex items-center gap-1 text-xs cursor-pointer">
+		<input type="checkbox" name="services" value={ fmt.Sprintf("%d", val) }
+			if containsInt(selected, val) {
+				checked
+			}
+			class="rounded border-gray-300 text-indigo-600"/>
+		{ label }
+	</label>
+}
+
+func containsInt(slice []int, v int) bool {
+	for _, s := range slice {
+		if s == v {
+			return true
+		}
+	}
+	return false
+}
+
+func fmtRevenue(v *float64) string {
+	if v == nil {
+		return "N/A"
+	}
+	return fmt.Sprintf("$%.2f", *v)
+}
+
+// ---------------------
+// DEACTIVATED ACCOUNTS
+// ---------------------
+
+type DeactivatedData struct {
+	Users      []models.User
+	TotalItems int64
+	Page       int
+	Limit      int
+	Search     string
+}
+
+templ DeactivatedAccounts(d DeactivatedData) {
+	@layouts.Dashboard("Deactivated Accounts") {
+		<div class="mb-4 flex items-center justify-between">
+			<span class="text-sm text-gray-500">Deactivated Accounts</span>
+			<form method="get" action="/deactivated">
+				<input type="text" name="q" value={ d.Search } placeholder="Search…"
+					class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-52 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+			</form>
+		</div>
+		@layouts.LazySection("deactivated-list", listURL("/deactivated/list", d.Search))
+	}
+}
+
+// DeactivatedListFragment is the lazily-loaded table for the deactivated page.
+templ DeactivatedListFragment(d DeactivatedData) {
+	<div id="deactivated-list" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+		<div class="px-5 py-3 border-b border-gray-100 text-sm text-gray-500">{ fmt.Sprintf("%d deactivated", d.TotalItems) }</div>
+		<div class="overflow-x-auto">
+			<table class="min-w-full text-sm">
+				<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-200">
+					<tr>
+						<th class="px-4 py-3 text-left">Name</th>
+						<th class="px-4 py-3 text-left">Email</th>
+						<th class="px-4 py-3 text-left">Company</th>
+						<th class="px-4 py-3 text-left">Deleted At</th>
+						<th class="px-4 py-3"></th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-100">
+					for _, u := range d.Users {
+						<tr class="hover:bg-gray-50">
+							<td class="px-4 py-3 font-medium text-gray-800">{ u.Name }</td>
+							<td class="px-4 py-3 text-gray-600">{ u.Email }</td>
+							<td class="px-4 py-3 text-gray-500">{ strOrDash(u.Company) }</td>
+							<td class="px-4 py-3 text-gray-500">{ fmtTime(u.DeletedAt) }</td>
+							<td class="px-4 py-3">
+								<form method="post" action={ templ.URL(fmt.Sprintf("/accounts/%d/restore", u.ID)) }>
+									<button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Restore</button>
+								</form>
+							</td>
+						</tr>
+					}
+					if len(d.Users) == 0 {
+						<tr>
+							<td colspan="5" class="px-4 py-10 text-center text-gray-400">No deactivated accounts.</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		@Pagination("/deactivated", d.Page, d.Limit, d.TotalItems, d.Search)
+	</div>
+}
+
+// ---------------------
+// FAVORITES
+// ---------------------
+
+templ Favorites(users []models.User) {
+	@layouts.Dashboard("Favorites") {
+		<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="min-w-full text-sm">
+					<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-200">
+						<tr>
+							<th class="px-4 py-3 text-left">Name</th>
+							<th class="px-4 py-3 text-left">Email</th>
+							<th class="px-4 py-3 text-left">Company</th>
+							<th class="px-4 py-3 text-left">Last Login</th>
+							<th class="px-4 py-3"></th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-100">
+						for _, u := range users {
+							<tr class="hover:bg-gray-50">
+								<td class="px-4 py-3 font-medium text-gray-800 flex items-center gap-2">
+									<svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+									{ u.Name }
+								</td>
+								<td class="px-4 py-3 text-gray-600">{ u.Email }</td>
+								<td class="px-4 py-3 text-gray-500">{ strOrDash(u.Company) }</td>
+								<td class="px-4 py-3 text-gray-500">{ fmtTime(u.LastLogin) }</td>
+								<td class="px-4 py-3">
+									<a href={ templ.URL(fmt.Sprintf("/accounts/%d", u.ID)) }
+										class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">View</a>
+								</td>
+							</tr>
+						}
+						if len(users) == 0 {
+							<tr>
+								<td colspan="5" class="px-4 py-10 text-center text-gray-400">No favorites yet.</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	}
+}
+
+// ---------------------
+// SETTINGS / COUNTRIES
+// ---------------------
+
+templ Settings(countries []models.Country) {
+	@layouts.Dashboard("Settings") {
+		<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+			<div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+				<h2 class="text-sm font-semibold text-gray-700">Countries</h2>
+				<span class="text-xs text-gray-400">{ fmt.Sprintf("%d countries", len(countries)) }</span>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="min-w-full text-sm">
+					<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-200">
+						<tr>
+							<th class="px-4 py-3 text-left">Name</th>
+							<th class="px-4 py-3 text-left">Code</th>
+							<th class="px-4 py-3 text-left">US Territory</th>
+							<th class="px-4 py-3 text-left">Status</th>
+							<th class="px-4 py-3"></th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-100">
+						for _, c := range countries {
+							<tr class="hover:bg-gray-50">
+								<td class="px-4 py-3 text-gray-800">{ c.Name }</td>
+								<td class="px-4 py-3 text-gray-500 font-mono text-xs">{ c.Code }</td>
+								<td class="px-4 py-3">
+									if c.IsUSTerritory {
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">Yes</span>
+									} else {
+										<span class="text-gray-400 text-xs">No</span>
+									}
+								</td>
+								<td class="px-4 py-3">
+									if c.Active {
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Active</span>
+									} else {
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-500">Inactive</span>
+									}
+								</td>
+								<td class="px-4 py-3">
+									<form method="post" action={ templ.URL(fmt.Sprintf("/settings/countries/%d/toggle", c.ID)) }>
+										<button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+											if c.Active {
+												Deactivate
+											} else {
+												Activate
+											}
+										</button>
+									</form>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	}
+}

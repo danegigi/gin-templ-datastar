@@ -1,0 +1,178 @@
+package layouts
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>{ title } — GrandShipper Admin</title>
+		<link rel="icon" href="/static/images/favicon.ico"/>
+		<link rel="stylesheet" href="/static/css/app.css"/>
+		<!-- Datastar -->
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@sudodevnull/datastar@0.20.1/dist/datastar.iife.js"></script>
+	</head>
+	<body class="h-full bg-gray-50 text-gray-900 font-sans antialiased">
+		{ children... }
+	</body>
+	</html>
+}
+
+templ Dashboard(title string) {
+	@Base(title) {
+		<div class="flex h-full" id="app">
+			@Sidebar()
+			<div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+				@Topbar(title)
+				<main class="flex-1 overflow-y-auto p-6">
+					{ children... }
+				</main>
+			</div>
+		</div>
+	}
+}
+
+templ Sidebar() {
+	<aside id="sidebar" class="w-56 shrink-0 bg-white border-r border-gray-200 flex flex-col h-full shadow-sm">
+		<!-- Logo -->
+		<div class="flex items-center gap-2 px-4 py-5 border-b border-gray-200">
+			<img src="/static/images/logo.png" alt="GrandShipper" class="h-7 w-7 object-contain"/>
+			<span class="text-lg font-bold text-indigo-700 tracking-tight">GrandShipper</span>
+		</div>
+		<!-- Nav links -->
+		<nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+			@SidebarLink("/", "Dashboard", iconDashboard())
+			@SidebarLink("/labels", "Labels", iconLabels())
+			@SidebarLink("/accounts", "Accounts", iconAccounts())
+			@SidebarLink("/favorites", "Favorites", iconFavorites())
+			@SidebarLink("/usps-reps", "USPS Reps", iconReps())
+			@SidebarLink("/affiliates", "Affiliates", iconAffiliates())
+			@SidebarLink("/deactivated", "Deactivated", iconDeactivated())
+			@SidebarLink("/settings", "Settings", iconSettings())
+		</nav>
+		<!-- Bottom: logout -->
+		<div class="px-4 py-4 border-t border-gray-200">
+			<a href="/logout" class="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 transition-colors">
+				@iconLogout()
+				<span>Logout</span>
+			</a>
+		</div>
+	</aside>
+}
+
+templ SidebarLink(href, label string, icon templ.Component) {
+	<a href={ templ.URL(href) }
+		class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group">
+		<span class="text-gray-400 group-hover:text-indigo-600 transition-colors">
+			@icon
+		</span>
+		{ label }
+	</a>
+}
+
+templ Topbar(title string) {
+	<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shrink-0">
+		<h1 class="text-base font-semibold text-gray-800">{ title }</h1>
+		<div class="flex items-center gap-3 text-sm text-gray-500">
+			<span id="current-time" class="tabular-nums"></span>
+			<script>
+				(function tick(){
+					const el = document.getElementById('current-time');
+					if(el) el.textContent = new Date().toLocaleTimeString();
+					setTimeout(tick, 1000);
+				})();
+			</script>
+		</div>
+	</header>
+}
+
+// Icon helpers — minimal inline SVG
+
+templ iconDashboard() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+}
+
+templ iconLabels() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+}
+
+templ iconAccounts() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+}
+
+templ iconFavorites() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+}
+
+templ iconReps() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+}
+
+templ iconAffiliates() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+}
+
+templ iconDeactivated() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+}
+
+templ iconSettings() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+}
+
+templ iconLogout() {
+	<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+}
+
+// ── Lazy-load helpers ──────────────────────────────────────────────────────
+// LazySection renders a placeholder div that fetches its real content from
+// `src` as soon as it enters the DOM (data-on-load). Datastar swaps the inner
+// HTML with the fragment the server returns. The skeleton shows meanwhile.
+
+templ LazySection(id, src string) {
+	<div id={ id } data-on-load={ "@get('" + src + "')" }>
+		@SkeletonCard()
+	</div>
+}
+
+// SkeletonCard is a generic shimmering placeholder for a card-shaped section.
+templ SkeletonCard() {
+	<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 animate-pulse">
+		<div class="h-3 w-1/3 bg-gray-200 rounded mb-4"></div>
+		<div class="space-y-2">
+			<div class="h-3 w-full bg-gray-100 rounded"></div>
+			<div class="h-3 w-5/6 bg-gray-100 rounded"></div>
+			<div class="h-3 w-4/6 bg-gray-100 rounded"></div>
+		</div>
+	</div>
+}
+
+// SkeletonStat is a compact placeholder for a stat card.
+templ SkeletonStat() {
+	<div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm animate-pulse">
+		<div class="h-2.5 w-2/3 bg-gray-200 rounded mb-3"></div>
+		<div class="h-6 w-1/2 bg-gray-100 rounded"></div>
+	</div>
+}
+
+// SkeletonTable is a placeholder for a table-shaped section.
+templ SkeletonTable() {
+	<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-pulse">
+		<div class="px-5 py-4 border-b border-gray-100">
+			<div class="h-3 w-1/4 bg-gray-200 rounded"></div>
+		</div>
+		<div class="p-5 space-y-3">
+			for range []int{0, 1, 2, 3, 4} {
+				<div class="h-3 w-full bg-gray-100 rounded"></div>
+			}
+		</div>
+	</div>
+}
+
+// ErrorNote renders inside a fragment when its query failed, so one broken
+// section does not blank the whole page.
+templ ErrorNote(msg string) {
+	<div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+		{ msg }
+	</div>
+}

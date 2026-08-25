@@ -1,0 +1,143 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/grandshipper/admin-v2/internal/models"
+	"github.com/grandshipper/admin-v2/internal/views/layouts"
+)
+
+type HomeData struct {
+	NewUsers      []models.WeeklyPerformance
+	NewLabels     []models.WeeklyPerformance
+	PrintPerf     []models.WeeklyPerformance
+	ActiveUsers   []models.WeeklyPerformance
+}
+
+// Home renders the dashboard SHELL only — no DB work. Each section is a
+// placeholder that lazily fetches its own data via Datastar data-on-load,
+// so the page paints instantly and each card/table streams in when its
+// query finishes.
+templ Home() {
+	@layouts.Dashboard("Dashboard") {
+		<!-- Stat cards — each loads independently -->
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+			@layouts.LazySection("stat-new-users", "/dashboard/stat/new-users")
+			@layouts.LazySection("stat-new-labels", "/dashboard/stat/new-labels")
+			@layouts.LazySection("stat-printed", "/dashboard/stat/printed")
+			@layouts.LazySection("stat-active", "/dashboard/stat/active-shippers")
+		</div>
+		<!-- Weekly tables — each loads independently -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+			@layouts.LazySection("tbl-new-users", "/dashboard/table/new-users")
+			@layouts.LazySection("tbl-new-labels", "/dashboard/table/new-labels")
+		</div>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			@layouts.LazySection("tbl-print-perf", "/dashboard/table/print-performance")
+			@layouts.LazySection("tbl-active", "/dashboard/table/active-users")
+		</div>
+	}
+}
+
+// ── Fragments returned by the /dashboard/* endpoints ──
+// Each fragment's root element carries the same id as its LazySection
+// placeholder so Datastar replaces the correct node.
+
+templ StatCardFragment(id, label, value, color string) {
+	<div id={ id } class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col gap-1">
+		<p class="text-xs font-medium text-gray-500 uppercase tracking-wide">{ label }</p>
+		<p class={ "text-2xl font-bold", colorClass(color) }>{ value }</p>
+	</div>
+}
+
+templ WeeklyTableFragment(id, title string, rows []models.WeeklyPerformance, showDistinct bool) {
+	<div id={ id }>
+		@weeklyTable(title, rows, showDistinct)
+	</div>
+}
+
+templ statCard(label, value, color string) {
+	<div class={ "bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col gap-1" }>
+		<p class="text-xs font-medium text-gray-500 uppercase tracking-wide">{ label }</p>
+		<p class={ "text-2xl font-bold", colorClass(color) }>{ value }</p>
+	</div>
+}
+
+templ weeklyTable(title string, rows []models.WeeklyPerformance, showDistinct bool) {
+	<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+		<div class="px-5 py-4 border-b border-gray-100">
+			<h3 class="text-sm font-semibold text-gray-700">{ title }</h3>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="min-w-full text-sm">
+				<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+					<tr>
+						<th class="px-4 py-2 text-left">Week</th>
+						<th class="px-4 py-2 text-right">Count</th>
+						if showDistinct {
+							<th class="px-4 py-2 text-right">Distinct Users</th>
+						}
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-100">
+					for _, r := range rows {
+						<tr class="hover:bg-gray-50">
+							<td class="px-4 py-2 text-gray-600">{ r.FirstDay } – { r.LastDay }</td>
+							<td class="px-4 py-2 text-right font-medium">{ fmt.Sprintf("%d", r.TotalRecords) }</td>
+							if showDistinct {
+								<td class="px-4 py-2 text-right text-gray-500">{ distinctStr(r.DistinctUsers) }</td>
+							}
+						</tr>
+					}
+					if len(rows) == 0 {
+						<tr><td colspan="3" class="px-4 py-6 text-center text-gray-400">No data</td></tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+func latestTotal(rows []models.WeeklyPerformance) string {
+	if len(rows) == 0 {
+		return "—"
+	}
+	return fmt.Sprintf("%d", rows[len(rows)-1].TotalRecords)
+}
+
+func latestPrinted(rows []models.WeeklyPerformance) string {
+	if len(rows) == 0 {
+		return "—"
+	}
+	return fmt.Sprintf("%d", rows[len(rows)-1].TotalRecords)
+}
+
+func latestDistinct(rows []models.WeeklyPerformance) string {
+	if len(rows) == 0 {
+		return "—"
+	}
+	r := rows[len(rows)-1]
+	if r.DistinctUsers == nil {
+		return "—"
+	}
+	return fmt.Sprintf("%d", *r.DistinctUsers)
+}
+
+func distinctStr(v *int64) string {
+	if v == nil {
+		return "—"
+	}
+	return fmt.Sprintf("%d", *v)
+}
+
+func colorClass(c string) string {
+	switch c {
+	case "emerald":
+		return "text-emerald-600"
+	case "violet":
+		return "text-violet-600"
+	case "amber":
+		return "text-amber-600"
+	default:
+		return "text-indigo-600"
+	}
+}

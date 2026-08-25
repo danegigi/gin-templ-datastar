@@ -1,0 +1,130 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/grandshipper/admin-v2/internal/models"
+	"github.com/grandshipper/admin-v2/internal/views/layouts"
+)
+
+type AccountsData struct {
+	Users      []models.User
+	TotalItems int64
+	Page       int
+	Limit      int
+	Search     string
+}
+
+templ Accounts(d AccountsData) {
+	@layouts.Dashboard("Accounts") {
+		<!-- Toolbar -->
+		<div class="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+			<div class="flex items-center gap-3">
+				<span class="text-sm text-gray-500">{ fmt.Sprintf("%d accounts", d.TotalItems) }</span>
+			</div>
+			<!-- Search box using Datastar -->
+			<form method="get" action="/accounts" class="flex gap-2"
+				data-store='{"q": ""}'
+				data-on-input__debounce.300ms="@get('/accounts/search?q=' + $q)">
+				<input
+					type="text"
+					name="q"
+					value={ d.Search }
+					data-bind="q"
+					placeholder="Search accounts…"
+					class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+				/>
+				<button type="submit"
+					class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+					Search
+				</button>
+			</form>
+		</div>
+		<!-- Table -->
+		<div id="accounts-table" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+			@AccountsTable(d)
+		</div>
+	}
+}
+
+// AccountsTable is the replaceable fragment (swapped by Datastar on search/page change).
+templ AccountsTable(d AccountsData) {
+	<div class="overflow-x-auto">
+		<table class="min-w-full text-sm">
+			<thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-200">
+				<tr>
+					<th class="px-4 py-3 text-left">Name</th>
+					<th class="px-4 py-3 text-left">Email</th>
+					<th class="px-4 py-3 text-left">Company</th>
+					<th class="px-4 py-3 text-left">Role</th>
+					<th class="px-4 py-3 text-left">Status</th>
+					<th class="px-4 py-3 text-left">Created</th>
+					<th class="px-4 py-3 text-left"></th>
+				</tr>
+			</thead>
+			<tbody class="divide-y divide-gray-100">
+				for _, u := range d.Users {
+					<tr class="hover:bg-gray-50 transition-colors">
+						<td class="px-4 py-3 font-medium text-gray-800">{ u.Name }</td>
+						<td class="px-4 py-3 text-gray-600">{ u.Email }</td>
+						<td class="px-4 py-3 text-gray-500">{ strOrDash(u.Company) }</td>
+						<td class="px-4 py-3 text-gray-500">{ strOrDash(u.RoleName) }</td>
+						<td class="px-4 py-3">
+							if u.Suspend {
+								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Suspended</span>
+							} else if u.DeletedAt != nil {
+								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Deleted</span>
+							} else if u.EmailVerifiedAt != nil {
+								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>
+							} else {
+								<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Unverified</span>
+							}
+						</td>
+						<td class="px-4 py-3 text-gray-500 tabular-nums">{ fmtTime(u.CreatedAt) }</td>
+						<td class="px-4 py-3">
+							<a href={ templ.URL(fmt.Sprintf("/accounts/%d", u.ID)) }
+								class="text-indigo-600 hover:text-indigo-800 text-xs font-medium transition-colors">View</a>
+						</td>
+					</tr>
+				}
+				if len(d.Users) == 0 {
+					<tr>
+						<td colspan="7" class="px-4 py-10 text-center text-gray-400">No accounts found.</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<!-- Pagination -->
+	@Pagination("/accounts", d.Page, d.Limit, d.TotalItems, d.Search)
+}
+
+templ Pagination(base string, page, limit int, total int64, search string) {
+	<div class="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
+		<span>{ fmt.Sprintf("Showing %d – %d of %d", minInt((page-1)*limit+1, int(total)), minInt(page*limit, int(total)), total) }</span>
+		<div class="flex gap-2">
+			if page > 1 {
+				<a href={ templ.URL(fmt.Sprintf("%s?page=%d&q=%s", base, page-1, search)) }
+					class="px-3 py-1 rounded border border-gray-200 hover:bg-gray-50 transition-colors">← Prev</a>
+			}
+			if int64(page*limit) < total {
+				<a href={ templ.URL(fmt.Sprintf("%s?page=%d&q=%s", base, page+1, search)) }
+					class="px-3 py-1 rounded border border-gray-200 hover:bg-gray-50 transition-colors">Next →</a>
+			}
+		</div>
+	</div>
+}
+
+// strOrDash returns the string value or "—" if nil.
+func strOrDash(s *string) string {
+	if s == nil {
+		return "—"
+	}
+	return *s
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

@@ -1,0 +1,15 @@
+# Compiled binary output
+bin/
+
+# air live-reload temp dir
+.air_tmp/
+
+# Node dependencies
+node_modules/
+
+# Secrets — NEVER commit. Use .env.example as the template.
+.env
+
+# NOTE: generated files ARE tracked in this repo so it builds without a
+# generate step on clone (*_templ.go, static/css/app.css). Re-run
+# `make generate` / `make css` after editing .templ or input.css.

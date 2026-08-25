@@ -1,0 +1,53 @@
+# air live-reload config for admin-v2
+# Install: go install github.com/air-verse/air@latest
+# Run:     air  (from the v2/ directory)
+
+root = "."
+tmp_dir = ".air_tmp"
+
+[build]
+  # Run templ generation + CSS build before compiling.
+  # pre_cmd runs once before the first build and on every re-build trigger.
+  pre_cmd = ["make generate css"]
+
+  # Compile the binary into .air_tmp/
+  cmd = "go build -o .air_tmp/admin-v2 ./cmd/server"
+  bin = ".air_tmp/admin-v2"
+
+  # Args forwarded to the binary (add flags here if needed)
+  args_bin = []
+
+  # Watch these file extensions for changes
+  include_ext = ["go", "templ", "css", "env"]
+
+  # Directories to watch
+  include_dir = ["cmd", "internal", "static"]
+
+  # Never watch generated files or node_modules (they trigger redundant rebuilds)
+  exclude_dir  = ["node_modules", ".air_tmp", "bin", "vendor"]
+  exclude_file = ["*_templ.go"]
+  exclude_regex = [".*_templ\\.go$"]
+
+  # Kill the running process before starting the new one
+  kill_delay = "200ms"
+
+  # Show build log on each rebuild
+  log = ".air_tmp/build-errors.log"
+
+  # Stop watching if build fails (avoids a spin loop on syntax errors)
+  stop_on_error = true
+
+[log]
+  # Coloured output, timestamps
+  time = true
+  color = true
+
+[color]
+  main    = "magenta"
+  watcher = "cyan"
+  build   = "yellow"
+  runner  = "green"
+
+[misc]
+  # Remove .air_tmp on clean exit
+  clean_on_exit = true
