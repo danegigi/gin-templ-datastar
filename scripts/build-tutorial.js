@@ -84,11 +84,18 @@ ${body}
 fs.writeFileSync(OUT, html);
 console.log(`Wrote ${OUT} (${body.length} bytes of body HTML)`);
 
-// Also emit a GitHub Pages copy at docs/index.html so the tutorial is readable
-// at https://<user>.github.io/<repo>/ once Pages is enabled (Source: main /docs).
-// .nojekyll tells Pages to serve the file as-is instead of Jekyll-processing it.
+// The docs/ copy gets a "Home" nav bar linking back to the site landing page.
+const navBar = `<nav style="position:sticky;top:0;z-index:10;background:rgba(15,17,23,.9);backdrop-filter:blur(8px);border-bottom:1px solid #2d3148;padding:12px 24px;display:flex;align-items:center;gap:16px;">
+  <a href="index.html" style="color:#7c87ff;text-decoration:none;font-weight:600;font-size:0.9rem;">&#8592; Home</a>
+  <span style="color:#8b8fa8;font-size:0.85rem;">Full-Stack Tutorial</span>
+</nav>`;
+const docsHtml = html.replace(/<body>/, `<body>\n${navBar}`);
+
+// Also emit a GitHub Pages copy at docs/tutorial.html so the full project
+// tutorial is reachable from the docs landing page (docs/index.html, built by
+// scripts/build-docs-site.js). .nojekyll tells Pages to serve files as-is.
 const docsDir = path.join(ROOT, "docs");
 fs.mkdirSync(docsDir, { recursive: true });
-fs.writeFileSync(path.join(docsDir, "index.html"), html);
+fs.writeFileSync(path.join(docsDir, "tutorial.html"), docsHtml);
 fs.writeFileSync(path.join(docsDir, ".nojekyll"), "");
-console.log(`Wrote ${path.join(docsDir, "index.html")} and docs/.nojekyll for GitHub Pages`);
+console.log(`Wrote ${path.join(docsDir, "tutorial.html")} and docs/.nojekyll for GitHub Pages`);

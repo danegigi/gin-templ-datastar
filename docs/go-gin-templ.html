@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Go + Gin + templ — gin-templ-datastar</title>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--border:#2d3148;--text:#e2e4f0;--muted:#8b8fa8;--accent:#7c87ff;--code-bg:#1e2130;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.75;}
+.nav{position:sticky;top:0;z-index:10;background:rgba(15,17,23,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;}
+.nav a{color:var(--accent);text-decoration:none;font-weight:600;font-size:0.9rem;}
+.nav a:hover{text-decoration:underline;}
+.nav .crumb{color:var(--muted);font-size:0.85rem;}
+.container{max-width:920px;margin:0 auto;padding:40px 36px 96px;}
+h1{font-size:2rem;font-weight:700;color:#fff;margin:28px 0 12px;line-height:1.25;}
+h2{font-size:1.3rem;font-weight:600;color:var(--accent);margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:1.05rem;font-weight:600;color:#c5caff;margin:30px 0 10px;}
+h4,h5,h6{font-size:0.95rem;font-weight:600;color:var(--muted);margin:22px 0 8px;}
+p{margin-bottom:14px;color:#cdd0e0;}
+a{color:var(--accent);}
+strong{color:#eef0fb;}
+code{background:#252836;color:#c5caff;padding:2px 6px;border-radius:4px;font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;font-size:0.86em;}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:18px 22px;overflow-x:auto;margin:18px 0;}
+pre code{background:none;padding:0;color:#dde1f7;font-size:0.86em;line-height:1.6;white-space:pre;}
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:0.9em;}
+th{background:#252836;color:var(--accent);text-align:left;padding:10px 14px;font-weight:600;font-size:0.8em;border-bottom:2px solid var(--border);}
+td{padding:9px 14px;border-bottom:1px solid var(--border);color:#cdd0e0;vertical-align:top;}
+ul,ol{padding-left:26px;margin-bottom:14px;}
+li{margin-bottom:6px;color:#cdd0e0;}
+blockquote{border-left:3px solid var(--accent);margin:18px 0;padding:12px 18px;background:rgba(124,135,255,.07);color:var(--muted);border-radius:0 6px 6px 0;}
+img{max-width:100%;border-radius:8px;}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="index.html">&#8592; Home</a>
+  <span class="crumb">Go + Gin + templ</span>
+</nav>
+<div class="container">
+<p>Full Stack Go, Gin, and Templ Tutorial</p><p>Build a production-minded server-rendered web application with Go, Gin, and Templ, using openlist.ing as the practical example project.</p><h1>Audience And Goal</h1><p>This tutorial is for developers who already understand HTTP, HTML, forms, JSON, databases, and application architecture. It teaches how to build a complete server-rendered Go web application with Gin for HTTP routing and middleware, Templ for type-safe HTML components, and a clean internal package structure.</p><p>The example product is openlist.ing, a street-sourced real estate listing platform. Visitors browse property sale and lease signs spotted from the street, submit properties, view listing details, and interact with a CMS that manages content and operational pages.</p><p>By the end, you should understand how to:</p><ul><li>structure a Go web application for maintainability.</li><li>build Gin routers, handlers, middleware, redirects, and form endpoints.</li><li>render pages with Templ components.</li><li>pass request context through services and repositories.</li><li>validate route behavior with `httptest`.</li><li>configure local development and production builds.</li><li>prepare the app for database, security, and deployment hardening.</li></ul><h1>1. What You Are Building</h1><p>The tutorial uses this application shape:</p><p>openlist.ing/</p><pre><code>frontend/   Public property listing website
+  cms/        Server-rendered administration app
+  database/   Central local database package and seed data</code></pre><p>The public frontend exposes pages such as:</p><ul><li>home page with latest listings.</li><li>listing search and filters.</li><li>listing detail page.</li><li>submit-property form.</li><li>claim and contact flows.</li><li>static pages such as about, FAQ, terms, and contact.</li></ul><p>The CMS exposes pages such as:</p><ul><li>dashboard.</li><li>user and role management forms.</li><li>page/content forms.</li><li>property listing management forms.</li><li>SEO, navigation, footer, theme, and audit settings.</li></ul><p>This is a classic server-rendered product: the server handles routes, loads data, renders HTML, and returns complete pages or form redirects.</p><h1>2. Why Go, Gin, And Templ Work Well Together</h1><p>Think of the stack in three layers:</p><ul><li>Go is the engine. It compiles your application into a binary, gives you static types, handles concurrency with goroutines, and provides the standard HTTP foundation.</li><li>Gin is the traffic controller. It matches URLs to handlers, reads route parameters, parses query strings and forms, serves static files, and runs middleware.</li><li>Templ is the page builder. It lets you write HTML as typed Go components, generate Go code from those components, and render the result directly to the HTTP response.</li></ul><p>In openlist.ing, a typical request works like this:</p><p>Browser requests GET /listings?q=maple</p><p>Gin matches the /listings route</p><p>The handler reads q=maple from the query string</p><p>The listing service loads and filters listings</p><p>The renderer calls a Templ ListingsPage component</p><p>Templ writes HTML to the response</p><p>The browser receives a complete server-rendered page</p><h2>Go: The Application Foundation</h2><p>Go gives the project a small deployment artifact and straightforward runtime behavior. A basic Go HTTP handler can be written with only the standard library:</p><p>http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {</p><pre><code>w.WriteHeader(http.StatusOK)
+    _, _ = w.Write([]byte("ok"))
+})</code></pre><p>log.Fatal(http.ListenAndServe(":5173", nil))</p><p>That example is useful for learning, but real applications quickly need routing, middleware, path parameters, form parsing, static assets, and test helpers. That is where Gin earns its place.</p><h2>Gin: Routing And Request Handling</h2><p>Gin gives you a clear way to map routes to handler functions:</p><pre><code>router := gin.New()
+router.Use(gin.Logger(), gin.Recovery())
+router.GET("/", homeHandler)
+router.GET("/listings", listingsHandler)
+router.GET("/listings/:id", listingDetailHandler)
+router.POST("/listings", submitListingHandler)
+A handler receives `*gin.Context`, which gives access to query strings, path parameters, form fields, headers, status codes, redirects, and response helpers:</code></pre><pre><code>func listingDetailHandler(c *gin.Context) {
+    id := c.Param("id")
+    if id == "" {
+        c.String(http.StatusBadRequest, "missing listing id")
+        return
+    }
+    c.String(http.StatusOK, "listing id: "+id)
+}</code></pre><p>For openlist.ing, Gin is responsible for routes like `/listings`, `/submit`, `/contact`, and CMS pages such as `/users`, `/seo`, and `/theme`.</p><h2>Templ: Typed HTML Components</h2><p>Templ lets you write HTML components that accept Go values. A small component looks like this:</p><pre><code>templ ListingTitle(address string, city string) {
+    &lt;article class="listing-summary"&gt;
+        &lt;h2&gt;{ address }&lt;/h2&gt;
+        &lt;p&gt;{ city }&lt;/p&gt;
+    &lt;/article&gt;
+}
+After running `templ generate`, that component becomes Go code. A Gin handler can render it through a small wrapper:</code></pre><pre><code>func render(c *gin.Context, component templ.Component) {
+    c.Status(http.StatusOK)
+    c.Header("Content-Type", "text/html; charset=utf-8")
+    _ = component.Render(c.Request.Context(), c.Writer)
+}</code></pre><p>The important idea is that the handler does not concatenate HTML strings. It passes typed data into a typed component.</p><h2>How The Three Pieces Fit In openlist.ing</h2><p>A simplified openlist.ing listing route combines all three layers:</p><pre><code>func (s *Server) listings(c *gin.Context) {
+    rows, err := s.service.All(c.Request.Context())
+    if handleErr(c, err) {
+        return
+    }
+    visible := s.service.Filter(rows, listings.Filter{
+        Query: c.Query("q"),
+    })
+    s.renderer.Listings(c, rows, visible)
+}</code></pre><p>The division of work is clean:</p><ul><li>Gin gives the handler `c.Query("q")` and the response writer.</li><li>Go services load and filter typed `Listing` values.</li><li>Templ receives those listings and renders the page.</li></ul><p>This combination is especially good for SaaS dashboards, content-managed sites, public listing pages, admin tools, and form-heavy applications where full-page rendering is simpler and more robust than shipping a large client application.</p><h1>3. Recommended Project Structure</h1><p>Use a small, explicit structure before reaching for frameworks inside frameworks.</p><p>frontend/</p><pre><code>cmd/server/main.go
+  internal/config/config.go
+  internal/httpx/router.go
+  internal/httpx/router_test.go
+  internal/listings/model.go
+  internal/listings/repository.go
+  internal/listings/service.go
+  internal/web/helpers.go
+  internal/web/render.go
+  internal/web/views.templ
+  internal/web/views_templ.go
+  public/
+  data/
+  go.mod</code></pre><p>For an admin app:</p><p>cms/</p><pre><code>cmd/server/main.go
+  internal/config/config.go
+  internal/cms/definitions.go
+  internal/httpx/router.go
+  internal/httpx/router_test.go
+  internal/httpx/view_helpers.go
+  internal/httpx/views.templ
+  internal/httpx/views_templ.go
+  public/
+  go.mod
+The package responsibilities are clear:</code></pre><ul><li>`cmd/server` wires the application and starts the HTTP server.</li><li>`internal/config` reads environment variables and default paths.</li><li>`internal/httpx` translates HTTP requests into application calls.</li><li>`internal/listings` contains listing business logic.</li><li>`internal/web` contains public site rendering.</li><li>`internal/cms` contains CMS page and field definitions.</li></ul><p>A good Go web app is not a pile of route callbacks. It is a small composition of packages with clear ownership.</p><h1>4. Go Module Setup</h1><p>A frontend module starts with:</p><p>mkdir frontend</p><p>cd frontend</p><pre><code>go mod init openlist.ing/frontend
+go get github.com/gin-gonic/gin@v1.10.0
+go get github.com/a-h/templ@latest</code></pre><p>Install the Templ CLI:</p><p>go install github.com/a-h/templ/cmd/templ@latest</p><p>A minimal `go.mod` will include Gin and Templ:</p><p>module openlist.ing/frontend</p><p>go 1.25.0</p><p>require (</p><pre><code>github.com/a-h/templ v0.3.1020
+    github.com/gin-gonic/gin v1.10.0
+)</code></pre><p>Templ has two parts: the Go module dependency and the CLI. The module is imported by generated code. The CLI turns `.templ` files into Go code.</p><h1>5. Configuration</h1><p>Keep configuration in one package. Do not scatter `os.Getenv` calls across handlers.</p><pre><code>package config
+import "os"
+type Config struct {
+    Port         string
+    PublicDir    string
+    DataPath     string
+    SeedDataPath string
+    SiteURL      string
+    CMSURL       string
+}
+func Load() Config {
+    return Config{
+        Port:         env("PORT", "5173"),
+        PublicDir:    env("PUBLIC_DIR", "public"),
+        DataPath:     env("DATA_PATH", "data/listings.json"),
+        SeedDataPath: env("SEED_DATA_PATH", "data/seed-listings.json"),
+        SiteURL:      env("SITE_URL", "http://localhost:5173"),
+        CMSURL:       env("CMS_URL", "http://localhost:5174"),
+    }
+}
+func env(key, fallback string) string {
+    if value := os.Getenv(key); value != "" {
+        return value
+    }
+    return fallback
+}</code></pre><p>Local `.env.example` files should document expected values:</p><p>DATABASE_PROVIDER=sqlite</p><p>DATABASE_PATH=../database/data/myapp.sqlite</p><p>SITE_URL=http://localhost:5173</p><p>CMS_URL=http://localhost:5174</p><p>Configuration should describe deploy-time choices. It should not decide business behavior.</p><h1>6. Application Entrypoint</h1><p>The entrypoint should wire dependencies and start the server.</p><pre><code>package main
+import (
+    "log"
+    "openlist.ing/frontend/internal/config"
+    "openlist.ing/frontend/internal/httpx"
+    "openlist.ing/frontend/internal/listings"
+    "openlist.ing/frontend/internal/web"
+)
+func main() {
+    cfg := config.Load()
+    repo := listings.NewFileRepository(cfg.DataPath, cfg.SeedDataPath)
+    service := listings.NewService(repo)
+    renderer := web.NewTemplRenderer()
+    router := httpx.NewRouter(cfg, service, renderer)
+    if err := router.Run(":" + cfg.Port); err != nil {
+        log.Fatal(err)
+    }
+}</code></pre><p>Notice what is not here:</p><ul><li>no listing filtering logic.</li><li>no HTML strings.</li><li>no form parsing.</li><li>no SQL or persistence details beyond constructing the repository.</li></ul><p>`main` is the assembly point. Keep it boring.</p><h1>7. Domain Models</h1><p>Models should be explicit and small.</p><p>package listings</p><p>type Mode string</p><p>type Status string</p><pre><code>const (
+    ModeSale  Mode = "sale"
+    ModeLease Mode = "lease"
+    StatusCommunityVisible Status = "community_visible"
+    StatusNeedsReview      Status = "needs_review"
+    StatusVerified         Status = "verified"
+    StatusClaimed          Status = "claimed"
+    StatusRemoved          Status = "removed"
+)
+type Listing struct {
+    ID              string `json:"id"`
+    Address         string `json:"address"`
+    City            string `json:"city"`
+    Country         string `json:"country"`
+    Mode            Mode   `json:"mode"`
+    Type            string `json:"type"`
+    Price           string `json:"price"`
+    Contact         string `json:"contact"`
+    Notes           string `json:"notes"`
+    Photo           string `json:"photo"`
+    Status          Status `json:"status"`
+    Featured        bool   `json:"featured"`
+    Claimant        string `json:"claimant"`
+    OfficialContact string `json:"officialContact"`
+    SpottedAt       string `json:"spottedAt"`
+    MapX            int    `json:"mapX"`
+    MapY            int    `json:"mapY"`
+}</code></pre><p>Struct tags make JSON shape explicit. Domain constants keep route handlers from passing arbitrary strings everywhere.</p><h1>8. Repository Layer</h1><p>A repository hides persistence. The first implementation can be JSON files for local development. A later implementation can use SQL.</p><pre><code>type Repository interface {
+    All(ctx context.Context) ([]Listing, error)
+    SaveAll(ctx context.Context, rows []Listing) error
+    Reset(ctx context.Context) error
+}</code></pre><p>A file-backed repository is useful for early product development, demos, and route testing. A SQL-backed repository can implement the same interface later.</p><p>The handler should not care whether listings came from JSON, SQLite, PostgreSQL, or an API.</p><h1>9. Service Layer</h1><p>The service layer owns use cases. It should contain behavior that would otherwise clutter handlers.</p><pre><code>type Service struct {
+    repo Repository
+}
+func NewService(repo Repository) *Service {
+    return &amp;Service{repo: repo}
+}
+func (s *Service) All(ctx context.Context) ([]Listing, error) {
+    return s.repo.All(ctx)
+}</code></pre><p>Filtering belongs here because it is application behavior, not HTTP behavior.</p><pre><code>type Filter struct {
+    Query  string
+    Market string
+    Mode   string
+    Status string
+}
+func (s *Service) Filter(rows []Listing, filter Filter) []Listing {
+    out := make([]Listing, 0, len(rows))
+    for _, row := range rows {
+        if row.Status == StatusRemoved {
+            continue
+        }
+        if !matchesFilter(row, filter) {
+            continue
+        }
+        out = append(out, row)
+    }
+    return out
+}</code></pre><p>Handlers should translate query parameters into a `Filter`. The service should decide what that filter means.</p><h1>10. Gin Router Construction</h1><p>Use a server struct for dependencies.</p><pre><code>type Server struct {
+    cfg      config.Config
+    service  *listings.Service
+    renderer web.Renderer
+}
+func NewRouter(cfg config.Config, service *listings.Service, renderer web.Renderer) 
+*gin.Engine {
+    gin.SetMode(gin.ReleaseMode)
+    router := gin.New()
+    router.Use(gin.Logger(), gin.Recovery())
+    server := &amp;Server{cfg: cfg, service: service, renderer: renderer}
+    server.mount(router)
+    return router
+}</code></pre><p>This makes the router easy to test because you can inject temporary repositories, fake renderers, or real Templ renderers.</p><h1>11. Route Mounting</h1><p>Routes should be readable at a glance.</p><pre><code>func (s *Server) mount(router *gin.Engine) {
+    router.Static("/assets", filepath.Join(s.cfg.PublicDir, "assets"))
+    router.GET("/styles.css", s.staticFile("styles.css", "text/css; charset=utf-8"))
+    router.GET("/site.webmanifest", s.staticFile("site.webmanifest",</code></pre><p>"application/manifest+json; charset=utf-8"))</p><pre><code>router.GET("/", s.home)
+    router.GET("/listings", s.listings)
+    router.GET("/submit", s.submit)
+    router.GET("/claim", s.claim)
+    router.GET("/admin", s.admin)
+    router.GET("/listings/:id", s.listingDetail)
+    router.POST("/contact", s.contactPost)
+    router.POST("/listings", s.submitListing)
+    router.POST("/claims", s.claimPost)
+    router.POST("/features", s.featurePost)
+    router.POST("/admin/listings/:id/status", s.statusPost)
+}</code></pre><p>Static assets, GET pages, and POST actions are easy to identify.</p><h1>12. Handler Design</h1><p>A good handler does five things:</p><ol><li>read HTTP input.</li><li>call a service.</li><li>handle errors.</li><li>render or redirect.</li><li>avoid business logic sprawl.</li></ol><p>Example listing handler:</p><pre><code>func (s *Server) listings(c *gin.Context) {
+    rows, err := s.service.All(c.Request.Context())
+    if handleErr(c, err) {
+        return
+    }
+    visible := s.service.Filter(rows, listings.Filter{
+        Query:  c.Query("q"),
+        Market: c.DefaultQuery("market", "all"),
+        Mode:   c.DefaultQuery("mode", "all"),
+        Status: c.DefaultQuery("status", "all"),
+    })
+    s.renderer.Listings(c, rows, visible)
+}</code></pre><p>Example form handler:</p><pre><code>func (s *Server) contactPost(c *gin.Context) {
+    if strings.TrimSpace(c.PostForm("name")) == "" ||
+        strings.TrimSpace(c.PostForm("email")) == "" ||
+        strings.TrimSpace(c.PostForm("message")) == "" {
+        c.String(http.StatusBadRequest, "Name, email, and message are required.")
+        return
+    }
+    c.Redirect(http.StatusSeeOther, "/?contact=sent#contact")
+}</code></pre><p>For browser forms, `303 See Other` is often the right redirect after successful POST. It prevents accidental resubmission when the user refreshes.</p><h1>13. Error Mapping</h1><p>Centralize repeated error-to-HTTP behavior.</p><pre><code>func handleErr(c *gin.Context, err error) bool {
+    if err == nil {
+        return false
+    }
+    if errors.Is(err, listings.ErrNotFound) {
+        c.Status(http.StatusNotFound)
+        return true
+    }
+    if errors.Is(err, listings.ErrUnsupportedStatus) {
+        c.String(http.StatusBadRequest, "Unsupported status")
+        return true
+    }
+    c.String(http.StatusInternalServerError, err.Error())
+    return true
+}
+This gives domain packages freedom to return domain errors while the HTTP package decides how those errors appear to browsers.</code></pre><h1>14. Templ Features And How To Use Them</h1><p>Templ is more than a way to write HTML in Go. It is a component system for server-rendered applications. You write `.templ` files, run `templ generate`, and Templ creates normal Go code that can be compiled, tested, and rendered from handlers.</p><p>The main features you will use in openlist.ing are:</p><ul><li>typed component parameters.</li><li>component composition.</li><li>children and layout slots.</li><li>Go expressions inside markup.</li><li>loops and conditionals.</li><li>dynamic attributes.</li><li>safe URLs for links.</li><li>helper functions from normal Go files.</li><li>generated Go render functions.</li></ul><h2>Component Parameters</h2><p>A Templ component accepts typed Go parameters. This is the first major benefit over unstructured HTML strings.</p><pre><code>templ ListingTitle(address string, city string) {
+    &lt;div class="listing-title"&gt;
+        &lt;h2&gt;{ address }&lt;/h2&gt;
+        &lt;p&gt;{ city }&lt;/p&gt;
+    &lt;/div&gt;
+}</code></pre><p>You call it with normal values:</p><p>@ListingTitle(row.Address, row.City)</p><p>For openlist.ing, most useful components accept domain types:</p><pre><code>templ ListingCard(row listings.Listing) {
+    &lt;article class="listing-card"&gt;
+        &lt;h3&gt;{ row.Address }&lt;/h3&gt;
+        &lt;p&gt;{ row.City }, { row.Country }&lt;/p&gt;
+    &lt;/article&gt;
+}</code></pre><p>This makes the component contract obvious. `ListingCard` needs a `listings.Listing`, not a map, JSON blob, or loose set of strings.</p><h2>Layout Components And Children</h2><p>A layout component can receive child content with `{ children... }`.</p><pre><code>templ PageShell(title string) {
+    &lt;!doctype html&gt;
+    &lt;html lang="en"&gt;
+        &lt;head&gt;
+            &lt;meta charset="utf-8"/&gt;
+            &lt;meta name="viewport" content="width=device-width, initial-scale=1"/&gt;
+            &lt;title&gt;{ title }&lt;/title&gt;
+            &lt;link rel="stylesheet" href="/styles.css"/&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            { children... }
+        &lt;/body&gt;
+    &lt;/html&gt;
+}</code></pre><p>A page component wraps its content inside the shell:</p><pre><code>templ HomePage(rows []listings.Listing) {
+    @PageShell("openlist.ing") {
+        @Topbar()
+        &lt;main&gt;
+            @Hero()
+            @LatestProperties(rows)
+        &lt;/main&gt;
+    }
+}</code></pre><p>Use this pattern for page-level consistency. The shell owns document structure, shared CSS, metadata, scripts, header/footer placement, and global layout. Individual pages own their content.</p><h2>Component Composition</h2><p>Templ components should be small enough to name clearly. Instead of one giant home page component, compose it from sections:</p><pre><code>templ HomePage(rows []listings.Listing) {
+    @PageShell("openlist.ing") {
+        @Topbar()
+        &lt;main&gt;
+            @Hero()
+            @LatestProperties(rows)
+            @Testimonials()
+            @ContactSection()
+        &lt;/main&gt;
+    }
+}</code></pre><p>Composition keeps templates readable. It also makes each section easier to change without touching unrelated markup.</p><h2>Go Expressions In Markup</h2><p>Use `{ ... }` to insert escaped dynamic text.</p><p>&lt;h1&gt;{ row.Address }&lt;/h1&gt;</p><p>&lt;p class="listing-price"&gt;{ row.Price }&lt;/p&gt;</p><p>&lt;p&gt;{ row.Notes }&lt;/p&gt;</p><p>Templ escapes text output by default. That is what you want for user-controlled fields such as listing notes, addresses, and contact details.</p><p>Use helpers when formatting gets repetitive:</p><pre><code>func statusLabel(status listings.Status) string {
+    return strings.ReplaceAll(string(status), "_", " ")
+}</code></pre><p>Then call the helper from the template:</p><p>&lt;span&gt;{ statusLabel(row.Status) }&lt;/span&gt;</p><h2>Loops</h2><p>Use normal Go `for` loops inside components.</p><pre><code>templ LatestProperties(rows []listings.Listing) {
+    &lt;section class="latest-properties"&gt;
+        &lt;div class="latest-grid"&gt;
+            for _, row := range topListings(rows, 8) {
+                @ListingCard(row)
+            }
+        &lt;/div&gt;
+    &lt;/section&gt;
+}</code></pre><p>This is useful for listing grids, CMS sidebar navigation, dropdown options, breadcrumbs, and repeated cards.</p><p>For select fields, the pattern is the same:</p><pre><code>templ PropertyTypeSelect(types []string) {
+    &lt;select name="type"&gt;
+        for _, item := range types {
+            &lt;option value={ item }&gt;{ item }&lt;/option&gt;
+        }
+    &lt;/select&gt;
+}</code></pre><h2>Conditionals</h2><p>Use `if` for conditional HTML.</p><pre><code>templ StatusBadges(row listings.Listing) {
+    if row.Featured {
+        &lt;span class="status-pill warning"&gt;featured&lt;/span&gt;
+    }
+    &lt;span class={ "status-pill " + string(row.Status) }&gt;{ statusLabel(row.Status) }&lt;/span&gt;
+}</code></pre><p>The CMS uses conditionals for saved notices:</p><pre><code>templ CMSPage(page cms.Page, saved bool) {
+    @Shell(page.Title) {
+        if saved {
+            &lt;p class="notice"&gt;Saved draft changes for { page.Title }.&lt;/p&gt;
+        }
+        &lt;form method="post" action={ templ.URL("/" + page.Slug) }&gt;
+            for _, field := range pageFields(page) {
+                @FieldControl(field)
+            }
+        &lt;/form&gt;
+    }
+}</code></pre><p>Use conditionals to include or omit real elements. Do not render hidden placeholder markup unless the client-side behavior needs it.</p><h2>Switch Statements</h2><p>Templ supports Go control flow such as `switch`. This is useful for CMS field rendering.</p><pre><code>templ FieldControl(field cms.Field) {
+    switch field.Type {
+        case "textarea":
+            @TextareaField(field)
+        case "select":
+            @SelectField(field)
+        case "checkbox":
+            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{</code></pre><p>field.Label }&lt;/span&gt;&lt;/label&gt;</p><pre><code>default:
+            @InputField(field)
+    }
+}</code></pre><p>This keeps the CMS extensible. Adding a new field type becomes a focused component change.</p><h2>Dynamic Attributes</h2><p>Use `{ ... }` inside attributes when the value changes per record.</p><p>&lt;img class="listing-photo-img" src={ listingImageURL(row) } alt=""/&gt;</p><p>&lt;button aria-label={ "Save " + row.Address }&gt;♡&lt;/button&gt;</p><p>&lt;span class={ "status-pill " + string(row.Status) }&gt;{ statusLabel(row.Status) }&lt;/span&gt;</p><p>Dynamic attributes are ideal for classes, form values, ARIA labels, image sources, IDs, and data attributes.</p><p>For links built from dynamic values, use `templ.URL`:</p><p>&lt;a href={ templ.URL("/listings/" + row.ID) }&gt;View details&lt;/a&gt;</p><p>That makes intent clear: this expression is meant to be used as a URL.</p><h2>Forms And Required Fields</h2><p>Templ works well for HTML forms because forms are mostly structured HTML with a few dynamic values.</p><pre><code>templ InputField(field cms.Field) {
+    if field.Required {
+        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={</code></pre><p>field.Name } placeholder={ field.Placeholder } required/&gt;&lt;/label&gt;</p><pre><code>} else {
+        &lt;label&gt;&lt;span&gt;{ field.Label }&lt;/span&gt;&lt;input type={ inputType(field) } name={</code></pre><p>field.Name } placeholder={ field.Placeholder }/&gt;&lt;/label&gt;</p><pre><code>}
+}</code></pre><p>In Go templates, boolean attributes such as `required` are easiest to handle with separate branches. This keeps generated HTML explicit and easy to inspect.</p><h2>Helper Functions</h2><p>Keep helper functions in normal `.go` files in the same package as your `.templ` files.</p><pre><code>package web
+func listingImageURL(row listings.Listing) string {
+    if row.Photo != "" {
+        return row.Photo
+    }
+    return defaultImageForType(row.Type)
+}</code></pre><p>Then use the helper in the template:</p><p>&lt;img src={ listingImageURL(row) } alt=""/&gt;</p><p>Good helper candidates include:</p><ul><li>status labels.</li><li>image fallback URLs.</li><li>date formatting.</li><li>short text summaries.</li><li>class-name builders.</li><li>filtered slices such as latest or featured listings.</li></ul><p>Avoid putting business decisions in helpers. If a rule changes application behavior, it belongs in a service, not a view helper.</p><h2>Safe HTML And User Content</h2><p>By default, Templ escapes text inserted with `{ value }`. Keep that default for user content.</p><p>Use safe HTML mechanisms only for trusted content that you control and sanitize before rendering. A CMS rich-text field should not become raw HTML until you have a sanitization strategy.</p><p>For openlist.ing, listing notes, addresses, contact fields, and user-submitted descriptions should render as escaped text.</p><h2>Datastar, HTMX, And Custom Attributes</h2><p>Templ can preserve custom HTML attributes used by lightweight frontend libraries. For example, the frontend can keep Datastar attributes in normal markup:</p><p>&lt;body data-signals="{ selectedListing: '', selectedStatus: 'all' }"&gt;</p><p>    { children... }</p><p>&lt;/body&gt;</p><p>Dynamic data attributes also work:</p><p>&lt;article data-show={ filterExpression(row) }&gt;</p><p>    @ListingCardBody(row)</p><p>&lt;/article&gt;</p><p>This makes Templ a good fit for hypermedia-style applications: server-rendered HTML first, light declarative interactivity where needed.</p><h2>Generated Code Workflow</h2><p>Templ files are source files, but Go builds the generated files. The workflow is:</p><p>templ generate</p><p>go test ./...</p><p>go run ./cmd/server</p><p>If generation succeeds but Go tests fail, the problem is in the generated Go integration, imports, helper functions, or handler code. If generation fails, the issue is in `.templ` syntax or unsupported template expressions.</p><h2>Practical Templ Rules For This Project</h2><p>Use these rules when extending openlist.ing:</p><ul><li>Create page components for full pages: `HomePage`, `ListingsPage`, `SubmitPage`, `CMSPage`.</li><li>Create section components for repeated page regions: `Topbar`, `Footer`, `LatestProperties`, `ContactSection`.</li><li>Create item components for repeated records: `ListingCard`, `Testimonial`, `FieldControl`.</li><li>Keep business rules in services and formatting helpers in the view package.</li><li>Use `templ.URL` for dynamic links.</li><li>Prefer escaped text output for anything users can edit.</li><li>Run `templ generate` after every `.templ` edit.</li><li>Run route tests after template changes because templates are part of the HTTP response contract.</li></ul><p>Templ is most effective when you treat it as typed HTML composition, not as a place to hide application logic.</p><h1>15. Rendering Templ From Gin</h1><p>Create a renderer interface for the pages your router needs.</p><pre><code>type Renderer interface {
+    Home(*gin.Context, []listings.Listing)
+    Listings(*gin.Context, []listings.Listing, []listings.Listing)
+    Simple(*gin.Context, string, string)
+    Submit(*gin.Context)
+    ListingDetail(*gin.Context, listings.Listing)
+}</code></pre><p>Implement it with Templ:</p><pre><code>type TemplRenderer struct{}
+func NewTemplRenderer() *TemplRenderer { return &amp;TemplRenderer{} }
+func (r *TemplRenderer) Listings(c *gin.Context, all []listings.Listing, visible</code></pre><p>[]listings.Listing) {</p><pre><code>r.render(c, ListingsPage(all, visible))
+}
+func (r *TemplRenderer) render(c *gin.Context, component templ.Component) {
+    c.Status(http.StatusOK)
+    c.Header("Content-Type", "text/html; charset=utf-8")
+    if err := component.Render(c.Request.Context(), c.Writer); err != nil {
+        c.Error(err)
+    }
+}</code></pre><p>This keeps templates out of handlers while still making render calls explicit.</p><h1>16. Building Listing Cards</h1><p>A listing card is a natural Templ component because it receives a typed listing and produces repeated HTML.</p><pre><code>templ ListingCard(row listings.Listing) {
+    &lt;article class="listing-card"&gt;
+        &lt;div class="listing-photo"&gt;
+            &lt;img class="listing-photo-img" src={ listingImageURL(row) } alt=""/&gt;
+            &lt;div class="photo-badges"&gt;
+                if row.Featured {
+                    &lt;span class="status-pill warning"&gt;featured&lt;/span&gt;
+                }
+                &lt;span class={ "status-pill " + string(row.Status) }&gt;{</code></pre><p>statusLabel(row.Status) }&lt;/span&gt;</p><pre><code>&lt;span class="status-pill warning"&gt;street sign&lt;/span&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="listing-body"&gt;
+            &lt;p class="listing-price"&gt;{ row.Price }&lt;/p&gt;
+            &lt;h3&gt;{ row.Address }&lt;/h3&gt;
+            &lt;p class="meta"&gt;{ row.City }, { row.Country }&lt;/p&gt;
+            &lt;a class="secondary-action details-button" href={ templ.URL("/listings/" +</code></pre><p>row.ID) }&gt;View details&lt;/a&gt;</p><pre><code>&lt;/div&gt;
+    &lt;/article&gt;
+}</code></pre><p>Keep helpers in Go files beside the templates:</p><pre><code>func statusLabel(status listings.Status) string {
+    return strings.ReplaceAll(string(status), "_", " ")
+}
+func listingImageURL(row listings.Listing) string {
+    if row.Photo != "" {
+        return row.Photo
+    }
+    return defaultImageForType(row.Type)
+}</code></pre><p>Use Templ for structure. Use Go helpers for formatting and small derivations.</p><h1>17. Forms In Templ</h1><p>Forms are a strong use case for server-rendered Go.</p><pre><code>templ SubmitPage() {
+    @PageShell("Submit a sign") {
+        @Topbar()
+        &lt;main&gt;
+            &lt;section class="page-heading"&gt;
+                &lt;h1&gt;Post a property sign&lt;/h1&gt;
+                &lt;p&gt;Share a sale or lease sign you saw from the street.&lt;/p&gt;
+            &lt;/section&gt;
+            &lt;form class="submission-form" method="post" action="/listings"&gt;
+                &lt;label&gt;&lt;span&gt;Address&lt;/span&gt;&lt;input name="address" required/&gt;&lt;/label&gt;
+                &lt;label&gt;&lt;span&gt;City&lt;/span&gt;&lt;input name="city" required/&gt;&lt;/label&gt;
+                &lt;label&gt;&lt;span&gt;Mode&lt;/span&gt;&lt;select name="mode"&gt;&lt;option value="sale"&gt;For</code></pre><p>sale&lt;/option&gt;&lt;option value="lease"&gt;For lease&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</p><pre><code>&lt;button class="primary-action" type="submit"&gt;Publish sighting&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/main&gt;
+    }
+}</code></pre><p>The matching handler reads form fields, calls a service, and redirects.</p><pre><code>func (s *Server) submitListing(c *gin.Context) {
+    if err := c.Request.ParseForm(); err != nil {
+        c.String(http.StatusBadRequest, err.Error())
+        return
+    }
+    if err := s.service.Submit(c.Request.Context(), formMap(c)); err != nil {
+        handleErr(c, err)
+        return
+    }
+    c.Redirect(http.StatusSeeOther, "/listings")
+}</code></pre><h1>18. CMS Page Definitions</h1><p>The CMS can generate many forms from typed page metadata.</p><pre><code>type Field struct {
+    Name        string
+    Label       string
+    Type        string
+    Placeholder string
+    Options     []string
+    Required    bool
+    RichText    bool
+}
+type Page struct {
+    Slug        string
+    Title       string
+    Eyebrow     string
+    Description string
+    SubmitLabel string
+    Fields      []Field
+}</code></pre><p>Example page definition:</p><pre><code>var Pages = []Page{
+    {
+        Slug:        "users",
+        Title:       "Users manager",
+        Eyebrow:     "Identity",
+        Description: "Create and update CMS users and member accounts.",
+        SubmitLabel: "Save user",
+        Fields: []Field{
+            {Name: "name", Label: "Name", Required: true},
+            {Name: "email", Label: "Email", Type: "email", Required: true},
+            {Name: "status", Label: "Status", Type: "select", Options: []string{"active",</code></pre><p>"invited", "suspended"}},</p><pre><code>},
+    },
+}</code></pre><p>This lets the CMS grow by adding definitions instead of route boilerplate.</p><h1>19. CMS Form Components</h1><p>A generic CMS page component can render any page definition.</p><pre><code>templ CMSPage(page cms.Page, saved bool) {
+    @Shell(page.Title) {
+        if saved {
+            &lt;p class="notice"&gt;Saved draft changes for { page.Title }.&lt;/p&gt;
+        }
+        &lt;section&gt;
+            &lt;p class="eyebrow"&gt;{ page.Eyebrow }&lt;/p&gt;
+            &lt;h1&gt;{ page.Title }&lt;/h1&gt;
+            &lt;p&gt;{ page.Description }&lt;/p&gt;
+            &lt;form method="post" action={ templ.URL("/" + page.Slug) }&gt;
+                for _, field := range pageFields(page) {
+                    @FieldControl(field)
+                }
+                &lt;button class="primary-action" type="submit"&gt;{ page.SubmitLabel }&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/section&gt;
+    }
+}</code></pre><p>Field rendering is type-based:</p><pre><code>templ FieldControl(field cms.Field) {
+    switch field.Type {
+        case "textarea":
+            @TextareaField(field)
+        case "select":
+            @SelectField(field)
+        case "checkbox":
+            &lt;label&gt;&lt;input type="checkbox" name={ field.Name } value="1"/&gt; &lt;span&gt;{</code></pre><p>field.Label }&lt;/span&gt;&lt;/label&gt;</p><pre><code>default:
+            @InputField(field)
+    }
+}</code></pre><p>This is a compact pattern for internal tools and admin systems.</p><h1>20. Middleware</h1><p>Gin middleware wraps requests. Start with logging and recovery:</p><pre><code>router := gin.New()
+router.Use(gin.Logger(), gin.Recovery())</code></pre><p>Add middleware for cross-cutting concerns:</p><pre><code>func SecurityHeaders() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Header("X-Content-Type-Options", "nosniff")
+        c.Header("X-Frame-Options", "DENY")
+        c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+        c.Next()
+    }
+}</code></pre><p>For CMS routes, middleware should eventually enforce sessions, CSRF protection, and permissions.</p><p>cmsGroup := router.Group("/")</p><p>cmsGroup.Use(RequireSession(), RequireCSRF())</p><p>Middleware should be boring and focused. It should not hide route-specific business rules.</p><h1>21. Testing Routes</h1><p>Use `httptest` to verify status codes, redirects, and response bodies.</p><pre><code>func TestFrontendRouteParity(t *testing.T) {
+    router := NewRouter(cfg, service, web.NewTemplRenderer())
+    assertStatus(t, router, http.MethodGet, "/", "", http.StatusOK)
+    assertStatus(t, router, http.MethodGet, "/listings?q=maple", "", http.StatusOK)
+    assertStatus(t, router, http.MethodGet, "/listings/missing", "", http.StatusNotFound)
+    assertStatus(t, router, http.MethodPost, "/contact", "name=&amp;email=&amp;message=", 
+http.StatusBadRequest)
+}</code></pre><p>Helper:</p><p>func assertStatus(t *testing.T, router http.Handler, method, target, body string, want int) </p><p>*httptest.ResponseRecorder {</p><pre><code>t.Helper()
+    req := httptest.NewRequest(method, target, strings.NewReader(body))
+    if body != "" {
+        req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+    }
+    res := httptest.NewRecorder()
+    router.ServeHTTP(res, req)
+    if res.Code != want {
+        t.Fatalf("%s %s status = %d, want %d", method, target, res.Code, want)
+    }
+    return res
+}</code></pre><p>Tests should lock down behavior before refactors. That is especially important in server-rendered apps where redirects and form status codes are part of the user experience.</p><h1>22. Templ Generation Workflow</h1><p>After editing `.templ` files, run:</p><p>templ generate</p><p>Then run tests:</p><p>GOCACHE=$PWD/.cache/go-build go test ./...</p><p>If the CLI warns that it is older than the module version, reinstall it:</p><p>go install github.com/a-h/templ/cmd/templ@latest</p><p>Generated files are required for normal Go builds. You can commit them or generate them in CI. For small teams and simple deployments, committing generated files is often the least surprising option.</p><h1>23. Static Assets And CSS</h1><p>Serve public assets directly from Gin:</p><pre><code>router.Static("/assets", filepath.Join(s.cfg.PublicDir, "assets"))
+router.GET("/styles.css", s.staticFile("styles.css", "text/css; charset=utf-8"))</code></pre><p>A helper can serve individual files with explicit content types:</p><pre><code>func (s *Server) staticFile(name string, contentType string) gin.HandlerFunc {
+    path := filepath.Join(s.cfg.PublicDir, name)
+    return func(c *gin.Context) {
+        c.Header("Content-Type", contentType)
+        c.File(path)
+    }
+}</code></pre><p>For production, add cache headers for fingerprinted assets. For local development, clarity matters more than aggressive caching.</p><h1>24. Database Strategy</h1><p>The current project keeps a centralized database package beside the apps. Local development uses SQLite, while the environment model leaves room for PostgreSQL or MySQL.</p><p>DATABASE_PROVIDER=sqlite</p><p>DATABASE_PATH=../database/data/myapp.sqlite</p><p>Production examples:</p><p>DATABASE_PROVIDER=postgres</p><p>DATABASE_URL=postgres://user:password@localhost/myapp</p><p>DATABASE_PROVIDER=mysql</p><p>DATABASE_URL=mysql://user:password@localhost/myapp</p><p>When implementing a Go SQL repository, create one database pool at startup:</p><p>db, err := sql.Open("postgres", cfg.DatabaseURL)</p><p>if err != nil {</p><pre><code>return err
+}</code></pre><p>db.SetMaxOpenConns(25)</p><p>db.SetMaxIdleConns(25)</p><p>db.SetConnMaxLifetime(5 * time.Minute)</p><p>Pass `context.Context` into every query. Never open a new database connection for each request.</p><h1>25. Production Build</h1><p>Build the frontend:</p><p>cd frontend</p><p>templ generate</p><p>go test ./...</p><p>go build -o bin/myapp-frontend ./cmd/server</p><p>Build the CMS:</p><p>cd cms</p><p>templ generate</p><p>go test ./...</p><p>go build -o bin/myapp-cms ./cmd/server</p><p>A production Dockerfile should generate Templ files during the builder stage:</p><p>FROM golang:1.25-bookworm AS builder</p><p>WORKDIR /app</p><p>RUN go install github.com/a-h/templ/cmd/templ@latest</p><p>COPY go.mod go.sum ./</p><p>RUN go mod download</p><p>COPY . .</p><pre><code>RUN templ generate
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/app</code></pre><p>./cmd/server</p><p>FROM gcr.io/distroless/static-debian12:nonroot</p><p>WORKDIR /app</p><p>COPY --from=builder /out/app /app/app</p><p>COPY --from=builder /app/public /app/public</p><p>EXPOSE 5173</p><p>USER nonroot:nonroot</p><p>ENTRYPOINT ["/app/app"]</p><p>Distroless is a good default for static Go binaries because it is smaller than a full Linux image but less bare than `scratch`.</p><h1>26. Production Hardening Checklist</h1><p>Before deployment, add or verify:</p><ul><li>structured logs with request IDs.</li><li>panic recovery and error logging.</li><li>security headers.</li><li>trusted proxy settings.</li><li>HTTPS at the proxy or load balancer.</li><li>CMS authentication.</li><li>CSRF protection for forms.</li><li>rate limits for login, contact, and submit endpoints.</li><li>database connection pooling.</li><li>migrations and seed workflow.</li><li>asset caching.</li><li>health checks.</li><li>graceful shutdown.</li></ul><p>A graceful shutdown entrypoint uses `http.Server` directly:</p><p>srv := &amp;http.Server{Addr: ":" + cfg.Port, Handler: router}</p><p>go func() {</p><pre><code>if err := srv.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed {
+        log.Fatal(err)
+    }
+}()
+ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)</code></pre><p>defer cancel()</p><p>_ = srv.Shutdown(ctx)</p><h1>27. Common Mistakes</h1><p>Avoid these early mistakes:</p><ul><li>putting all logic in `main.go`.</li><li>letting handlers become business services.</li><li>building HTML with string concatenation.</li><li>skipping `templ generate` before tests.</li><li>ignoring `context.Context` in repository methods.</li><li>using `302` for every form redirect instead of intentional `303` behavior.</li><li>opening database connections per request.</li><li>hiding dependencies in global variables.</li><li>skipping route tests because pages render in a browser.</li></ul><p>The stack rewards explicitness. Keep the boring boundaries intact.</p><h1>28. Suggested Learning Path</h1><p>Work through the stack in this order:</p><ol><li>Create a Gin router with one static page.</li><li>Add a Templ layout and render it from Gin.</li><li>Add a typed model and a service method.</li><li>Add a listing page with a looped Templ component.</li><li>Add a form page and a POST handler.</li><li>Add redirects and validation errors.</li><li>Add `httptest` route tests.</li><li>Add middleware.</li><li>Add persistence behind a repository interface.</li><li>Add production configuration and build scripts.</li></ol><p>This order keeps each concept small enough to understand while still moving toward a real application.</p><h1>29. Final Architecture Summary</h1><p>A solid Go, Gin, and Templ application has clear boundaries:</p><ul><li>Gin owns HTTP.</li><li>handlers translate requests and responses.</li><li>services own use cases.</li><li>repositories own persistence.</li><li>Templ owns HTML.</li><li>config owns environment.</li><li>tests own behavior verification.</li><li>`cmd/server` owns assembly.</li></ul><p>openlist.ing follows that shape. The result is a server-rendered application that is easy to run locally, easy to test, easy to compile, and ready for production hardening.</p>
+</div>
+</body>
+</html>
