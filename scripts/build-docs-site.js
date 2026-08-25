@@ -79,24 +79,27 @@ function decodeEntities(s) {
 }
 
 function formatCodeBlocks(html) {
-  return html.replace(/<table>[\s\S]*?<\/table>/gi, (table) => {
-    // Heuristic: a "code box" is a table with exactly one column and content
-    // that contains line breaks (multi-line code) or Go/HTML code tokens.
-    const cellCount = (table.match(/<t[dh]\b/gi) || []).length;
-    const looksLikeCode =
-      /<br\s*\/?>/i.test(table) &&
-      /(func |package |import |:=|fmt\.|<-|templ |go\.mod|SELECT |INSERT |type \w+ struct|router\.|c\.\w+\(|DATABASE_URL)/i.test(table);
-    // Only convert single-column code boxes; leave real data tables alone.
-    if (cellCount <= 2 && looksLikeCode) {
-      const code = decodeEntities(table).replace(/\n{3,}/g, "\n\n").trim();
-      const escaped = code
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-      return `<pre><code>${escaped}</code></pre>`;
-    }
-    return table; // genuine data table — keep as-is
-  });
+  return html
+    // Drop empty tables Word leaves behind.
+    .replace(/<table>\s*<\/table>/gi, "")
+    .replace(/<table>[\s\S]*?<\/table>/gi, (table) => {
+      const cellCount = (table.match(/<t[dh]\b/gi) || []).length;
+      const inner = stripTags(table).trim();
+      if (inner === "") return "";
+      const multiline = /<br\s*\/?>/i.test(table) || /<\/p>\s*<p>/i.test(table);
+      // Strong code signal — Go/SQL/templ statements, calls, or shell commands.
+      const codeTokens = /(func\b|package \w|import\b|:=|fmt\.|gin\.|router\.|c\.\w+\(|templ\.|http\.\w|log\.\w|json\.\w|strings\.\w|filepath\.\w|os\.\w|<-|\breturn\b|\bvar \w|\bconst \w|type \w+ (struct|interface)|=\s*&?\w+\{|\)\.\w+\(|\bnil\b|\[\]byte|SELECT |INSERT |UPDATE |DELETE |^\s*(curl|go|npm|npx|air|templ|make|export) )/im.test(inner);
+      // Single-column table (1 header/data cell) that looks like code.
+      if (cellCount <= 2 && (multiline || codeTokens)) {
+        const code = decodeEntities(table).replace(/\n{3,}/g, "\n\n").trim();
+        const escaped = code
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        return `<pre><code>${escaped}</code></pre>`;
+      }
+      return table; // genuine data table — keep as-is
+    });
 }
 
 // Some docs store code as a RUN of consecutive <p> lines (one <p> per line),
@@ -112,7 +115,12 @@ function stripTags(s) {
 function isCodeLine(text) {
   const t = text.trim();
   if (t === "") return false;
-  if (/^\s{2,}\S/.test(text)) return true;                 // indented
+  // Reject prose that merely MENTIONS code: a quoted identifier followed by a
+  // description dash ("strings.Split" - Splits a string), or bullet/definition
+  // lines, or a natural sentence ending in punctuation.
+  if (/["'`][^"'`]+["'`]\s*[-–—]\s/.test(t)) return false;
+  if (/^[-*•]\s/.test(t) && !/[{};]/.test(t)) return false;
+  if (/^\s{2,}\S/.test(text)) return true;                 // indented → code
   // Standalone structural lines (closing braces/parens, opening a block).
   if (/^[\})\];]+[,;]?$/.test(t)) return true;
   if (/^(\{|\(|\[)$/.test(t)) return true;
@@ -120,10 +128,9 @@ function isCodeLine(text) {
   if (/^[A-Z][A-Z0-9_]*=/.test(t)) return true;
   // Shell commands.
   if (/^(curl|go|npm|npx|air|templ|make|cd|export|git|docker|sqlite3|psql|mysql)\b/.test(t)) return true;
-  // Go / templ / SQL code tokens.
-  if (/(func |package |import |:=|fmt\.|gin\.|router\.|c\.\w+\(|templ\.|http\.\w|log\.\w|<-|return |var \w+ |const \w+ |type \w+ (struct|interface)|=\s*&?\w+\{|\}\s*\{|SELECT |INSERT |UPDATE |DELETE )/.test(t)) {
-    // …but not a prose sentence that merely mentions a token: prose ends in a
-    // period/colon and contains several spaces of ordinary words.
+  // Go / templ / SQL code statements.
+  if (/(func |package |import |:=|fmt\.|gin\.|router\.|c\.\w+\(|templ\.|http\.\w|log\.\w|json\.\w|<-|return |var \w+ |const \w+ |type \w+ (struct|interface)|=\s*&?\w+\{|\}\s*\{|SELECT |INSERT |UPDATE |DELETE )/.test(t)) {
+    // …but not a prose sentence that merely mentions a token.
     const looksProse = /[.:]$/.test(t) && t.split(" ").length > 8 && !/[{};=]/.test(t);
     return !looksProse;
   }
@@ -177,9 +184,6 @@ function scrub(html) {
   return html
     // Real project/db name -> generic
     .replace(/openlisting/gi, "myapp")
-    // Personal name used in code samples -> neutral sample name
-    .replace(/Ginad@example\.com/gi, "sam@example.com")
-    .replace(/\bGinad\b/g, "Alex")
     // Any DSN with embedded credentials -> obvious placeholder
     .replace(/([a-z]+):\/\/[^:@\/\s"<]+:[^@\/\s"<]+@[^\/\s"<]+/gi, "$1://user:password@localhost")
     .replace(/[a-z0-9_]+:[^@\s"<]+@tcp\([^)]+\)/gi, "user:password@tcp(localhost:3306)")

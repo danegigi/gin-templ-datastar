@@ -42,13 +42,28 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 </nav>
 <div class="container">
 <h1 class="page-title">Go Basics</h1>
-<h2><a id="_8x57017dn20f"></a>Go Language Documentation</h2><p>Modern Go development is module-first. You normally create a project folder anywhere, run `go mod init`, and let the Go tool manage dependencies through `go.mod` and `go.sum`.<br /><br />* Use modules, not GOPATH/src, for almost every new project.<br />* Use <strong>go</strong> install <strong>package</strong>@version to install command-line tools.<br />* Use <strong>go</strong> get only to add, upgrade, or downgrade module dependencies.<br />* Use <strong>go</strong> work for local multi-module development; do not treat it as a production dependency manager.</p><h2><a id="_ydrifyxq9yhe"></a><strong>1. Installation and Environment</strong></h2><p>Install Go from the official Go downloads page or a trusted package manager. After installation, verify the version and environment variables:<br /><br /></p><table><thead><tr><th><p><strong>go</strong> version<br /><strong>go</strong> env GOROOT GOPATH GOMOD GOWORK</p></th></tr></thead></table><p>Modern projects do not need to live under GOPATH. GOPATH is still used for the module cache and binaries installed by go install, but your source code can be anywhere. Ensure your binary path is exported:</p><table><thead><tr><th><p>export PATH="$PATH:$(go env GOPATH)/bin"</p></th></tr></thead></table><h3>Useful Environment Commands:</h3><table><thead><tr><th><p><strong>go</strong> env # Print Go environment<br /><strong>go</strong> env -w GOPRIVATE=github.com/your-org/ # Private modules configurations<br /><strong>go</strong> env -w GOTOOLCHAIN=auto # Allow automatic toolchain selection</p></th></tr></thead></table><h2>2. Project Setup With Modules</h2><h3>Creating a New App</h3><table><thead><tr><th><p>mkdir hello-<strong>go</strong><br />cd hello-<strong>go</strong><br /><strong>go</strong> mod init github.com/danegigi/SampleGo</p></th></tr></thead></table><p>Create main.go file:</p><pre><code>package main
+<h2><a id="_8x57017dn20f"></a>Go Language Documentation</h2><p>Modern Go development is module-first. You normally create a project folder anywhere, run `go mod init`, and let the Go tool manage dependencies through `go.mod` and `go.sum`.<br /><br />* Use modules, not GOPATH/src, for almost every new project.<br />* Use <strong>go</strong> install <strong>package</strong>@version to install command-line tools.<br />* Use <strong>go</strong> get only to add, upgrade, or downgrade module dependencies.<br />* Use <strong>go</strong> work for local multi-module development; do not treat it as a production dependency manager.</p><h2><a id="_ydrifyxq9yhe"></a><strong>1. Installation and Environment</strong></h2><p>Install Go from the official Go downloads page or a trusted package manager. After installation, verify the version and environment variables:<br /><br /></p><pre><code>go version
+go env GOROOT GOPATH GOMOD GOWORK</code></pre><p>Modern projects do not need to live under GOPATH. GOPATH is still used for the module cache and binaries installed by go install, but your source code can be anywhere. Ensure your binary path is exported:</p><pre><code>export PATH="$PATH:$(go env GOPATH)/bin"</code></pre><h3>Useful Environment Commands:</h3><pre><code>go env # Print Go environment
+go env -w GOPRIVATE=github.com/your-org/ # Private modules configurations
+go env -w GOTOOLCHAIN=auto # Allow automatic toolchain selection</code></pre><h2>2. Project Setup With Modules</h2><h3>Creating a New App</h3><pre><code>mkdir hello-go
+cd hello-go
+go mod init github.com/danegigi/SampleGo</code></pre><p>Create main.go file:</p><pre><code>package main
 
 import "fmt"
 
 func main() {
     fmt.Println("Hello, Go")
-}</code></pre><p>Run your code directly using:</p><table><thead><tr><th><p><strong>go</strong> run .</p></th></tr></thead></table><h3>go.mod Essentials</h3><p>The go.mod file tracks required language specifications and toolchains:</p><table><thead><tr><th><p>module github.com/danegigi/SampleGo<br /><strong>go</strong> 1.26.5<br /><br />require github.com/google/uuid v1.6.0</p></th></tr></thead></table><h3>Common Module Commands</h3><table><thead><tr><th><p>Command</p></th><th><p>Description</p></th></tr><tr><th><p>go mod init example.com/app</p></th><th><p>Create a new go.mod file</p></th></tr><tr><th><p>go mod tidy</p></th><th><p>Add missing and remove unused dependencies</p></th></tr><tr><th><p>go get example.com/mod@v1.2.3</p></th><th><p>Change or update a dependency version</p></th></tr><tr><th><p>go list -m all</p></th><th><p>List selected module versions</p></th></tr><tr><th><p>go mod graph</p></th><th><p>View the module dependency graph</p></th></tr><tr><th><p>go mod why -m example.com/mod</p></th><th><p>Explain why a module is required</p></th></tr><tr><th><p>go mod download</p></th><th><p>Pre-download dependencies to the local cache</p></th></tr><tr><th><p>go mod vendor</p></th><th><p>Create a vendor/ directory for a single module</p></th></tr></thead></table><h3>Installing CLI Tools</h3><p>Install tools with go install and an explicit version to keep tool installation decoupled from project dependencies:</p><table><thead><tr><th><p><strong>go</strong> install golang.org/x/tools/cmd/godoc@latest<br /><strong>go</strong> install golang.org/x/vuln/cmd/govulncheck@latest</p></th></tr></thead></table><p><br /></p><h2>3. Workspaces (go work)</h2><p>A workspace lets you work on multiple local modules simultaneously without manually managing replace directives.</p><table><thead><tr><th><p>mkdir platform &amp;&amp; cd platform<br />git clone git@example.com:company/api.git<br />git clone git@example.com:company/shared.git</p></th></tr></thead></table><p><br />Initialize workspace with directories<br /></p><table><thead><tr><th><p><strong>go</strong> work init ./api ./shared<br /><strong>go</strong> work use ./another-module<br /><strong>go</strong> work sync<br /><strong>go</strong> env GOWORK</p></th></tr></thead></table><p><br /></p><p><em>Production builds should be verified independently from each module without relying on go.work.</em></p><table><thead><tr><th><p>GOWORK=off <strong>go</strong> test ./...</p></th></tr></thead></table><p>Workspace vendoring is natively supported:</p><table><thead><tr><th><p><strong>go</strong> work vendor<br /><strong>go</strong> test -mod=vendor ./...</p></th></tr></thead></table><h2>4. Packages, Imports, and Visibility</h2><p>The first statement in every Go file is the package declaration.</p><p>Files in the same folder must use the same package name.</p><p>Executable programs use package main and define func main().</p><pre><code>package main
+}</code></pre><p>Run your code directly using:</p><pre><code>go run .</code></pre><h3>go.mod Essentials</h3><p>The go.mod file tracks required language specifications and toolchains:</p><pre><code>module github.com/danegigi/SampleGo
+go 1.26.5
+
+require github.com/google/uuid v1.6.0</code></pre><h3>Common Module Commands</h3><table><thead><tr><th><p>Command</p></th><th><p>Description</p></th></tr><tr><th><p>go mod init example.com/app</p></th><th><p>Create a new go.mod file</p></th></tr><tr><th><p>go mod tidy</p></th><th><p>Add missing and remove unused dependencies</p></th></tr><tr><th><p>go get example.com/mod@v1.2.3</p></th><th><p>Change or update a dependency version</p></th></tr><tr><th><p>go list -m all</p></th><th><p>List selected module versions</p></th></tr><tr><th><p>go mod graph</p></th><th><p>View the module dependency graph</p></th></tr><tr><th><p>go mod why -m example.com/mod</p></th><th><p>Explain why a module is required</p></th></tr><tr><th><p>go mod download</p></th><th><p>Pre-download dependencies to the local cache</p></th></tr><tr><th><p>go mod vendor</p></th><th><p>Create a vendor/ directory for a single module</p></th></tr></thead></table><h3>Installing CLI Tools</h3><p>Install tools with go install and an explicit version to keep tool installation decoupled from project dependencies:</p><pre><code>go install golang.org/x/tools/cmd/godoc@latest
+go install golang.org/x/vuln/cmd/govulncheck@latest</code></pre><p><br /></p><h2>3. Workspaces (go work)</h2><p>A workspace lets you work on multiple local modules simultaneously without manually managing replace directives.</p><pre><code>mkdir platform &amp;&amp; cd platform
+git clone git@example.com:company/api.git
+git clone git@example.com:company/shared.git</code></pre><p><br />Initialize workspace with directories<br /></p><pre><code>go work init ./api ./shared
+go work use ./another-module
+go work sync
+go env GOWORK</code></pre><p><br /></p><p><em>Production builds should be verified independently from each module without relying on go.work.</em></p><table><thead><tr><th><p>GOWORK=off <strong>go</strong> test ./...</p></th></tr></thead></table><p>Workspace vendoring is natively supported:</p><pre><code>go work vendor
+go test -mod=vendor ./...</code></pre><h2>4. Packages, Imports, and Visibility</h2><p>The first statement in every Go file is the package declaration.</p><p>Files in the same folder must use the same package name.</p><p>Executable programs use package main and define func main().</p><pre><code>package main
 
 import (
     "fmt"
@@ -58,7 +73,7 @@ import (
 func main() {
     fmt.Println(mathx.Add(2, 3))
 }</code></pre><p><strong>Exported</strong>: Start with an uppercase letter (User, NewServer).</p><p><strong>Unexported</strong>: Start with a lowercase letter (user, newServer).</p><p><strong>internal/ packages</strong> can only be imported by code inside that specific parent directory tree.</p><h2>5. Variables, Constants, and Types</h2><pre><code>var count int
-var name string = "Alex"
+var name string = "Ginad"
 var enabled = true
 score := 42 // Valid only inside functions
 
@@ -176,7 +191,7 @@ var validationErr *ValidationError
 if errors.As(err, &amp;validationErr) {
 	fmt.Println("Field:", validationErr.Field)
 	fmt.Println("Message:", validationErr.Msg)
-}</code></pre><p><br />Note:</p><p>errors.Is - Compare against a known error value</p><p>errors.As - Find/extract an error of a particular type</p><p>Use panic only for programmer blunders or unrecoverable system initialization errors—never basic bad data or user inputs.</p><h2>8. Data Structures and Mutation</h2><h3>Slices</h3><pre><code>names := []string{"Dane", "Alex", "Gigi"}
+}</code></pre><p><br />Note:</p><p>errors.Is - Compare against a known error value</p><p>errors.As - Find/extract an error of a particular type</p><p>Use panic only for programmer blunders or unrecoverable system initialization errors—never basic bad data or user inputs.</p><h2>8. Data Structures and Mutation</h2><h3>Slices</h3><pre><code>names := []string{"Dane", "Ginad", "Gigi"}
 names = append(names, "Gane")
 
 // Delete an element at index 1
@@ -187,12 +202,30 @@ copyOfNames := append([]string(nil), names...)</code></pre><h3>Maps</h3><pre><co
 counts["b"] = 2
 
 value, ok := counts["a"]
-delete(counts, "b")</code></pre><h3>Pointers</h3><p>Slices, maps, and channels are reference-like types; structs and arrays are passed by value (copied). Use pointers for value mutation and memory footprint reduction:</p><table></table><pre><code>func increment(n *int) {
+delete(counts, "b")</code></pre><h3>Pointers</h3><p>Slices, maps, and channels are reference-like types; structs and arrays are passed by value (copied). Use pointers for value mutation and memory footprint reduction:</p><pre><code>func increment(n *int) {
     *n++
 }
 
 x := 1
-increment(&amp;x) // x is now 2</code></pre><h2>9. Structs, Methods, and Interfaces</h2><table><thead><tr><th><p><strong>type</strong> User <strong>struct</strong> {<br />    ID        <strong>int64</strong>     `json:"id" db:"id"`<br />    Name      <strong>string</strong>    `json:"name" db:"name"`<br />    CreatedAt time.Time `json:"created_at" db:"created_at"`<br />}<br /><br />// Value receiver (Read-only)<br /><strong>func</strong> (u User) <strong>DisplayName</strong>() <strong>string</strong> {<br />    <strong>return</strong> u.Name<br />}<br /><br />// Pointer receiver (Mutation)<br /><strong>func</strong> (u *User) <strong>Rename</strong>(name <strong>string</strong>) {<br />    u.Name = name<br />}<br /><br /><strong>type</strong> Store <strong>interface</strong> {<br />    FindUser(ctx context.Context, id <strong>int64</strong>) (User, error)<br />}</p></th></tr></thead></table><p>Interfaces are satisfied implicitly. Keep your interfaces small and target them closely to consumer spaces.</p><h2>10. Generics</h2><p>Generics parameterize functions and structures across a defined set of compatible types.</p><pre><code>type Number interface {
+increment(&amp;x) // x is now 2</code></pre><h2>9. Structs, Methods, and Interfaces</h2><pre><code>type User struct {
+    ID        int64     `json:"id" db:"id"`
+    Name      string    `json:"name" db:"name"`
+    CreatedAt time.Time `json:"created_at" db:"created_at"`
+}
+
+// Value receiver (Read-only)
+func (u User) DisplayName() string {
+    return u.Name
+}
+
+// Pointer receiver (Mutation)
+func (u *User) Rename(name string) {
+    u.Name = name
+}
+
+type Store interface {
+    FindUser(ctx context.Context, id int64) (User, error)
+}</code></pre><p>Interfaces are satisfied implicitly. Keep your interfaces small and target them closely to consumer spaces.</p><h2>10. Generics</h2><p>Generics parameterize functions and structures across a defined set of compatible types.</p><pre><code>type Number interface {
     ~int | ~int64 | ~float64
 }
 
@@ -343,12 +376,21 @@ func main() {
 	} else {
 		fmt.Println("All fetches resolved nicely!")
 	}
-}</code></pre><h2>12. Testing, Fuzzing, and Security</h2><p>Execute testing runs using standard flags:</p><table><thead><tr><th><p><strong>go</strong> test ./...<br /><strong>go</strong> test -race ./...                  # Dynamic race checking<br /><strong>go</strong> test -coverprofile=coverage.out   # Run code coverage metrics<br /><strong>go</strong> tool cover -html=coverage.out     # Open visual <strong>interface</strong> breakdown<br /></p></th></tr></thead></table><h3>Unit Testing</h3><pre><code>func TestSum(t *testing.T) {
+}</code></pre><h2>12. Testing, Fuzzing, and Security</h2><p>Execute testing runs using standard flags:</p><pre><code>go test ./...
+go test -race ./...                  # Dynamic race checking
+go test -coverprofile=coverage.out   # Run code coverage metrics
+go tool cover -html=coverage.out     # Open visual interface breakdown</code></pre><h3>Unit Testing</h3><pre><code>func TestSum(t *testing.T) {
     got := Sum([]int{1, 2, 3})
     if got != 6 {
         t.Fatalf("expected 6, got %d", got)
     }
-}</code></pre><h3>Fuzz Testing</h3><table><thead><tr><th><p><strong>func</strong> <strong>FuzzParseID</strong>(f *testing.F) {<br />    f.Add("123")<br />    f.Fuzz(<strong>func</strong>(t *testing.T, input <strong>string</strong>) {<br />        strconv.ParseInt(input, 10, 64)<br />    })<br />}</p></th></tr></thead></table><p><br /></p><p>Run fuzzing evaluations explicitly:</p><table><thead><tr><th><p><strong>go</strong> test -fuzz=FuzzParseID ./...</p></th></tr></thead></table><h3>Security Profiling</h3><p>Utilize tools to automatically track vulnerability mappings against dependency databases:</p><table><thead><tr><th><p><strong>go</strong> install golang.org/x/vuln/cmd/govulncheck@latest<br />govulncheck ./...<br /></p></th></tr></thead></table><h2>13. Modern System Standard Utilities</h2><h3>File Operations (ioutil modern replacements)</h3><pre><code>data, err := os.ReadFile("input.txt")
+}</code></pre><h3>Fuzz Testing</h3><pre><code>func FuzzParseID(f *testing.F) {
+    f.Add("123")
+    f.Fuzz(func(t *testing.T, input string) {
+        strconv.ParseInt(input, 10, 64)
+    })
+}</code></pre><p><br /></p><p>Run fuzzing evaluations explicitly:</p><pre><code>go test -fuzz=FuzzParseID ./...</code></pre><h3>Security Profiling</h3><p>Utilize tools to automatically track vulnerability mappings against dependency databases:</p><pre><code>go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...</code></pre><h2>13. Modern System Standard Utilities</h2><h3>File Operations (ioutil modern replacements)</h3><pre><code>data, err := os.ReadFile("input.txt")
 if err != nil { return err }
 
 err = os.WriteFile("output.txt", data, 00644)
@@ -392,7 +434,31 @@ if err != nil { return err }
 
 resp, err := client.Do(req)
 if err != nil { return err }
-defer resp.Body.Close()</code></pre><h2>15. Structural Production Layout &amp; Deployment</h2><p>Recommended production blueprint architectures for microservice layouts:</p><table><thead><tr><th><p>myapp/<br />├── cmd/<br />│   └── api/<br />│       └── main.<strong>go</strong><br />├── internal/<br />│   ├── config/<br />│   ├── http/<br />│   ├── service/<br />│   └── store/<br />├── pkg/<br />│   └── optional-public-library/<br />├── <strong>go</strong>.mod<br />└── <strong>go</strong>.sum<br /></p></th></tr></thead></table><h3>Minimal Distroless Dockerfile Production Template</h3><table><thead><tr><th><p>FROM golang:1.26 AS build<br />WORKDIR /src<br />COPY <strong>go</strong>.mod <strong>go</strong>.sum ./<br />RUN <strong>go</strong> mod download<br />COPY . .<br />RUN CGO_ENABLED=0 GOOS=linux <strong>go</strong> build -trimpath -ldflags="-s -w" -o /out/app ./cmd/api<br /><br />FROM gcr.io/distroless/static-debian12<br />COPY --from=build /out/app /app<br />USER nonroot:nonroot<br />ENTRYPOINT ["/app"]<br /></p></th></tr></thead></table><h2>16. Build Tags</h2><p>Build tags constrain compilation targets based on environment conditions, operational requirements, or cross-compilation platforms.</p><table><thead><tr><th><p>//go:build linux<br /><strong>package</strong> platform<br /><strong>func</strong> <strong>Name</strong>() <strong>string</strong> { <strong>return</strong> "linux" }</p></th></tr></thead></table><p>Filename suffixes such as _linux.<strong>go</strong>, _windows.<strong>go</strong>, _amd64.<strong>go</strong>, and _arm64.<strong>go</strong> are also automatically resolved by the Go compiler toolchain to filter platform-specific compilation units.</p><h2>17. Practical Cheat Sheet</h2><table><thead><tr><th><p>Task</p></th><th><p>Command</p></th></tr><tr><th><p>Create module</p></th><th><p>go mod init example.com/app</p></th></tr><tr><th><p>Run app</p></th><th><p>go run .</p></th></tr><tr><th><p>Build</p></th><th><p>go build ./...</p></th></tr><tr><th><p>Test all</p></th><th><p>go test ./...</p></th></tr><tr><th><p>Race detector</p></th><th><p>go test -race ./...</p></th></tr><tr><th><p>Format</p></th><th><p>go fmt ./...</p></th></tr><tr><th><p>Vet</p></th><th><p>go vet ./...</p></th></tr><tr><th><p>Add dependency</p></th><th><p>go get module@version</p></th></tr><tr><th><p>Clean dependencies</p></th><th><p>go mod tidy</p></th></tr><tr><th><p>Install CLI</p></th><th><p>go install module/cmd/tool@version</p></th></tr><tr><th><p>Workspace init</p></th><th><p>go work init ./module-a ./module-b</p></th></tr><tr><th><p>Disable workspace</p></th><th><p>GOWORK=off go test ./...</p></th></tr></thead></table>
+defer resp.Body.Close()</code></pre><h2>15. Structural Production Layout &amp; Deployment</h2><p>Recommended production blueprint architectures for microservice layouts:</p><pre><code>myapp/
+├── cmd/
+│   └── api/
+│       └── main.go
+├── internal/
+│   ├── config/
+│   ├── http/
+│   ├── service/
+│   └── store/
+├── pkg/
+│   └── optional-public-library/
+├── go.mod
+└── go.sum</code></pre><h3>Minimal Distroless Dockerfile Production Template</h3><pre><code>FROM golang:1.26 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/api
+
+FROM gcr.io/distroless/static-debian12
+COPY --from=build /out/app /app
+USER nonroot:nonroot
+ENTRYPOINT ["/app"]</code></pre><h2>16. Build Tags</h2><p>Build tags constrain compilation targets based on environment conditions, operational requirements, or cross-compilation platforms.</p><pre><code>//go:build linux
+package platform
+func Name() string { return "linux" }</code></pre><p>Filename suffixes such as _linux.<strong>go</strong>, _windows.<strong>go</strong>, _amd64.<strong>go</strong>, and _arm64.<strong>go</strong> are also automatically resolved by the Go compiler toolchain to filter platform-specific compilation units.</p><h2>17. Practical Cheat Sheet</h2><table><thead><tr><th><p>Task</p></th><th><p>Command</p></th></tr><tr><th><p>Create module</p></th><th><p>go mod init example.com/app</p></th></tr><tr><th><p>Run app</p></th><th><p>go run .</p></th></tr><tr><th><p>Build</p></th><th><p>go build ./...</p></th></tr><tr><th><p>Test all</p></th><th><p>go test ./...</p></th></tr><tr><th><p>Race detector</p></th><th><p>go test -race ./...</p></th></tr><tr><th><p>Format</p></th><th><p>go fmt ./...</p></th></tr><tr><th><p>Vet</p></th><th><p>go vet ./...</p></th></tr><tr><th><p>Add dependency</p></th><th><p>go get module@version</p></th></tr><tr><th><p>Clean dependencies</p></th><th><p>go mod tidy</p></th></tr><tr><th><p>Install CLI</p></th><th><p>go install module/cmd/tool@version</p></th></tr><tr><th><p>Workspace init</p></th><th><p>go work init ./module-a ./module-b</p></th></tr><tr><th><p>Disable workspace</p></th><th><p>GOWORK=off go test ./...</p></th></tr></thead></table>
 </div>
 </body>
 </html>

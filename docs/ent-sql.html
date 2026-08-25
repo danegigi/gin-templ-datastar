@@ -42,22 +42,74 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 </nav>
 <div class="container">
 <h1 class="page-title">Ent & SQL</h1>
-<h2>Ent Tutorial (Basic → Intermedia)</h2><h2><br />1. Introduction</h2><p>Ent is a code-first ORM for Go. You define schemas in Go and Ent generates a type-safe API.</p><table><thead><tr><th><p>Schema<br />  ↓<br />go generate ./ent<br />  ↓<br />Generated Client<br />  ↓<br />CRUD<br />  ↓<br />SQL</p></th></tr></thead></table><p><a href="https://entgo.io/docs/getting-started/">https://entgo.io/docs/getting-started/</a></p><p><a href="https://github.com/ent/ent/tree/master/examples/start">https://github.com/ent/ent/tree/master/examples/start</a></p><h2>2. Database Connection</h2><h2>SQLite</h2><table><thead><tr><th><p>client, <strong>err</strong> := ent.<strong>Open</strong>("sqlite3", "file:ent.db?_fk=1")</p></th></tr></thead></table><p>No SQL equivalent exists because connections are handled by the driver.</p><p>Run development migration:</p><table><thead><tr><th><p><strong>client</strong>.Schema.Create(<strong>ctx</strong>)</p></th></tr></thead></table><p><a href="https://entgo.io/docs/dialects">https://entgo.io/docs/dialects</a></p><p><a href="https://entgo.io/docs/sql-integration">https://entgo.io/docs/sql-integration</a></p><h2>3. Schema Definition</h2><p>A schema defines an entity.</p><pre><code>type User struct {
+<h2>Ent Tutorial (Basic → Intermedia)</h2><h2><br />1. Introduction</h2><p>Ent is a code-first ORM for Go. You define schemas in Go and Ent generates a type-safe API.</p><pre><code>Schema
+  ↓
+go generate ./ent
+  ↓
+Generated Client
+  ↓
+CRUD
+  ↓
+SQL</code></pre><p><a href="https://entgo.io/docs/getting-started/">https://entgo.io/docs/getting-started/</a></p><p><a href="https://github.com/ent/ent/tree/master/examples/start">https://github.com/ent/ent/tree/master/examples/start</a></p><h2>2. Database Connection</h2><h2>SQLite</h2><pre><code>client, err := ent.Open("sqlite3", "file:ent.db?_fk=1")</code></pre><p>No SQL equivalent exists because connections are handled by the driver.</p><p>Run development migration:</p><table><thead><tr><th><p><strong>client</strong>.Schema.Create(<strong>ctx</strong>)</p></th></tr></thead></table><p><a href="https://entgo.io/docs/dialects">https://entgo.io/docs/dialects</a></p><p><a href="https://entgo.io/docs/sql-integration">https://entgo.io/docs/sql-integration</a></p><h2>3. Schema Definition</h2><p>A schema defines an entity.</p><pre><code>type User struct {
     ent.Schema
-}</code></pre><p>A schema contains:</p><ul><li>Fields</li><li>Edges</li><li>Indexes</li><li>Mixins</li><li>Annotations</li></ul><h2>How Ent Generates Code</h2><table><thead><tr><th><p>ent/schema/user.<strong>go</strong><br />        │<br /><strong>go</strong> generate ./ent<br />        │<br />      entc<br />        │<br />Metadata Graph<br />        │<br />Generates:<br />client.<strong>go</strong><br />user.<strong>go</strong><br />user_create.<strong>go</strong><br />user_query.<strong>go</strong><br />user_update.<strong>go</strong><br />predicates<br />migrations</p></th></tr></thead></table><p>Example:</p><table><thead><tr><th><p><strong>field</strong>.String("email").Unique()</p></th></tr></thead></table><p>Generated SQL</p><table><thead><tr><th><p>email VARCHAR(255) <strong>UNIQUE</strong> <strong>NOT</strong> <strong>NULL</strong>;</p></th></tr></thead></table><p>Generated API</p><table><thead><tr><th><p><strong>SetEmail</strong>(...)<br />user.EmailEQ(...)</p></th></tr></thead></table><p><a href="https://entgo.io/docs/schema-def">https://entgo.io/docs/schema-def</a></p><p><a href="https://entgo.io/docs/schema-fields">https://entgo.io/docs/schema-fields</a></p><p><a href="https://entgo.io/docs/schema-edges">https://entgo.io/docs/schema-edges</a></p><p><a href="https://entgo.io/docs/schema-indexes">https://entgo.io/docs/schema-indexes</a></p><p><a href="https://entgo.io/docs/schema-mixin">https://entgo.io/docs/schema-mixin</a></p><p><a href="https://entgo.io/docs/schema-annotations">https://entgo.io/docs/schema-annotations</a></p><h2>4. Code Generation</h2><table><thead><tr><th><p>go <strong>generate</strong> ./ent</p></th></tr></thead></table><p>Regenerate after every schema change.</p><p><a href="https://entgo.io/docs/code-gen">https://entgo.io/docs/code-gen</a></p><h2>5. CRUD Operations</h2><h2>Create</h2><table><thead><tr><th><p>client.User.Create().<br /> SetName("John").<br /> SetEmail("john@example.com").<br /> Save(ctx)</p></th></tr></thead></table><table><thead><tr><th><p><strong>INSERT</strong> <strong>INTO</strong> <strong>users</strong>(<strong>name</strong>,email)<br /><strong>VALUES</strong>('John','john@example.com');</p></th></tr></thead></table><h2>Read</h2><table><thead><tr><th><p>client.User.Query().<br /><strong>Where</strong>(user.Email("john@example.com")).<br /><strong>Only</strong>(ctx)</p></th></tr></thead></table><pre><code>SELECT *
+}</code></pre><p>A schema contains:</p><ul><li>Fields</li><li>Edges</li><li>Indexes</li><li>Mixins</li><li>Annotations</li></ul><h2>How Ent Generates Code</h2><pre><code>ent/schema/user.go
+        │
+go generate ./ent
+        │
+      entc
+        │
+Metadata Graph
+        │
+Generates:
+client.go
+user.go
+user_create.go
+user_query.go
+user_update.go
+predicates
+migrations</code></pre><p>Example:</p><pre><code>field.String("email").Unique()</code></pre><p>Generated SQL</p><table><thead><tr><th><p>email VARCHAR(255) <strong>UNIQUE</strong> <strong>NOT</strong> <strong>NULL</strong>;</p></th></tr></thead></table><p>Generated API</p><pre><code>SetEmail(...)
+user.EmailEQ(...)</code></pre><p><a href="https://entgo.io/docs/schema-def">https://entgo.io/docs/schema-def</a></p><p><a href="https://entgo.io/docs/schema-fields">https://entgo.io/docs/schema-fields</a></p><p><a href="https://entgo.io/docs/schema-edges">https://entgo.io/docs/schema-edges</a></p><p><a href="https://entgo.io/docs/schema-indexes">https://entgo.io/docs/schema-indexes</a></p><p><a href="https://entgo.io/docs/schema-mixin">https://entgo.io/docs/schema-mixin</a></p><p><a href="https://entgo.io/docs/schema-annotations">https://entgo.io/docs/schema-annotations</a></p><h2>4. Code Generation</h2><pre><code>go generate ./ent</code></pre><p>Regenerate after every schema change.</p><p><a href="https://entgo.io/docs/code-gen">https://entgo.io/docs/code-gen</a></p><h2>5. CRUD Operations</h2><h2>Create</h2><pre><code>client.User.Create().
+ SetName("John").
+ SetEmail("john@example.com").
+ Save(ctx)</code></pre><pre><code>INSERT INTO users(name,email)
+VALUES('John','john@example.com');</code></pre><h2>Read</h2><pre><code>client.User.Query().
+Where(user.Email("john@example.com")).
+Only(ctx)</code></pre><pre><code>SELECT *
 FROM users
 WHERE email=?
-LIMIT 1;</code></pre><h2>Update</h2><table><thead><tr><th><p>client.User.UpdateOneID(id).<br /><strong>SetName</strong>("Jane").<br /><strong>Save</strong>(ctx)</p></th></tr></thead></table><table><thead><tr><th><p>UPDATE users<br />SET <strong>name</strong>='Jane'<br />WHERE <strong>id</strong>=?;</p></th></tr></thead></table><h2>Delete</h2><table><thead><tr><th><p>client.User.DeleteOneID(id).Exec(ctx)</p></th></tr></thead></table><table><thead><tr><th><p>DELETE <strong>FROM</strong> users<br />WHERE <strong>id</strong>=?;</p></th></tr></thead></table><h2>Transaction</h2><pre><code>tx,_:=client.Tx(ctx)
+LIMIT 1;</code></pre><h2>Update</h2><pre><code>client.User.UpdateOneID(id).
+SetName("Jane").
+Save(ctx)</code></pre><pre><code>UPDATE users
+SET name='Jane'
+WHERE id=?;</code></pre><h2>Delete</h2><pre><code>client.User.DeleteOneID(id).Exec(ctx)</code></pre><pre><code>DELETE FROM users
+WHERE id=?;</code></pre><h2>Transaction</h2><pre><code>tx,_:=client.Tx(ctx)
 // operations
-tx.Commit()</code></pre><table><thead><tr><th><p><strong>BEGIN</strong>;<br />...<br /><strong>COMMIT</strong>;</p></th></tr></thead></table><p><a href="https://entgo.io/docs/crud">https://entgo.io/docs/crud</a></p><p><a href="https://entgo.io/docs/transactions">https://entgo.io/docs/transactions</a></p><p><a href="https://github.com/ent/ent/tree/master/examples/start">https://github.com/ent/ent/tree/master/examples/start</a></p><h2>6. Query Builder</h2><p>Filtering:</p><table><thead><tr><th><p>client.<strong>User</strong>.Query().<br /><strong>Where</strong>(<strong>user</strong>.<strong>And</strong>(<br /> <strong>user</strong>.AgeGT(18),<br /> <strong>user</strong>.NameContains("John"),<br />))</p></th></tr></thead></table><pre><code>SELECT *
+tx.Commit()</code></pre><pre><code>BEGIN;
+...
+COMMIT;</code></pre><p><a href="https://entgo.io/docs/crud">https://entgo.io/docs/crud</a></p><p><a href="https://entgo.io/docs/transactions">https://entgo.io/docs/transactions</a></p><p><a href="https://github.com/ent/ent/tree/master/examples/start">https://github.com/ent/ent/tree/master/examples/start</a></p><h2>6. Query Builder</h2><p>Filtering:</p><pre><code>client.User.Query().
+Where(user.And(
+ user.AgeGT(18),
+ user.NameContains("John"),
+))</code></pre><pre><code>SELECT *
 FROM users
 WHERE age&gt;18
-AND name LIKE '%John%';</code></pre><p>Ordering</p><table><thead><tr><th><p>Order(<strong>ent</strong>.Desc(<strong>user</strong>.FieldName))</p></th></tr></thead></table><table><thead><tr><th><p><strong>ORDER</strong> <strong>BY</strong> name <strong>DESC</strong>;</p></th></tr></thead></table><p>Aggregation</p><table><thead><tr><th><p><strong>Count</strong>()<br /><strong>GroupBy</strong>()</p></th></tr></thead></table><table><thead><tr><th><p><strong>SELECT</strong> <strong>COUNT</strong>(*) <strong>FROM</strong> <strong>users</strong>;</p></th></tr></thead></table><p><a href="https://entgo.io/docs/predicates">https://entgo.io/docs/predicates</a></p><p><a href="https://entgo.io/docs/traversals">https://entgo.io/docs/traversals</a></p><p><a href="https://entgo.io/docs/aggregate">https://entgo.io/docs/aggregate</a></p><p><a href="https://entgo.io/docs/paging">https://entgo.io/docs/paging</a></p><h2>7. Pagination</h2><table><thead><tr><th><p>Query().Limit(10).Offset(20)</p></th></tr></thead></table><pre><code>SELECT *
+AND name LIKE '%John%';</code></pre><p>Ordering</p><table><thead><tr><th><p>Order(<strong>ent</strong>.Desc(<strong>user</strong>.FieldName))</p></th></tr></thead></table><table><thead><tr><th><p><strong>ORDER</strong> <strong>BY</strong> name <strong>DESC</strong>;</p></th></tr></thead></table><p>Aggregation</p><pre><code>Count()
+GroupBy()</code></pre><pre><code>SELECT COUNT(*) FROM users;</code></pre><p><a href="https://entgo.io/docs/predicates">https://entgo.io/docs/predicates</a></p><p><a href="https://entgo.io/docs/traversals">https://entgo.io/docs/traversals</a></p><p><a href="https://entgo.io/docs/aggregate">https://entgo.io/docs/aggregate</a></p><p><a href="https://entgo.io/docs/paging">https://entgo.io/docs/paging</a></p><h2>7. Pagination</h2><pre><code>Query().Limit(10).Offset(20)</code></pre><pre><code>SELECT *
 FROM users
-LIMIT 10 OFFSET 20;</code></pre><p>Cursor pagination is recommended for large datasets.</p><p><a href="https://entgo.io/docs/paging">https://entgo.io/docs/paging</a></p><h2>8. Eager Loading</h2><table><thead><tr><th><p>client.User.Query().<br /><strong>WithPosts</strong>().<br /><strong>All</strong>(ctx)</p></th></tr></thead></table><pre><code>SELECT u.*, p.*
+LIMIT 10 OFFSET 20;</code></pre><p>Cursor pagination is recommended for large datasets.</p><p><a href="https://entgo.io/docs/paging">https://entgo.io/docs/paging</a></p><h2>8. Eager Loading</h2><pre><code>client.User.Query().
+WithPosts().
+All(ctx)</code></pre><pre><code>SELECT u.*, p.*
 FROM users u
 LEFT JOIN posts p
-ON p.user_id=u.id;</code></pre><p><a href="https://entgo.io/docs/eager-load">https://entgo.io/docs/eager-load</a></p><p><a href="https://entgo.io/docs/traversals">https://entgo.io/docs/traversals</a></p><h2>9. Hooks</h2><p>Lifecycle</p><table><thead><tr><th><p><strong>Create</strong><br /> ↓<br />Hook<br /> ↓<br /><strong>Validation</strong><br /> ↓<br /><strong>SQL</strong></p></th></tr></thead></table><p>Soft delete</p><p>Instead of</p><table><thead><tr><th><p><strong>DELETE</strong> <strong>FROM</strong> <strong>users</strong>;</p></th></tr></thead></table><p>Use</p><table><thead><tr><th><p>UPDATE users<br />SET <strong>deleted_at</strong>=NOW();</p></th></tr></thead></table><p>Common hooks:</p><ul><li>Validation</li><li>Audit logging</li><li>Password hashing</li><li>Soft delete</li><li>Timestamp updates</li></ul><p><a href="https://entgo.io/docs/hooks">https://entgo.io/docs/hooks</a></p><p><a href="https://entgo.io/docs/interceptors">https://entgo.io/docs/interceptors</a></p><p><a href="https://entgo.io/docs/privacy">https://entgo.io/docs/privacy</a></p><h2>10. Atlas Migrations</h2><p>Development</p><table><thead><tr><th><p><strong>client</strong>.Schema.Create(<strong>ctx</strong>)</p></th></tr></thead></table><p>Production</p><table><thead><tr><th><p>atlas migrate diff<br />atlas migrate apply</p></th></tr></thead></table><p><a href="https://entgo.io/docs/migrate">https://entgo.io/docs/migrate</a></p><p><a href="https://entgo.io/docs/versioned-migrations">https://entgo.io/docs/versioned-migrations</a></p><p><a href="https://atlasgo.io/">https://atlasgo.io/</a></p><h2>11. Best Practices</h2><ul><li>Keep schemas focused</li><li>Review generated SQL</li><li>Use transactions</li><li>Use eager loading to avoid N+1</li><li>Use Atlas in production</li></ul><p><a href="https://entgo.io/docs/testing">https://entgo.io/docs/testing</a></p><p><a href="https://entgo.io/docs/faq">https://entgo.io/docs/faq</a></p>
+ON p.user_id=u.id;</code></pre><p><a href="https://entgo.io/docs/eager-load">https://entgo.io/docs/eager-load</a></p><p><a href="https://entgo.io/docs/traversals">https://entgo.io/docs/traversals</a></p><h2>9. Hooks</h2><p>Lifecycle</p><pre><code>Create
+ ↓
+Hook
+ ↓
+Validation
+ ↓
+SQL</code></pre><p>Soft delete</p><p>Instead of</p><pre><code>DELETE FROM users;</code></pre><p>Use</p><pre><code>UPDATE users
+SET deleted_at=NOW();</code></pre><p>Common hooks:</p><ul><li>Validation</li><li>Audit logging</li><li>Password hashing</li><li>Soft delete</li><li>Timestamp updates</li></ul><p><a href="https://entgo.io/docs/hooks">https://entgo.io/docs/hooks</a></p><p><a href="https://entgo.io/docs/interceptors">https://entgo.io/docs/interceptors</a></p><p><a href="https://entgo.io/docs/privacy">https://entgo.io/docs/privacy</a></p><h2>10. Atlas Migrations</h2><p>Development</p><table><thead><tr><th><p><strong>client</strong>.Schema.Create(<strong>ctx</strong>)</p></th></tr></thead></table><p>Production</p><pre><code>atlas migrate diff
+atlas migrate apply</code></pre><p><a href="https://entgo.io/docs/migrate">https://entgo.io/docs/migrate</a></p><p><a href="https://entgo.io/docs/versioned-migrations">https://entgo.io/docs/versioned-migrations</a></p><p><a href="https://atlasgo.io/">https://atlasgo.io/</a></p><h2>11. Best Practices</h2><ul><li>Keep schemas focused</li><li>Review generated SQL</li><li>Use transactions</li><li>Use eager loading to avoid N+1</li><li>Use Atlas in production</li></ul><p><a href="https://entgo.io/docs/testing">https://entgo.io/docs/testing</a></p><p><a href="https://entgo.io/docs/faq">https://entgo.io/docs/faq</a></p>
 </div>
 </body>
 </html>
