@@ -107,6 +107,7 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 <li class="toc-l3"><a href="#maps-with-make">Maps with make</a></li>
 <li class="toc-l3"><a href="#channels-with-make">Channels with make</a></li>
 <li class="toc-l3"><a href="#quick-reference">Quick reference</a></li>
+<li class="toc-l3"><a href="#goroutines-and-sync-sharing-allocated-values-safely">Goroutines and sync: sharing allocated values safely</a></li>
   </ul>
 </nav>
 <h2 id="go-language-documentation"><a id="_8x57017dn20f"></a>Go Language Documentation</h2><p>Modern Go development is module-first. You normally create a project folder anywhere, run `go mod init`, and let the Go tool manage dependencies through `go.mod` and `go.sum`.<br /><br />* Use modules, not GOPATH/src, for almost every new project.<br />* Use <strong>go</strong> install <strong>package</strong>@version to install command-line tools.<br />* Use <strong>go</strong> get only to add, upgrade, or downgrade module dependencies.<br />* Use <strong>go</strong> work for local multi-module development; do not treat it as a production dependency manager.</p><h2 id="1-installation-and-environment"><a id="_ydrifyxq9yhe"></a><strong>1. Installation and Environment</strong></h2><p>Install Go from the official Go downloads page or a trusted package manager. After installation, verify the version and environment variables:<br /><br /></p><pre><code>go version
@@ -656,6 +657,97 @@ func main() {
 </table>
 
 <blockquote>Rule of thumb: reach for <code>make</code> for slices, maps, and channels; reach for a composite literal (<code>&amp;T{...}</code>) for structs; reach for <code>new</code> only when you specifically need a pointer to a primitive's zero value.</blockquote>
+
+<h3 id="goroutines-and-sync-sharing-allocated-values-safely">Goroutines and <code>sync</code>: sharing allocated values safely</h3>
+
+<p>Once you allocate a value with <code>make</code> or <code>new</code> and hand it to multiple goroutines, you have to coordinate access. A goroutine is a lightweight thread the Go runtime schedules; you start one with <code>go f()</code>. The catch: if two goroutines touch the same allocated value (a map, a slice element, a counter) at the same time and at least one writes, that's a <strong>data race</strong> — undefined behavior that corrupts memory and crashes under load. The <code>sync</code> package gives you the tools to prevent it.</p>
+
+<h4><code>sync.WaitGroup</code> — wait for a batch of goroutines</h4>
+
+<pre><code>package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+func main() {
+    // Pre-size a slice so each goroutine writes its OWN index (no overlap,
+    // so no lock needed — distinct indices are independent memory).
+    results := make([]int, 5)
+
+    var wg sync.WaitGroup            // zero value is ready to use (no make/new)
+    for i := 0; i &lt; 5; i++ {
+        wg.Add(1)                    // register one goroutine
+        go func(idx int) {
+            defer wg.Done()          // mark this one done when it returns
+            results[idx] = idx * idx // safe: each writes a distinct index
+        }(i)                         // pass i in so each goroutine gets its own copy
+    }
+    wg.Wait()                        // block until all Done() calls have fired
+    fmt.Println(results)             // [0 1 4 9 16]
+}
+</code></pre>
+
+<p><strong>Use case:</strong> a <code>WaitGroup</code> is a counter: <code>Add(n)</code> to register work, <code>Done()</code> as each unit finishes, <code>Wait()</code> to block until the counter hits zero. It's the standard way to fan out a batch of goroutines and wait for all of them — parallel DB queries, concurrent file downloads, per-item processing. The safety trick above is that each goroutine writes a <em>distinct</em> slice index, so no two ever touch the same memory and no lock is needed. Note the <code>WaitGroup</code> itself needs no <code>make</code> — its zero value is usable, so <code>var wg sync.WaitGroup</code> is enough.</p>
+
+<h4><code>sync.Mutex</code> — protect shared writes</h4>
+
+<pre><code>package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+// A counter safe for concurrent use: the mutex guards the map.
+type Counter struct {
+    mu     sync.Mutex
+    counts map[string]int
+}
+
+func NewCounter() *Counter {
+    // new(Counter) would leave counts nil (panics on write), so we make the
+    // map explicitly and return a pointer via a composite literal.
+    return &amp;Counter{counts: make(map[string]int)}
+}
+
+func (c *Counter) Inc(key string) {
+    c.mu.Lock()          // only one goroutine past this line at a time
+    defer c.mu.Unlock()  // always release, even if the body panics
+    c.counts[key]++      // safe under the lock
+}
+
+func main() {
+    c := NewCounter()
+    var wg sync.WaitGroup
+    for i := 0; i &lt; 100; i++ {
+        wg.Add(1)
+        go func() { defer wg.Done(); c.Inc("hits") }()
+    }
+    wg.Wait()
+    fmt.Println(c.counts["hits"]) // 100 — no lost updates
+}
+</code></pre>
+
+<p><strong>Use case:</strong> a <code>Mutex</code> (mutual exclusion lock) is what you reach for when goroutines must write the <em>same</em> value — a shared map, a running total, a cache. <code>Lock()</code>/<code>Unlock()</code> ensure only one goroutine is in the critical section at a time, so increments aren't lost. Without the lock, <code>c.counts[key]++</code> from 100 goroutines is a data race and the final count would be wrong (and Go's <code>-race</code> detector would flag it). The constructor also shows the allocation pattern: a map field <em>must</em> be <code>make</code>'d — <code>new(Counter)</code> alone leaves <code>counts</code> nil and the first <code>Inc</code> panics.</p>
+
+<h4>When to use which</h4>
+
+<table>
+  <thead>
+    <tr><th>Situation</th><th>Tool</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Wait for N goroutines to all finish</td><td><code>sync.WaitGroup</code></td></tr>
+    <tr><td>Guard a value multiple goroutines write</td><td><code>sync.Mutex</code> (or <code>sync.RWMutex</code> for read-heavy)</td></tr>
+    <tr><td>Run a one-time init exactly once</td><td><code>sync.Once</code></td></tr>
+    <tr><td>Hand values between goroutines</td><td>a channel (<code>make(chan T)</code>)</td></tr>
+  </tbody>
+</table>
+
+<blockquote>Go's motto: "Don't communicate by sharing memory; share memory by communicating." Prefer channels for handing work between goroutines, and reach for a <code>Mutex</code> when you genuinely have shared state to guard. Run tests with <code>go test -race</code> to catch data races before they reach production.</blockquote>
+
 
 </div>
 <a href="#" class="toc-back">&#8593; Top</a>

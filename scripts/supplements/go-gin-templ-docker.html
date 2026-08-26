@@ -194,3 +194,240 @@ volumes:
 </table>
 
 <p>A common production shape for a small team: CI builds the multi-stage image and pushes it to a registry; a Swarm stack file references that image with <code>replicas</code> and a rolling <code>update_config</code>; and Traefik sits in front terminating TLS and routing by hostname. You get zero-downtime deploys, automatic certificates, and horizontal scaling with a handful of YAML files and no Kubernetes.</p>
+
+<h2>Kubernetes: From Pods to a Real Deployment</h2>
+
+<p>Docker Swarm is the easy on-ramp, but most companies run <strong>Kubernetes</strong> (often written "K8s" — K, then 8 letters, then s) in production. Kubernetes is a container orchestrator: you tell it the <em>desired state</em> ("I want 3 copies of this app running, reachable at this address"), and it continuously works to make reality match — restarting crashed containers, rescheduling them when a machine dies, and rolling out new versions without downtime. This section builds up from the smallest unit to a full deployment, assuming you've never touched K8s before.</p>
+
+<h3>The mental model: desired state and the control loop</h3>
+
+<p>Everything in Kubernetes is an <strong>object</strong> you describe in YAML and submit to the cluster. The cluster's "control plane" runs controllers that constantly compare desired state (what your YAML says) against actual state (what's running) and act to close the gap. You almost never start containers by hand — you declare what you want and let Kubernetes maintain it. If you delete a running app container, Kubernetes notices it's one short of the desired count and starts a new one within seconds. That self-healing loop is the whole point.</p>
+
+<h3>1. Pods — the smallest deployable unit</h3>
+
+<p>A <strong>Pod</strong> is one or more containers that share a network address and storage, scheduled together on the same machine (node). For a typical web app, a Pod holds a single container: your Go binary. You rarely create Pods directly (a bare Pod isn't restarted if it dies), but understanding them is the foundation.</p>
+
+<pre><code># pod.yaml — the simplest possible object (for learning; not for production)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+  labels:
+    app: myapp            # labels are key/value tags used to select objects later
+spec:
+  containers:
+    - name: server
+      image: myregistry/myapp:latest
+      ports:
+        - containerPort: 8080
+</code></pre>
+
+<pre><code># Apply it, then inspect.
+kubectl apply -f pod.yaml
+kubectl get pods                     # STATUS should become Running
+kubectl logs myapp                   # view the container's stdout
+kubectl describe pod myapp           # events + why it's pending/crashing
+kubectl delete pod myapp             # gone for good — nothing restarts it
+</code></pre>
+
+<p><strong>What this shows:</strong> <code>kubectl</code> is the CLI that talks to the cluster. <code>apply -f</code> submits an object; Kubernetes schedules the Pod onto a node and pulls the image. The <code>labels</code> (<code>app: myapp</code>) are just tags — but they're how everything else finds this Pod later. The lesson: a bare Pod has no supervision, so we never ship them alone. That's what a Deployment is for.</p>
+
+<h3>2. Deployments — self-healing, scaling, and rolling updates</h3>
+
+<p>A <strong>Deployment</strong> is the object you actually use. It manages a set of identical Pods for you: it keeps a target number running (self-healing), lets you scale that number up or down, and rolls out new image versions one Pod at a time with zero downtime.</p>
+
+<pre><code># deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 3                       # desired number of Pods
+  selector:
+    matchLabels:
+      app: myapp                    # this Deployment manages Pods with this label
+  template:                         # the Pod "cookie cutter" — how each replica looks
+    metadata:
+      labels:
+        app: myapp                  # must match the selector above
+    spec:
+      containers:
+        - name: server
+          image: myregistry/myapp:1.0.0   # pin a real version, never :latest in prod
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+          resources:
+            requests:               # what the scheduler reserves for this Pod
+              cpu: "100m"           # 100 millicores = 0.1 CPU
+              memory: "64Mi"
+            limits:                 # hard ceiling; exceeding memory = OOM-killed
+              cpu: "500m"
+              memory: "256Mi"
+          # Health probes let Kubernetes know if the container is alive & ready.
+          livenessProbe:            # if this fails, K8s RESTARTS the container
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:           # if this fails, K8s stops sending it traffic
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+</code></pre>
+
+<pre><code>kubectl apply -f deployment.yaml
+kubectl get deployments            # READY should read 3/3
+kubectl get pods                   # 3 Pods, names like myapp-7d9f8c-abcde
+kubectl scale deployment myapp --replicas=5   # scale up on the fly
+
+# Roll out a new version — K8s replaces Pods one at a time, watching readiness.
+kubectl set image deployment/myapp server=myregistry/myapp:1.1.0
+kubectl rollout status deployment/myapp        # watch the rollout progress
+kubectl rollout undo deployment/myapp          # instant rollback if it goes wrong
+</code></pre>
+
+<p><strong>What this shows:</strong> the Deployment's <code>template</code> is a Pod blueprint; <code>replicas: 3</code> is the desired count. Kill a Pod (<code>kubectl delete pod myapp-...</code>) and the Deployment starts a replacement immediately — that's self-healing. The two <strong>probes</strong> matter a lot: the <code>readinessProbe</code> hitting your app's <code>/healthcheck</code> route tells Kubernetes when a new Pod is ready to receive traffic (so rollouts wait for it), and the <code>livenessProbe</code> restarts a hung container. <code>resources.requests</code> tells the scheduler how much to reserve; <code>limits</code> cap usage (blow past the memory limit and the container is OOM-killed and restarted). <code>rollout undo</code> is your safety net.</p>
+
+<h3>3. Services — a stable address for a moving set of Pods</h3>
+
+<p>Pods are ephemeral — they get new IPs every time they restart or reschedule. A <strong>Service</strong> gives the set a single, stable virtual IP and DNS name, and load-balances across whichever Pods currently match its label selector. Other Pods reach your app by the Service name, not by chasing Pod IPs.</p>
+
+<pre><code># service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+spec:
+  selector:
+    app: myapp              # routes to every Pod carrying this label
+  ports:
+    - port: 80              # the Service port other things call
+      targetPort: 8080      # the containerPort to forward to
+  type: ClusterIP           # internal-only virtual IP (the default)
+</code></pre>
+
+<pre><code>kubectl apply -f service.yaml
+kubectl get service myapp
+# Inside the cluster, other Pods can now reach it at:
+#   http://myapp        (same namespace)
+#   http://myapp.default.svc.cluster.local   (fully-qualified)
+</code></pre>
+
+<p><strong>What this shows:</strong> the Service's <code>selector</code> (<code>app: myapp</code>) is the same label the Deployment stamps on its Pods — that's the glue connecting them. Any Pod in the cluster can now call <code>http://myapp</code> and Kubernetes' internal DNS + load balancer routes it to a healthy replica, regardless of how many there are or what IPs they have. <code>type: ClusterIP</code> keeps it internal; to expose it to the outside world you use an Ingress (next).</p>
+
+<h3>4. Ingress — routing external traffic in (with HTTPS)</h3>
+
+<p>A ClusterIP Service is only reachable inside the cluster. An <strong>Ingress</strong> is the K8s equivalent of the Traefik setup earlier: it routes external HTTP(S) requests by hostname/path to internal Services, and (with cert-manager) provisions TLS certificates. An "ingress controller" (nginx-ingress, or Traefik running as the controller) actually implements the rules.</p>
+
+<pre><code># ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"   # auto-TLS via cert-manager
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [app.example.com]
+      secretName: myapp-tls          # cert-manager fills this Secret in
+  rules:
+    - host: app.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp          # forward to the Service from step 3
+                port:
+                  number: 80
+</code></pre>
+
+<p><strong>What this shows:</strong> external requests for <code>app.example.com</code> hit the ingress controller, which forwards them to the internal <code>myapp</code> Service on port 80, which load-balances to the Pods. The <code>cert-manager</code> annotation triggers automatic Let's Encrypt certificates stored in the <code>myapp-tls</code> Secret — same outcome as Traefik's ACME resolver, expressed the Kubernetes way. This is the full path: internet → Ingress → Service → Pod → your Go binary.</p>
+
+<h3>5. Config and secrets</h3>
+
+<p>Never bake config or credentials into your image. Kubernetes has two objects for this: <strong>ConfigMap</strong> for non-secret config and <strong>Secret</strong> for sensitive values. You mount them as environment variables (or files) into your Pods.</p>
+
+<pre><code># config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+data:
+  PORT: "8080"
+  CORS_ORIGIN: "https://app.example.com"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-secrets
+type: Opaque
+stringData:                # stringData is auto-base64-encoded for you
+  JWT_KEY: "replace-with-a-real-secret"
+  DATABASE_URL: "user:password@tcp(mysql:3306)/myapp?parseTime=true"
+</code></pre>
+
+<pre><code># In the Deployment's container spec, pull them all in as env vars:
+          envFrom:
+            - configMapRef: { name: myapp-config }
+            - secretRef:    { name: myapp-secrets }
+</code></pre>
+
+<p><strong>What this shows:</strong> config lives outside the image, so the same image runs unchanged in dev, staging, and prod — only the ConfigMap/Secret differ. <code>envFrom</code> injects every key as an environment variable your Go app reads with <code>os.Getenv</code>. Secrets are namespaced and access-controlled (in production, back them with a real secrets manager or sealed-secrets — plain Secrets are only base64-encoded, not encrypted at rest by default).</p>
+
+<h3>6. Putting it all together — the deploy workflow</h3>
+
+<pre><code># 1. Build and push the image (your CI does this on every merge).
+docker build -t myregistry/myapp:1.0.0 .
+docker push myregistry/myapp:1.0.0
+
+# 2. Apply all the manifests (a folder of YAML, or one combined file).
+kubectl apply -f k8s/
+#   configmap/myapp-config created
+#   secret/myapp-secrets created
+#   deployment.apps/myapp created
+#   service/myapp created
+#   ingress.networking.k8s.io/myapp created
+
+# 3. Watch it come up.
+kubectl get pods -w                 # -w = watch, live updates until 3/3 Running
+kubectl rollout status deployment/myapp
+
+# 4. Ship a new version — change the image tag and re-apply, or:
+kubectl set image deployment/myapp server=myregistry/myapp:1.1.0
+kubectl rollout status deployment/myapp    # zero-downtime, honors readinessProbe
+kubectl rollout undo deployment/myapp      # rollback if needed
+
+# Handy debugging commands every junior dev should know:
+kubectl logs -f deployment/myapp           # stream logs from the Pods
+kubectl describe pod &lt;pod-name&gt;            # events: image pull errors, OOM, etc.
+kubectl exec -it &lt;pod-name&gt; -- sh          # shell into a running container
+kubectl get events --sort-by=.lastTimestamp
+</code></pre>
+
+<h3>Object cheat sheet</h3>
+
+<table>
+  <thead>
+    <tr><th>Object</th><th>What it is</th><th>Analogy</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Pod</td><td>One or more co-located containers (usually one)</td><td>A single running instance</td></tr>
+    <tr><td>Deployment</td><td>Keeps N identical Pods running; rolling updates</td><td>A supervisor / autoscaler</td></tr>
+    <tr><td>Service</td><td>Stable IP + DNS that load-balances to matching Pods</td><td>An internal load balancer</td></tr>
+    <tr><td>Ingress</td><td>Routes external HTTP(S) by host/path to Services</td><td>The front door + reverse proxy</td></tr>
+    <tr><td>ConfigMap / Secret</td><td>Config and credentials injected as env/files</td><td>An .env file, but cluster-managed</td></tr>
+    <tr><td>Namespace</td><td>A virtual cluster for isolating teams/envs</td><td>A folder / tenant</td></tr>
+  </tbody>
+</table>
+
+<h3>Docker vs Kubernetes — when to reach for which</h3>
+
+<p>Docker <em>builds and runs</em> a container. Kubernetes <em>orchestrates</em> many containers across many machines. You always need Docker (or a compatible image builder) to produce the image; Kubernetes is the layer above that decides where images run, keeps them healthy, scales them, and networks them. For a hobby project or a single server, Docker Compose is plenty. When you need multiple machines, self-healing, zero-downtime rollouts, and horizontal scaling across a team, that's where Kubernetes earns its complexity. A good learning path is exactly this section's order: run the image with <code>docker run</code>, wire services with Compose, then graduate to Pods → Deployments → Services → Ingress on a local cluster like <a href="https://kind.sigs.k8s.io/">kind</a> or <a href="https://minikube.sigs.k8s.io/">minikube</a> before touching a real cloud cluster.</p>
+
+<blockquote>Start local: install <code>kind</code> (<code>kind create cluster</code>) or <code>minikube</code> (<code>minikube start</code>), point <code>kubectl</code> at it, and apply the manifests above. Everything here runs on your laptop first — break things safely, then move to a managed cluster (EKS, GKE, AKS) once the workflow is muscle memory.</blockquote>
+
