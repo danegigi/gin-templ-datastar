@@ -1,0 +1,130 @@
+<h2>Allocating with <code>make</code> and <code>new</code></h2>
+
+<p>Go has two built-in allocation functions, <code>make</code> and <code>new</code>. They look similar but do different jobs, and choosing the right one is a common early stumbling block. The short version:</p>
+
+<ul>
+  <li><strong><code>new(T)</code></strong> allocates zeroed storage for a value of type <code>T</code> and returns a <strong>pointer</strong> to it (<code>*T</code>). It works for any type.</li>
+  <li><strong><code>make(T, ...)</code></strong> initializes the internal data structure of a <strong>slice, map, or channel</strong> and returns a ready-to-use value of type <code>T</code> (not a pointer). It works <em>only</em> for those three types.</li>
+</ul>
+
+<p>The reason for two functions: slices, maps, and channels are not just memory — they are handles to a runtime data structure (a backing array with length/capacity, a hash table, a queue with a lock). <code>make</code> sets that structure up; <code>new</code> only hands you zeroed memory, which for these types is a nil, unusable value.</p>
+
+<h3>Pointers with <code>new</code></h3>
+
+<pre><code>package main
+
+import "fmt"
+
+type Config struct {
+    Host string
+    Port int
+}
+
+func main() {
+    // new(T) allocates a zeroed T and returns *T.
+    p := new(int)        // p is *int, points to 0
+    *p = 42              // dereference to set the value
+    fmt.Println(*p)      // 42
+
+    // Works for structs too — all fields start at their zero value.
+    cfg := new(Config)   // cfg is *Config -> &Config{Host:"", Port:0}
+    cfg.Host = "localhost"
+    cfg.Port = 8080
+    fmt.Println(*cfg)    // {localhost 8080}
+}
+</code></pre>
+
+<p><strong>Use case:</strong> <code>new</code> is rarely used in idiomatic Go for structs — <code>&amp;Config{Host: "localhost", Port: 8080}</code> (a composite literal with the address-of operator) is clearer and lets you set fields inline. <code>new</code> earns its place mainly when you need a pointer to a primitive (like <code>*int</code> or <code>*bool</code>) — for example an optional/nullable field in a struct that maps to a database column, or a counter you pass by pointer so a function can mutate it.</p>
+
+<h3>Slices with <code>make</code></h3>
+
+<pre><code>package main
+
+import "fmt"
+
+func main() {
+    // make([]T, length, capacity)
+    // length = elements you can index right now (all zero-valued)
+    // capacity = room in the backing array before a reallocation is needed
+    s := make([]int, 3, 10)
+    fmt.Println(s, len(s), cap(s))  // [0 0 0] 3 10
+
+    s = append(s, 1, 2, 3)          // fits within cap, no reallocation
+    fmt.Println(s, len(s), cap(s))  // [0 0 0 1 2 3] 6 10
+
+    // Common shorthand when you only care about length:
+    buf := make([]byte, 1024)       // a 1 KB read buffer, all zero
+    _ = buf
+}
+</code></pre>
+
+<p><strong>Use case:</strong> use <code>make</code> with a capacity when you know roughly how many elements you'll append — pre-sizing avoids repeated backing-array reallocations as the slice grows, which matters in hot loops. The classic example is building a result slice: <code>out := make([]Result, 0, len(input))</code> then appending in a loop. Read buffers (<code>make([]byte, 4096)</code>) are the other everyday case.</p>
+
+<h3>Maps with <code>make</code></h3>
+
+<pre><code>package main
+
+import "fmt"
+
+func main() {
+    // A nil map (var m map[string]int) can be READ but panics on WRITE.
+    // make gives you a writable map.
+    m := make(map[string]int)
+    m["alice"] = 30
+    m["bob"] = 25
+    fmt.Println(m["alice"])  // 30
+
+    // Optional size hint — pre-allocates buckets for ~N entries to reduce
+    // rehashing as the map grows. It's a hint, not a hard limit.
+    counts := make(map[string]int, 100)
+    _ = counts
+}
+</code></pre>
+
+<p><strong>Use case:</strong> always <code>make</code> a map before writing to it — a <code>nil</code> map (declared with <code>var m map[string]int</code> and never initialized) panics on assignment. Pass the size hint when you know the rough number of keys (e.g. building a lookup from a slice of records) to cut down on rehashing. Maps are the go-to for de-duplication (<code>map[string]struct{}</code> as a set) and grouping/counting.</p>
+
+<h3>Channels with <code>make</code></h3>
+
+<pre><code>package main
+
+import "fmt"
+
+func main() {
+    // Unbuffered channel: a send blocks until another goroutine receives.
+    // Use for synchronization / handoff between goroutines.
+    done := make(chan bool)
+    go func() {
+        fmt.Println("working...")
+        done &lt;- true          // signal completion
+    }()
+    &lt;-done                    // block until the goroutine signals
+
+    // Buffered channel: holds N values before a send blocks.
+    // Use as a queue / to smooth bursts between producer and consumer.
+    jobs := make(chan int, 5) // capacity 5
+    jobs &lt;- 1
+    jobs &lt;- 2
+    close(jobs)               // no more sends; receivers can still drain
+    for j := range jobs {
+        fmt.Println("job", j)
+    }
+}
+</code></pre>
+
+<p><strong>Use case:</strong> an <strong>unbuffered</strong> channel (<code>make(chan T)</code>) is a synchronization point — the sender waits for a receiver, so it's ideal for signaling "done" or handing a single value between goroutines. A <strong>buffered</strong> channel (<code>make(chan T, n)</code>) decouples producer and consumer up to <code>n</code> items — use it as a work queue, a semaphore to cap concurrency (<code>make(chan struct{}, maxWorkers)</code>), or to absorb bursts so a fast producer isn't blocked by a slower consumer.</p>
+
+<h3>Quick reference</h3>
+
+<table>
+  <thead>
+    <tr><th>You want…</th><th>Use</th><th>Returns</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>A pointer to a zeroed value of any type</td><td><code>new(T)</code></td><td><code>*T</code></td></tr>
+    <tr><td>A usable slice</td><td><code>make([]T, len, cap)</code></td><td><code>[]T</code></td></tr>
+    <tr><td>A writable map</td><td><code>make(map[K]V, hint)</code></td><td><code>map[K]V</code></td></tr>
+    <tr><td>A channel (buffered or not)</td><td><code>make(chan T, n)</code></td><td><code>chan T</code></td></tr>
+  </tbody>
+</table>
+
+<blockquote>Rule of thumb: reach for <code>make</code> for slices, maps, and channels; reach for a composite literal (<code>&amp;T{...}</code>) for structs; reach for <code>new</code> only when you specifically need a pointer to a primitive's zero value.</blockquote>

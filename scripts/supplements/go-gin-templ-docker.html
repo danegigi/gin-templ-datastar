@@ -1,0 +1,196 @@
+<h2>DevOps: Deploying a Go + Gin + templ App</h2>
+
+<p>A Go web app compiles to a single static binary, which makes it one of the easiest things to containerize and deploy. This section walks up the ladder: a single Docker image, then Docker Compose for local multi-service dev, then Docker Swarm for a small cluster, and finally Traefik as a reverse proxy that gives you automatic HTTPS and routing. Each step builds on the previous one.</p>
+
+<h3>1. Dockerfile — a multi-stage build</h3>
+
+<p>The goal of a Go Dockerfile is a tiny final image that contains <em>only</em> the compiled binary and static assets — no Go toolchain, no source. A multi-stage build does this: a "builder" stage compiles, and a minimal final stage copies just the binary out.</p>
+
+<pre><code># ---- Stage 1: build ----
+FROM golang:1.26-alpine AS builder
+WORKDIR /src
+
+# Install the templ + tailwind toolchain if you generate at build time.
+# (Alternatively, commit the generated *_templ.go and app.css and skip this.)
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
+# Cache dependencies first: this layer only rebuilds when go.mod/go.sum change.
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Now copy the source and build.
+COPY . .
+RUN templ generate ./...
+# CGO_ENABLED=0 makes a fully static binary (no libc), so it runs on scratch/alpine.
+# -ldflags "-s -w" strips debug info to shrink the binary.
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/server ./cmd/server
+
+# ---- Stage 2: run ----
+FROM alpine:3.20
+# ca-certificates lets the app make HTTPS calls (Stripe, S3, etc.).
+RUN apk add --no-cache ca-certificates
+WORKDIR /app
+
+# Copy only what the runtime needs: the binary and static assets.
+COPY --from=builder /app/server /app/server
+COPY --from=builder /src/static /app/static
+
+# Run as a non-root user for safety.
+RUN adduser -D -u 10001 appuser
+USER appuser
+
+EXPOSE 8080
+ENTRYPOINT ["/app/server"]
+</code></pre>
+
+<p><strong>What it does:</strong> stage 1 pulls the full Go image, generates templ code, and compiles a static binary. Stage 2 starts from a ~5 MB Alpine base and copies in only the binary and <code>static/</code> directory. The final image is typically 15–25 MB instead of the ~800 MB of the builder. <code>CGO_ENABLED=0</code> is the key flag — it produces a self-contained binary with no dynamic library dependencies, so it can even run <code>FROM scratch</code>.</p>
+
+<p>Build and run it:</p>
+
+<pre><code>docker build -t myapp:latest .
+docker run --rm -p 8080:8080 --env-file .env myapp:latest
+</code></pre>
+
+<h3>2. Docker Compose — app + database together</h3>
+
+<p>A real app needs a database. Docker Compose describes multiple services in one <code>compose.yaml</code> and wires them onto a shared network so they can find each other by name. This is the standard local-dev and small-single-host setup.</p>
+
+<pre><code>services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Compose lets services reach each other by SERVICE NAME as the host.
+      DATABASE_URL: "user:password@tcp(db:3306)/myapp?parseTime=true"
+      JWT_KEY: "${JWT_KEY}"          # read from your shell / an .env file
+      SESSION_SECRET: "${SESSION_SECRET}"
+      PORT: "8080"
+    depends_on:
+      db:
+        condition: service_healthy   # wait until the DB is actually ready
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: myapp
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - dbdata:/var/lib/mysql        # persist data across container restarts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  dbdata:
+</code></pre>
+
+<p><strong>What it does:</strong> two services — <code>app</code> and <code>db</code> — on an automatically-created private network. The app reaches MySQL at host <code>db</code> (the service name) rather than an IP, because Compose provides internal DNS. <code>depends_on</code> with <code>condition: service_healthy</code> makes the app wait for the DB's healthcheck to pass before starting, avoiding "connection refused" on boot. The named volume <code>dbdata</code> keeps the database on disk so data survives <code>docker compose down</code> and restarts.</p>
+
+<pre><code># Bring the whole stack up (build if needed), in the background.
+docker compose up -d --build
+
+# Tail logs, then tear it down (keeping the volume).
+docker compose logs -f app
+docker compose down
+</code></pre>
+
+<h3>3. Docker Swarm — scaling to a cluster</h3>
+
+<p>Compose runs on one host. <strong>Docker Swarm</strong> turns a set of machines into a single cluster and schedules replicas across them, with built-in load balancing and rolling updates — using nearly the same YAML. It's the lightest-weight orchestrator (Kubernetes is the heavier alternative).</p>
+
+<pre><code># Initialize a swarm on the manager node.
+docker swarm init
+
+# The same compose file works, but now under the `deploy:` key.
+# Deploy it as a "stack":
+docker stack deploy -c compose.yaml myapp
+</code></pre>
+
+<p>Add a <code>deploy</code> block to the app service to control replicas and rolling updates:</p>
+
+<pre><code>services:
+  app:
+    image: myregistry/myapp:latest   # Swarm pulls from a registry, not `build:`
+    deploy:
+      replicas: 3                      # run 3 copies, load-balanced
+      update_config:
+        parallelism: 1                 # update one replica at a time
+        delay: 10s                     # wait between each (zero-downtime rollout)
+        order: start-first             # start the new one before stopping the old
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    ports:
+      - "8080:8080"
+</code></pre>
+
+<p><strong>What it does:</strong> Swarm runs 3 replicas of the app and spreads incoming requests across them via its built-in routing mesh — hitting any node's port 8080 reaches a healthy replica. <code>update_config</code> defines a <strong>rolling update</strong>: when you push a new image and re-run <code>docker stack deploy</code>, Swarm replaces replicas one at a time (<code>start-first</code> brings the new container up before killing the old), so the service stays available throughout. Note the switch from <code>build:</code> to <code>image:</code> — Swarm pulls a pre-built image from a registry, so your CI builds and pushes the image, and the stack file just references it.</p>
+
+<h3>4. Traefik — reverse proxy + automatic HTTPS</h3>
+
+<p>You don't want to expose the app on port 8080 to the world, hand-manage TLS certificates, or reconfigure a proxy every time you scale. <strong>Traefik</strong> is a reverse proxy that discovers your containers automatically (via Docker labels), routes by hostname/path, and provisions Let's Encrypt certificates for you.</p>
+
+<pre><code>services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      # Watch Docker for containers to route to.
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"  # only route labeled containers
+      # Entry points: 80 for HTTP (redirected), 443 for HTTPS.
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Automatic TLS via Let's Encrypt (ACME).
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=you@example.com"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"  # read Docker events
+      - "letsencrypt:/letsencrypt"                       # persist certificates
+
+  app:
+    build: .
+    environment:
+      PORT: "8080"
+    labels:
+      - "traefik.enable=true"
+      # Route requests for this hostname to this service.
+      - "traefik.http.routers.app.rule=Host(`app.example.com`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=le"
+      # Tell Traefik which internal port the app listens on.
+      - "traefik.http.services.app.loadbalancer.server.port=8080"
+
+volumes:
+  letsencrypt:
+</code></pre>
+
+<p><strong>What it does:</strong> Traefik mounts the Docker socket (read-only) to watch containers as they start and stop. Because the app carries <code>traefik.enable=true</code> and a <code>Host(...)</code> rule label, Traefik automatically creates a route: HTTPS requests for <code>app.example.com</code> are forwarded to the app's internal port 8080. The <code>certresolver=le</code> label triggers Traefik to obtain and renew a Let's Encrypt certificate for that hostname over the TLS challenge — no manual <code>certbot</code>. The app itself keeps serving plain HTTP on 8080 inside the network; Traefik terminates TLS at the edge. When you scale the app to multiple replicas (in Swarm), Traefik load-balances across them automatically because it discovers each one by its labels.</p>
+
+<h3>Putting it together</h3>
+
+<table>
+  <thead>
+    <tr><th>Tool</th><th>Solves</th><th>Use when</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Dockerfile</td><td>Reproducible, tiny runtime image</td><td>Always — the foundation for everything below</td></tr>
+    <tr><td>Docker Compose</td><td>App + DB + friends on one host</td><td>Local dev, and small single-server deployments</td></tr>
+    <tr><td>Docker Swarm</td><td>Replicas across a cluster, rolling updates</td><td>You've outgrown one host but don't want Kubernetes</td></tr>
+    <tr><td>Traefik</td><td>Reverse proxy, routing, automatic HTTPS</td><td>You need TLS and clean hostnames in front of it all</td></tr>
+  </tbody>
+</table>
+
+<p>A common production shape for a small team: CI builds the multi-stage image and pushes it to a registry; a Swarm stack file references that image with <code>replicas</code> and a rolling <code>update_config</code>; and Traefik sits in front terminating TLS and routing by hostname. You get zero-downtime deploys, automatic certificates, and horizontal scaling with a handful of YAML files and no Kubernetes.</p>

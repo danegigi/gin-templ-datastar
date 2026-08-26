@@ -26,6 +26,7 @@ const PAGES = [
     title: "Go Basics",
     blurb: "The Go language fundamentals — types, variables, functions, structs, slices, maps, and control flow.",
     src: `${UPLOADS}/c3c1af49d041422c908ee8b59dccf753_GO_Basics.docx`,
+    append: "go-basics.html",
   },
   {
     slug: "go-stdlib",
@@ -42,9 +43,10 @@ const PAGES = [
   },
   {
     slug: "go-gin-templ",
-    title: "Go + Gin + templ",
-    blurb: "Putting Gin together with templ for type-safe server-rendered HTML.",
+    title: "Go + Gin + templ + Docker",
+    blurb: "Putting Gin together with templ for type-safe server-rendered HTML, then deploying with Docker, Compose, Swarm, and Traefik.",
     src: `${UPLOADS}/d1e070915d9d4828b46563072d41260e_Go-Gin-Templ.docx`,
+    append: "go-gin-templ-docker.html",
   },
   {
     slug: "ent-sql",
@@ -377,7 +379,15 @@ ${bodyHtml}
     const headed = p.headings === "numbered"
       ? promoteNumberedHeadings(formatted)
       : promoteBoldHeadings(formatted);
-    const { html: withIds, toc } = addTocAndIds(headed);
+    // Append hand-authored supplemental HTML (already has <h2>/<pre> markup, so
+    // it skips the docx code-reconstruction pipeline). Done BEFORE addTocAndIds
+    // so the supplement's headings are anchored and appear in the page TOC.
+    let combined = headed;
+    if (p.append) {
+      const supPath = path.join(__dirname, "supplements", p.append);
+      combined += "\n" + fs.readFileSync(supPath, "utf8");
+    }
+    const { html: withIds, toc } = addTocAndIds(combined);
     fs.writeFileSync(path.join(DOCS, `${p.slug}.html`), pageShell(p.title, withIds, toc));
     console.log(`Wrote docs/${p.slug}.html`);
   }

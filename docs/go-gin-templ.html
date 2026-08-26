@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Go + Gin + templ — gin-templ-datastar</title>
+<title>Go + Gin + templ + Docker — gin-templ-datastar</title>
 <style>
 :root{--bg:#0f1117;--surface:#1a1d27;--border:#2d3148;--text:#e2e4f0;--muted:#8b8fa8;--accent:#7c87ff;--code-bg:#1e2130;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -50,10 +50,10 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 <body>
 <nav class="nav">
   <a href="index.html">&#8592; Home</a>
-  <span class="crumb">Go + Gin + templ</span>
+  <span class="crumb">Go + Gin + templ + Docker</span>
 </nav>
 <div class="container">
-<h1 class="page-title">Go + Gin + templ</h1>
+<h1 class="page-title">Go + Gin + templ + Docker</h1>
 <nav class="toc" aria-label="Table of contents">
   <p class="toc-title">Contents</p>
   <ul>
@@ -105,6 +105,12 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 <li class="toc-l2"><a href="#27-common-mistakes">27. Common Mistakes</a></li>
 <li class="toc-l2"><a href="#28-suggested-learning-path">28. Suggested Learning Path</a></li>
 <li class="toc-l2"><a href="#29-final-architecture-summary">29. Final Architecture Summary</a></li>
+<li class="toc-l2"><a href="#devops-deploying-a-go-gin-templ-app">DevOps: Deploying a Go + Gin + templ App</a></li>
+<li class="toc-l3"><a href="#1-dockerfile-a-multi-stage-build">1. Dockerfile — a multi-stage build</a></li>
+<li class="toc-l3"><a href="#2-docker-compose-app-database-together">2. Docker Compose — app + database together</a></li>
+<li class="toc-l3"><a href="#3-docker-swarm-scaling-to-a-cluster">3. Docker Swarm — scaling to a cluster</a></li>
+<li class="toc-l3"><a href="#4-traefik-reverse-proxy-automatic-https">4. Traefik — reverse proxy + automatic HTTPS</a></li>
+<li class="toc-l3"><a href="#putting-it-together">Putting it together</a></li>
   </ul>
 </nav>
 <p>Full Stack Go, Gin, and Templ Tutorial</p><p>Build a production-minded server-rendered web application with Go, Gin, and Templ, using openlist.ing as the practical example project.</p><h2 id="audience-and-goal">Audience And Goal</h2><p>This tutorial is for developers who already understand HTTP, HTML, forms, JSON, databases, and application architecture. It teaches how to build a complete server-rendered Go web application with Gin for HTTP routing and middleware, Templ for type-safe HTML components, and a clean internal package structure.</p><p>The example product is openlist.ing, a street-sourced real estate listing platform. Visitors browse property sale and lease signs spotted from the street, submit properties, view listing details, and interact with a CMS that manages content and operational pages.</p><p>By the end, you should understand how to:</p><ul><li>structure a Go web application for maintainability.</li><li>build Gin routers, handlers, middleware, redirects, and form endpoints.</li><li>render pages with Templ components.</li><li>pass request context through services and repositories.</li><li>validate route behavior with `httptest`.</li><li>configure local development and production builds.</li><li>prepare the app for database, security, and deployment hardening.</li></ul><h2 id="1-what-you-are-building">1. What You Are Building</h2><p>The tutorial uses this application shape:</p><p>openlist.ing/</p><pre><code>frontend/   Public property listing website
@@ -623,6 +629,203 @@ go func() {
     }
 }()
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)</code></pre><p>defer cancel()</p><p>_ = srv.Shutdown(ctx)</p><h2 id="27-common-mistakes">27. Common Mistakes</h2><p>Avoid these early mistakes:</p><ul><li>putting all logic in `main.go`.</li><li>letting handlers become business services.</li><li>building HTML with string concatenation.</li><li>skipping `templ generate` before tests.</li><li>ignoring `context.Context` in repository methods.</li><li>using `302` for every form redirect instead of intentional `303` behavior.</li><li>opening database connections per request.</li><li>hiding dependencies in global variables.</li><li>skipping route tests because pages render in a browser.</li></ul><p>The stack rewards explicitness. Keep the boring boundaries intact.</p><h2 id="28-suggested-learning-path">28. Suggested Learning Path</h2><p>Work through the stack in this order:</p><ol><li>Create a Gin router with one static page.</li><li>Add a Templ layout and render it from Gin.</li><li>Add a typed model and a service method.</li><li>Add a listing page with a looped Templ component.</li><li>Add a form page and a POST handler.</li><li>Add redirects and validation errors.</li><li>Add `httptest` route tests.</li><li>Add middleware.</li><li>Add persistence behind a repository interface.</li><li>Add production configuration and build scripts.</li></ol><p>This order keeps each concept small enough to understand while still moving toward a real application.</p><h2 id="29-final-architecture-summary">29. Final Architecture Summary</h2><p>A solid Go, Gin, and Templ application has clear boundaries:</p><ul><li>Gin owns HTTP.</li><li>handlers translate requests and responses.</li><li>services own use cases.</li><li>repositories own persistence.</li><li>Templ owns HTML.</li><li>config owns environment.</li><li>tests own behavior verification.</li><li>`cmd/server` owns assembly.</li></ul><p>openlist.ing follows that shape. The result is a server-rendered application that is easy to run locally, easy to test, easy to compile, and ready for production hardening.</p>
+<h2 id="devops-deploying-a-go-gin-templ-app">DevOps: Deploying a Go + Gin + templ App</h2>
+
+<p>A Go web app compiles to a single static binary, which makes it one of the easiest things to containerize and deploy. This section walks up the ladder: a single Docker image, then Docker Compose for local multi-service dev, then Docker Swarm for a small cluster, and finally Traefik as a reverse proxy that gives you automatic HTTPS and routing. Each step builds on the previous one.</p>
+
+<h3 id="1-dockerfile-a-multi-stage-build">1. Dockerfile — a multi-stage build</h3>
+
+<p>The goal of a Go Dockerfile is a tiny final image that contains <em>only</em> the compiled binary and static assets — no Go toolchain, no source. A multi-stage build does this: a "builder" stage compiles, and a minimal final stage copies just the binary out.</p>
+
+<pre><code># ---- Stage 1: build ----
+FROM golang:1.26-alpine AS builder
+WORKDIR /src
+
+# Install the templ + tailwind toolchain if you generate at build time.
+# (Alternatively, commit the generated *_templ.go and app.css and skip this.)
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
+# Cache dependencies first: this layer only rebuilds when go.mod/go.sum change.
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Now copy the source and build.
+COPY . .
+RUN templ generate ./...
+# CGO_ENABLED=0 makes a fully static binary (no libc), so it runs on scratch/alpine.
+# -ldflags "-s -w" strips debug info to shrink the binary.
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/server ./cmd/server
+
+# ---- Stage 2: run ----
+FROM alpine:3.20
+# ca-certificates lets the app make HTTPS calls (Stripe, S3, etc.).
+RUN apk add --no-cache ca-certificates
+WORKDIR /app
+
+# Copy only what the runtime needs: the binary and static assets.
+COPY --from=builder /app/server /app/server
+COPY --from=builder /src/static /app/static
+
+# Run as a non-root user for safety.
+RUN adduser -D -u 10001 appuser
+USER appuser
+
+EXPOSE 8080
+ENTRYPOINT ["/app/server"]
+</code></pre>
+
+<p><strong>What it does:</strong> stage 1 pulls the full Go image, generates templ code, and compiles a static binary. Stage 2 starts from a ~5 MB Alpine base and copies in only the binary and <code>static/</code> directory. The final image is typically 15–25 MB instead of the ~800 MB of the builder. <code>CGO_ENABLED=0</code> is the key flag — it produces a self-contained binary with no dynamic library dependencies, so it can even run <code>FROM scratch</code>.</p>
+
+<p>Build and run it:</p>
+
+<pre><code>docker build -t myapp:latest .
+docker run --rm -p 8080:8080 --env-file .env myapp:latest
+</code></pre>
+
+<h3 id="2-docker-compose-app-database-together">2. Docker Compose — app + database together</h3>
+
+<p>A real app needs a database. Docker Compose describes multiple services in one <code>compose.yaml</code> and wires them onto a shared network so they can find each other by name. This is the standard local-dev and small-single-host setup.</p>
+
+<pre><code>services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Compose lets services reach each other by SERVICE NAME as the host.
+      DATABASE_URL: "user:password@tcp(db:3306)/myapp?parseTime=true"
+      JWT_KEY: "${JWT_KEY}"          # read from your shell / an .env file
+      SESSION_SECRET: "${SESSION_SECRET}"
+      PORT: "8080"
+    depends_on:
+      db:
+        condition: service_healthy   # wait until the DB is actually ready
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: myapp
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - dbdata:/var/lib/mysql        # persist data across container restarts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  dbdata:
+</code></pre>
+
+<p><strong>What it does:</strong> two services — <code>app</code> and <code>db</code> — on an automatically-created private network. The app reaches MySQL at host <code>db</code> (the service name) rather than an IP, because Compose provides internal DNS. <code>depends_on</code> with <code>condition: service_healthy</code> makes the app wait for the DB's healthcheck to pass before starting, avoiding "connection refused" on boot. The named volume <code>dbdata</code> keeps the database on disk so data survives <code>docker compose down</code> and restarts.</p>
+
+<pre><code># Bring the whole stack up (build if needed), in the background.
+docker compose up -d --build
+
+# Tail logs, then tear it down (keeping the volume).
+docker compose logs -f app
+docker compose down
+</code></pre>
+
+<h3 id="3-docker-swarm-scaling-to-a-cluster">3. Docker Swarm — scaling to a cluster</h3>
+
+<p>Compose runs on one host. <strong>Docker Swarm</strong> turns a set of machines into a single cluster and schedules replicas across them, with built-in load balancing and rolling updates — using nearly the same YAML. It's the lightest-weight orchestrator (Kubernetes is the heavier alternative).</p>
+
+<pre><code># Initialize a swarm on the manager node.
+docker swarm init
+
+# The same compose file works, but now under the `deploy:` key.
+# Deploy it as a "stack":
+docker stack deploy -c compose.yaml myapp
+</code></pre>
+
+<p>Add a <code>deploy</code> block to the app service to control replicas and rolling updates:</p>
+
+<pre><code>services:
+  app:
+    image: myregistry/myapp:latest   # Swarm pulls from a registry, not `build:`
+    deploy:
+      replicas: 3                      # run 3 copies, load-balanced
+      update_config:
+        parallelism: 1                 # update one replica at a time
+        delay: 10s                     # wait between each (zero-downtime rollout)
+        order: start-first             # start the new one before stopping the old
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    ports:
+      - "8080:8080"
+</code></pre>
+
+<p><strong>What it does:</strong> Swarm runs 3 replicas of the app and spreads incoming requests across them via its built-in routing mesh — hitting any node's port 8080 reaches a healthy replica. <code>update_config</code> defines a <strong>rolling update</strong>: when you push a new image and re-run <code>docker stack deploy</code>, Swarm replaces replicas one at a time (<code>start-first</code> brings the new container up before killing the old), so the service stays available throughout. Note the switch from <code>build:</code> to <code>image:</code> — Swarm pulls a pre-built image from a registry, so your CI builds and pushes the image, and the stack file just references it.</p>
+
+<h3 id="4-traefik-reverse-proxy-automatic-https">4. Traefik — reverse proxy + automatic HTTPS</h3>
+
+<p>You don't want to expose the app on port 8080 to the world, hand-manage TLS certificates, or reconfigure a proxy every time you scale. <strong>Traefik</strong> is a reverse proxy that discovers your containers automatically (via Docker labels), routes by hostname/path, and provisions Let's Encrypt certificates for you.</p>
+
+<pre><code>services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      # Watch Docker for containers to route to.
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"  # only route labeled containers
+      # Entry points: 80 for HTTP (redirected), 443 for HTTPS.
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Automatic TLS via Let's Encrypt (ACME).
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=you@example.com"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"  # read Docker events
+      - "letsencrypt:/letsencrypt"                       # persist certificates
+
+  app:
+    build: .
+    environment:
+      PORT: "8080"
+    labels:
+      - "traefik.enable=true"
+      # Route requests for this hostname to this service.
+      - "traefik.http.routers.app.rule=Host(`app.example.com`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=le"
+      # Tell Traefik which internal port the app listens on.
+      - "traefik.http.services.app.loadbalancer.server.port=8080"
+
+volumes:
+  letsencrypt:
+</code></pre>
+
+<p><strong>What it does:</strong> Traefik mounts the Docker socket (read-only) to watch containers as they start and stop. Because the app carries <code>traefik.enable=true</code> and a <code>Host(...)</code> rule label, Traefik automatically creates a route: HTTPS requests for <code>app.example.com</code> are forwarded to the app's internal port 8080. The <code>certresolver=le</code> label triggers Traefik to obtain and renew a Let's Encrypt certificate for that hostname over the TLS challenge — no manual <code>certbot</code>. The app itself keeps serving plain HTTP on 8080 inside the network; Traefik terminates TLS at the edge. When you scale the app to multiple replicas (in Swarm), Traefik load-balances across them automatically because it discovers each one by its labels.</p>
+
+<h3 id="putting-it-together">Putting it together</h3>
+
+<table>
+  <thead>
+    <tr><th>Tool</th><th>Solves</th><th>Use when</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Dockerfile</td><td>Reproducible, tiny runtime image</td><td>Always — the foundation for everything below</td></tr>
+    <tr><td>Docker Compose</td><td>App + DB + friends on one host</td><td>Local dev, and small single-server deployments</td></tr>
+    <tr><td>Docker Swarm</td><td>Replicas across a cluster, rolling updates</td><td>You've outgrown one host but don't want Kubernetes</td></tr>
+    <tr><td>Traefik</td><td>Reverse proxy, routing, automatic HTTPS</td><td>You need TLS and clean hostnames in front of it all</td></tr>
+  </tbody>
+</table>
+
+<p>A common production shape for a small team: CI builds the multi-stage image and pushes it to a registry; a Swarm stack file references that image with <code>replicas</code> and a rolling <code>update_config</code>; and Traefik sits in front terminating TLS and routing by hostname. You get zero-downtime deploys, automatic certificates, and horizontal scaling with a handful of YAML files and no Kubernetes.</p>
+
 </div>
 <a href="#" class="toc-back">&#8593; Top</a>
 </body>
