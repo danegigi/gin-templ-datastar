@@ -47,6 +47,11 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 .toc-back:hover{opacity:1;}
 .playground-float{position:fixed;bottom:24px;right:90px;background:#1a1d27;color:var(--accent);border:1px solid var(--accent);padding:8px 12px;border-radius:8px;font-size:0.75rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
 .playground-float:hover{opacity:1;background:rgba(124,135,255,.12);text-decoration:none;}
+pre{position:relative;}
+.copy-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--muted);padding:4px 8px;border-radius:5px;font-size:0.7rem;font-family:inherit;cursor:pointer;opacity:0;transition:opacity .2s,background .15s;}
+pre:hover .copy-btn{opacity:1;}
+.copy-btn:hover{background:rgba(124,135,255,.15);color:var(--accent);border-color:var(--accent);}
+.copy-btn.copied{color:#4ade80;border-color:#4ade80;}
 </style>
 </head>
 <body>
@@ -473,5 +478,22 @@ go build -tags=go_json ./cmd/server</code></pre><p># Optional: reduce binary siz
 </div>
 <a href="https://go.dev/play/" target="_blank" class="playground-float">▶ Go Playground</a>
 <a href="#" class="toc-back">&#8593; Top</a>
+<script>
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code ? code.textContent : pre.textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+  pre.appendChild(btn);
+});
+</script>
 </body>
 </html>
