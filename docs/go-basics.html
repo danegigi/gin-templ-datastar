@@ -185,148 +185,12 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 <li class="toc-l3"><a href="#temporary-files-and-directories">Temporary Files and Directories</a></li>
 <li class="toc-l3"><a href="#embed-directive">Embed Directive</a></li>
 <li class="toc-l3"><a href="#environment-variables">Environment Variables</a></li>
-<li class="toc-l2"><a href="#explanations-blocks-properly-escaped-and-playground-buttons-">`, explanations, `` blocks (properly escaped), and playground buttons.
-
-
-Logging
-Go's standard library provides straightforward logging via the log package, and structured logging via log/slog (Go 1.21+).
-package main
-
-import (
-    "log"
-    "log/slog"
-    "os"
-)
-
-func main() {
-    log.Println("standard logger")
-    log.SetPrefix("my-app: ")
-    log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-    log.Println("with prefix and microseconds")
-
-    mylog := log.New(os.Stdout, "custom: ", log.LstdFlags)
-    mylog.Println("from custom logger")
-
-    // Structured logging with slog
-    slog.Info("starting app", "version", "1.0.0")
-    slog.Warn("connection slow", "latency_ms", 450)
-
-    // JSON handler
-    jsonHandler := slog.NewJSONHandler(os.Stdout, nil)
-    jsonLogger := slog.New(jsonHandler)
-    jsonLogger.Info("user login", "user", "alice", "ip", "203.0.113.10")
-}
-
-▶ Run in Go Playground
-
-
-Spawning Processes
-Sometimes a Go program needs to spawn other processes. os/exec runs external commands and captures their output.
-package main
-
-import (
-    "fmt"
-    "os/exec"
-)
-
-func main() {
-    // Simple command
-    out, err := exec.Command("date").Output()
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println("date:", string(out))
-
-    // Command with args + piping
-    grep := exec.Command("grep", "hello")
-    grep.Stdin = nil
-    grepIn, _ := grep.StdinPipe()
-    grepOut, _ := grep.StdoutPipe()
-    grep.Start()
-    grepIn.Write([]byte("hello grep\ngoodbye grep"))
-    grepIn.Close()
-    grepBytes, _ := fmt.Println(grepOut)
-    _ = grepBytes
-    grep.Wait()
-}
-
-▶ Run in Go Playground
-
-
-Exec'ing Processes
-Sometimes we want to completely replace the current Go process with another. syscall.Exec does this (Unix only) — the Go program disappears and the new process takes over its PID.
-package main
-
-import (
-    "os"
-    "os/exec"
-    "syscall"
-)
-
-func main() {
-    binary, err := exec.LookPath("ls")
-    if err != nil {
-        panic(err)
-    }
-    args := []string{"ls", "-a", "-l", "-h"}
-    env := os.Environ()
-    execErr := syscall.Exec(binary, args, env)
-    if execErr != nil {
-        panic(execErr)
-    }
-}
-
-▶ Run in Go Playground
-
-
-Signals
-Go programs can handle Unix signals for graceful shutdown. The os/signal package notifies a channel when signals arrive.
-package main
-
-import (
-    "fmt"
-    "os"
-    "os/signal"
-    "syscall"
-)
-
-func main() {
-    sigs := make(chan os.Signal, 1)
-    signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-    done := make(chan bool, 1)
-    go func() {
-        sig := &lt;-sigs
-        fmt.Println()
-        fmt.Println("received:", sig)
-        done &lt;- true
-    }()
-
-    fmt.Println("awaiting signal (press Ctrl+C)")
-    &lt;-done
-    fmt.Println("exiting")
-}
-
-▶ Run in Go Playground
-
-
-Exit
-Use os.Exit to immediately exit with a status code. Deferred functions will NOT run. Use this for scripts/CLI tools, not libraries.
-package main
-
-import (
-    "fmt"
-    "os"
-)
-
-func main() {
-    defer fmt.Println("!") // this will NOT be printed
-    os.Exit(3)
-}
-
-▶ Run in Go Playground
-
-14. HTTP Infrastructure</a></li>
+<li class="toc-l3"><a href="#logging">Logging</a></li>
+<li class="toc-l3"><a href="#spawning-processes">Spawning Processes</a></li>
+<li class="toc-l3"><a href="#execing-processes">Exec'ing Processes</a></li>
+<li class="toc-l3"><a href="#signals">Signals</a></li>
+<li class="toc-l3"><a href="#exit">Exit</a></li>
+<li class="toc-l2"><a href="#14-http-infrastructure-2">14. HTTP Infrastructure</a></li>
 <li class="toc-l3"><a href="#http-client">HTTP Client</a></li>
 <li class="toc-l3"><a href="#http-server">HTTP Server</a></li>
 <li class="toc-l3"><a href="#tcp-server">TCP Server</a></li>
@@ -3340,10 +3204,9 @@ func main() {
 
 ---
 
-<h2 id="explanations-blocks-properly-escaped-and-playground-buttons-">`, explanations, `<pre><code>` blocks (properly escaped), and playground buttons.
 
 
-<h3>Logging</h3>
+<h3 id="logging">Logging</h3>
 <p>Go's standard library provides straightforward logging via the <code>log</code> package, and structured logging via <code>log/slog</code> (Go 1.21+).</p>
 <pre><code>package main
 
@@ -3375,7 +3238,7 @@ func main() {
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
-<h3>Spawning Processes</h3>
+<h3 id="spawning-processes">Spawning Processes</h3>
 <p>Sometimes a Go program needs to spawn other processes. <code>os/exec</code> runs external commands and captures their output.</p>
 <pre><code>package main
 
@@ -3408,7 +3271,7 @@ func main() {
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
-<h3>Exec'ing Processes</h3>
+<h3 id="execing-processes">Exec'ing Processes</h3>
 <p>Sometimes we want to completely replace the current Go process with another. <code>syscall.Exec</code> does this (Unix only) — the Go program disappears and the new process takes over its PID.</p>
 <pre><code>package main
 
@@ -3434,7 +3297,7 @@ func main() {
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
-<h3>Signals</h3>
+<h3 id="signals">Signals</h3>
 <p>Go programs can handle Unix signals for graceful shutdown. The <code>os/signal</code> package notifies a channel when signals arrive.</p>
 <pre><code>package main
 
@@ -3465,7 +3328,7 @@ func main() {
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
-<h3>Exit</h3>
+<h3 id="exit">Exit</h3>
 <p>Use <code>os.Exit</code> to immediately exit with a status code. Deferred functions will NOT run. Use this for scripts/CLI tools, not libraries.</p>
 <pre><code>package main
 
@@ -3481,7 +3344,7 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>14. HTTP Infrastructure</h2>
+<h2 id="14-http-infrastructure-2">14. HTTP Infrastructure</h2>
 <h3 id="http-client">HTTP Client</h3>
 <p>Go's <code>net/http</code> package makes it easy to make HTTP requests. The default client handles most needs; for production, configure timeouts.</p>
 <pre><code>package main
