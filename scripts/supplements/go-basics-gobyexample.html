@@ -1,26 +1,4 @@
 <!-- Go by Example: Complete reference with "Run in Go Playground" buttons -->
-<script>
-document.addEventListener('click', function(e) {
-  var btn = e.target.closest('.playground-btn');
-  if (!btn) return;
-  e.preventDefault();
-  var pre = btn.previousElementSibling;
-  while (pre && pre.tagName !== 'PRE') pre = pre.previousElementSibling;
-  if (!pre) return;
-  var code = pre.querySelector('code');
-  if (!code) return;
-  var src = code.textContent;
-  btn.textContent = '⏳ Loading…';
-  fetch('https://go.dev/_/share', { method: 'POST', body: src })
-    .then(function(r) { return r.text(); })
-    .then(function(hash) { window.open('https://go.dev/play/p/' + hash, '_blank'); btn.textContent = '▶ Run in Go Playground'; })
-    .catch(function() { window.open('https://go.dev/play/', '_blank'); btn.textContent = '▶ Run in Go Playground'; });
-});
-</script>
-<style>
-.playground-btn{display:inline-block;margin:-8px 0 20px;padding:6px 14px;font-size:.82rem;font-weight:600;color:#7c87ff;background:rgba(124,135,255,.08);border:1px solid rgba(124,135,255,.25);border-radius:6px;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s}
-.playground-btn:hover{background:rgba(124,135,255,.15);border-color:rgba(124,135,255,.5);text-decoration:none}
-</style>
 
 <h2>Go by Example — Organized Reference</h2>
 <p>All topics from <a href="https://gobyexample.com/" target="_blank">Go by Example</a>, organized under the matching course sections. Click <strong>"▶ Run in Go Playground"</strong> to run any example live.</p>
@@ -37,7 +15,6 @@ func main() {
     fmt.Println("hello world")
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Values</h3>
@@ -55,7 +32,6 @@ func main() {
     fmt.Println(!true)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Variables</h3>
@@ -81,7 +57,6 @@ func main() {
     fmt.Println(f)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Constants</h3>
@@ -104,7 +79,6 @@ func main() {
     fmt.Println(math.Sin(n))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h2>6. Control Flow & Loop Scope Mechanics</h2>
@@ -142,7 +116,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>If/Else</h3>
@@ -172,7 +145,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Switch</h3>
@@ -213,7 +185,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h2>7. Functions, Defer, and Error Handling</h2>
@@ -239,7 +210,6 @@ func main() {
     fmt.Println("1+2+3 =", res)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Multiple Return Values</h3>
@@ -262,7 +232,6 @@ func main() {
     fmt.Println(c)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Variadic Functions</h3>
@@ -288,7 +257,6 @@ func main() {
     sum(nums...) // spread a slice
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Closures</h3>
@@ -315,7 +283,6 @@ func main() {
     fmt.Println(newInts()) // 1 — fresh closure
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Recursion</h3>
@@ -345,7 +312,6 @@ func main() {
     fmt.Println(fib(7)) // 13
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 ```html
 <h3>Defer</h3>
 <p><code>defer</code> ensures a function call is performed later, usually for cleanup. It's commonly used to close files, unlock mutexes, or print a footer. Deferred calls execute in LIFO order when the surrounding function returns.</p>
@@ -385,7 +351,6 @@ func closeFile(f *os.File) {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Panic</h3>
@@ -404,7 +369,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Recover</h3>
@@ -444,7 +408,6 @@ func main() {
     fmt.Println("Result:", result, "Error:", err)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Errors</h3>
@@ -480,7 +443,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/errors" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Custom Errors</h3>
@@ -523,7 +485,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/custom-errors" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h2>8. Data Structures and Mutation</h2>
@@ -555,7 +516,6 @@ func main() {
     fmt.Println("2d:", twoD)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Slices</h3>
@@ -588,7 +548,6 @@ func main() {
     fmt.Println("dcl:", t)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Maps</h3>
@@ -618,7 +577,6 @@ func main() {
     fmt.Println("map:", n)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Sorting</h3>
@@ -642,7 +600,6 @@ func main() {
     fmt.Println("Sorted: ", slices.IsSorted(ints))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Sorting by Functions</h3>
@@ -677,7 +634,6 @@ func main() {
     fmt.Println(people)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Range over Built-in Types</h3>
@@ -714,7 +670,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/range-builtins" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h2>9. Structs, Methods, and Interfaces</h2>
@@ -750,7 +705,6 @@ func main() {
     fmt.Println("pointer:", &amp;i)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/pointers" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Strings and Runes</h3>
@@ -787,7 +741,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/strings-runes" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Structs</h3>
@@ -837,7 +790,6 @@ func main() {
     fmt.Println(sp.age)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/structs" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Methods</h3>
@@ -881,7 +833,6 @@ func main() {
     fmt.Println("after scale, area:", r.area())
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/methods" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Interfaces</h3>
@@ -938,7 +889,6 @@ func main() {
     measure(c)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/interfaces" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Enums</h3>
@@ -994,7 +944,6 @@ func main() {
     fmt.Println(ns2) // idle
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/enums" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Struct Embedding</h3>
@@ -1039,7 +988,6 @@ func main() {
     fmt.Println("describer:", d.describe())
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/struct-embedding" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h2>10. Generics</h2>
@@ -1098,7 +1046,6 @@ func main() {
     fmt.Println("list:", lst.GetAll())
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/generics" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Range over Iterators</h3>
@@ -1133,7 +1080,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/range-iterators" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h2>11. Concurrency Patterns</h2>
@@ -1151,7 +1097,6 @@ func main() {
     fmt.Println(&lt;-messages)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Channel Synchronization</h3>
@@ -1176,7 +1121,6 @@ func main() {
     &lt;-done
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Channel Directions</h3>
@@ -1202,7 +1146,6 @@ func main() {
     fmt.Println(&lt;-pongs)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Select</h3>
@@ -1237,7 +1180,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Timeouts</h3>
@@ -1275,7 +1217,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Non-Blocking Channel Operations</h3>
@@ -1313,7 +1254,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Closing Channels</h3>
@@ -1348,7 +1288,6 @@ func main() {
     &lt;-done
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Range over Channels</h3>
@@ -1368,7 +1307,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Timers</h3>
@@ -1397,7 +1335,6 @@ func main() {
     time.Sleep(2 * time.Second)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Tickers</h3>
@@ -1430,7 +1367,6 @@ func main() {
     fmt.Println("Ticker stopped")
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Worker Pools</h3>
@@ -1470,7 +1406,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>WaitGroups</h3>
@@ -1502,7 +1437,6 @@ func main() {
     wg.Wait()
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Rate Limiting</h3>
@@ -1550,7 +1484,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Atomic Counters</h3>
@@ -1580,7 +1513,6 @@ func main() {
     fmt.Println("ops:", ops.Load()) // 50000
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Mutexes</h3>
@@ -1622,7 +1554,6 @@ func main() {
     fmt.Println(c.counters) // map[a:20000 b:10000]
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Stateful Goroutines</h3>
@@ -1695,7 +1626,6 @@ func main() {
     fmt.Println("writeOps:", writeOps.Load())
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Context</h3>
@@ -1723,7 +1653,6 @@ func main() {
     doWork(ctx) // prints "cancelled: context deadline exceeded"
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Goroutines</h3>
@@ -1757,7 +1686,6 @@ func main() {
     fmt.Println("all workers done")
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/goroutines" target="_blank" rel="noopener">Try in Go Playground</a>
 
 
 <h3>Channels</h3>
@@ -1798,7 +1726,6 @@ func main() {
     fmt.Println("finished")
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/channels" target="_blank" rel="noopener">Try in Go Playground</a>
 ```
 
 
@@ -1822,7 +1749,6 @@ func main() {
     fmt.Printf("%x\n", bs)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Testing and Benchmarking</h3>
@@ -1870,7 +1796,6 @@ func BenchmarkIntMin(b *testing.B) {
 }
 </code></pre>
 <p>Run: <code>go test -v</code> | Bench: <code>go test -bench=.</code></p>
-<a class="playground-btn" href="https://go.dev/play/p/testing-and-benchmarking">Try in Go Playground</a>
 
 
 <h2>13. Modern System Standard Utilities</h2>
@@ -1897,7 +1822,6 @@ func main() {
     fmt.Println("ToUpper:   ", strings.ToUpper("test"))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>String Formatting</h3>
@@ -1934,7 +1858,6 @@ func main() {
     fmt.Println(s)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Text Templates</h3>
@@ -1967,7 +1890,6 @@ func main() {
     t4.Execute(os.Stdout, []string{"Go", "Rust", "C"})
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Regular Expressions</h3>
@@ -1992,7 +1914,6 @@ func main() {
     fmt.Println(r.ReplaceAllString("a peach", "&lt;fruit&gt;"))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>JSON</h3>
@@ -2052,7 +1973,6 @@ func main() {
     enc.Encode(map[string]int{"apple": 5, "lettuce": 7})
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>XML</h3>
@@ -2085,7 +2005,6 @@ func main() {
     fmt.Println(p)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Time</h3>
@@ -2123,7 +2042,6 @@ func main() {
     fmt.Println(then.Add(-diff))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Epoch</h3>
@@ -2147,7 +2065,6 @@ func main() {
     fmt.Println(time.Unix(0, now.UnixNano()))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Time Formatting / Parsing</h3>
@@ -2175,7 +2092,6 @@ func main() {
         t.Hour(), t.Minute(), t.Second())
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Random Numbers</h3>
@@ -2206,7 +2122,6 @@ func main() {
     fmt.Println()
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Number Parsing</h3>
@@ -2238,7 +2153,6 @@ func main() {
     fmt.Println(e)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>URL Parsing</h3>
@@ -2273,7 +2187,6 @@ func main() {
     fmt.Println(m["k"][0])
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Base64 Encoding</h3>
@@ -2301,7 +2214,6 @@ func main() {
     fmt.Println(string(uDec))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Reading Files</h3>
@@ -2341,7 +2253,6 @@ func main() {
     fmt.Printf("%d bytes @ %d: %s\n", n2, o2, string(b2[:n2]))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 Here's the HTML fragment covering Go by Example topics 66–76:
 
 <h3>Writing Files</h3>
@@ -2378,7 +2289,6 @@ func main() {
     w.Flush()
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/writing-files">Try in Go Playground</a>
 
 
 <h3>Line Filters</h3>
@@ -2404,7 +2314,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/line-filters">Try in Go Playground</a>
 
 
 <h3>File Paths</h3>
@@ -2442,7 +2351,6 @@ func main() {
     fmt.Println(rel)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/file-paths">Try in Go Playground</a>
 
 
 <h3>Directories</h3>
@@ -2485,7 +2393,6 @@ func main() {
     })
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/directories">Try in Go Playground</a>
 
 
 <h3>Temporary Files and Directories</h3>
@@ -2515,7 +2422,6 @@ func main() {
     os.WriteFile(fname, []byte{1, 2}, 0666)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/temporary-files-and-directories">Try in Go Playground</a>
 
 
 <h3>Embed Directive</h3>
@@ -2549,7 +2455,6 @@ func main() {
 }
 </code></pre>
 <p><strong>Project structure required:</strong> <code>single_file.txt</code> + <code>folder/</code> with matching files must exist at build time.</p>
-<a class="playground-btn" href="https://go.dev/play/p/embed-directive">Try in Go Playground</a>
 
 
 <h3>Environment Variables</h3>
@@ -2581,7 +2486,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/environment-variables">Try in Go Playground</a>
 
 ---
 
@@ -2616,7 +2520,6 @@ func main() {
     jsonLogger.Info("user login", "user", "alice", "ip", "203.0.113.10")
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Spawning Processes</h3>
@@ -2649,7 +2552,6 @@ func main() {
     grep.Wait()
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Exec'ing Processes</h3>
@@ -2675,7 +2577,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Signals</h3>
@@ -2706,7 +2607,6 @@ func main() {
     fmt.Println("exiting")
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>Exit</h3>
@@ -2723,7 +2623,6 @@ func main() {
     os.Exit(3)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 <h2>14. HTTP Infrastructure</h2>
 <h3>HTTP Client</h3>
@@ -2748,7 +2647,6 @@ func main() {
     fmt.Println(string(body[:100]))
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>HTTP Server</h3>
@@ -2779,7 +2677,6 @@ func main() {
     http.ListenAndServe(":8090", nil)
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h3>TCP Server</h3>
@@ -2812,7 +2709,6 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
 
 <h2>15. Structural Production Layout & Deployment</h2>
@@ -2835,7 +2731,6 @@ func main() {
     fmt.Println(arg)
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/command-line-arguments">Try in Go Playground</a>
 
 
 <h3>Command-Line Flags</h3>
@@ -2864,7 +2759,6 @@ func main() {
     fmt.Println("tail:", flag.Args())
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/command-line-flags">Try in Go Playground</a>
 
 
 <h3>Command-Line Subcommands</h3>
@@ -2908,6 +2802,5 @@ func main() {
     }
 }
 </code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/command-line-subcommands">Try in Go Playground</a>
 
 

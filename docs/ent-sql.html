@@ -45,6 +45,8 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 .toc-l3 a{color:var(--muted);font-size:0.88rem;}
 .toc-back{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
 .toc-back:hover{opacity:1;}
+.playground-float{position:fixed;bottom:24px;right:90px;background:#1a1d27;color:var(--accent);border:1px solid var(--accent);padding:8px 12px;border-radius:8px;font-size:0.75rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
+.playground-float:hover{opacity:1;background:rgba(124,135,255,.12);text-decoration:none;}
 </style>
 </head>
 <body>
@@ -147,6 +149,7 @@ SQL</code></pre><p>Soft delete</p><p>Instead of</p><pre><code>DELETE FROM users;
 SET deleted_at=NOW();</code></pre><p>Common hooks:</p><ul><li>Validation</li><li>Audit logging</li><li>Password hashing</li><li>Soft delete</li><li>Timestamp updates</li></ul><p><a href="https://entgo.io/docs/hooks">https://entgo.io/docs/hooks</a></p><p><a href="https://entgo.io/docs/interceptors">https://entgo.io/docs/interceptors</a></p><p><a href="https://entgo.io/docs/privacy">https://entgo.io/docs/privacy</a></p><h2 id="10-atlas-migrations">10. Atlas Migrations</h2><p>Development</p><table><thead><tr><th><p><strong>client</strong>.Schema.Create(<strong>ctx</strong>)</p></th></tr></thead></table><p>Production</p><pre><code>atlas migrate diff
 atlas migrate apply</code></pre><p><a href="https://entgo.io/docs/migrate">https://entgo.io/docs/migrate</a></p><p><a href="https://entgo.io/docs/versioned-migrations">https://entgo.io/docs/versioned-migrations</a></p><p><a href="https://atlasgo.io/">https://atlasgo.io/</a></p><h2 id="11-best-practices">11. Best Practices</h2><ul><li>Keep schemas focused</li><li>Review generated SQL</li><li>Use transactions</li><li>Use eager loading to avoid N+1</li><li>Use Atlas in production</li></ul><p><a href="https://entgo.io/docs/testing">https://entgo.io/docs/testing</a></p><p><a href="https://entgo.io/docs/faq">https://entgo.io/docs/faq</a></p>
 </div>
+<a href="https://go.dev/play/" target="_blank" class="playground-float">▶ Go Playground</a>
 <a href="#" class="toc-back">&#8593; Top</a>
 </body>
 </html>

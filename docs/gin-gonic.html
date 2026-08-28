@@ -45,6 +45,8 @@ hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
 .toc-l3 a{color:var(--muted);font-size:0.88rem;}
 .toc-back{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
 .toc-back:hover{opacity:1;}
+.playground-float{position:fixed;bottom:24px;right:90px;background:#1a1d27;color:var(--accent);border:1px solid var(--accent);padding:8px 12px;border-radius:8px;font-size:0.75rem;font-weight:600;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:.88;}
+.playground-float:hover{opacity:1;background:rgba(124,135,255,.12);text-decoration:none;}
 </style>
 </head>
 <body>
@@ -469,6 +471,7 @@ go build -o ./tmp/server ./cmd/server
 GIN_MODE=release ./tmp/server</code></pre><p># Optional JSON encoder build tags supported by Gin:</p><pre><code>go build -tags=jsoniter ./cmd/server
 go build -tags=go_json ./cmd/server</code></pre><p># Optional: reduce binary size by disabling MsgPack rendering support:</p><p>go build -tags=nomsgpack ./cmd/server</p><h2 id="20-migration-notes-from-the-old-tutorial">20. Migration notes from the old tutorial</h2><ul><li>The old examples still teach important basics: routes, path params, query params, forms, uploads, route groups, middleware, rendering, cookies, trusted proxies, and testing.</li><li>Prefer modern Go modules over GOPATH-era workflows.</li><li>Prefer ShouldBind* for almost every real application because it lets you choose JSON, HTML, or SSE validation responses.</li><li>For frontend pages, templ components are easier to refactor than string-based templates and work well for Datastar fragments.</li><li>For live UI, Datastar SSE lets your Gin handlers stream DOM updates without converting the page into a SPA.</li></ul>
 </div>
+<a href="https://go.dev/play/" target="_blank" class="playground-float">▶ Go Playground</a>
 <a href="#" class="toc-back">&#8593; Top</a>
 </body>
 </html>
