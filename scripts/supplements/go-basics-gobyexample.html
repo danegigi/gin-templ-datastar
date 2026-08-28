@@ -22,11 +22,12 @@ document.addEventListener('click', function(e) {
 .playground-btn:hover{background:rgba(124,135,255,.15);border-color:rgba(124,135,255,.5);text-decoration:none}
 </style>
 
-<h2>Go by Example — Complete Reference</h2>
-<p>Every topic from <a href="https://gobyexample.com/" target="_blank">Go by Example</a> with explanations and runnable code. Click <strong>"▶ Run in Go Playground"</strong> to open any example live.</p>
+<h2>Go by Example — Organized Reference</h2>
+<p>All topics from <a href="https://gobyexample.com/" target="_blank">Go by Example</a>, organized under the matching course sections. Click <strong>"▶ Run in Go Playground"</strong> to run any example live.</p>
 <hr/>
 
-<h2>Hello World</h2>
+<h2>5. Variables, Constants, and Types</h2>
+<h3>Hello World</h3>
 <p>The classic first program. Every Go program starts with a <code>package main</code> declaration and a <code>func main()</code> entry point. <code>fmt.Println</code> prints a line to standard output.</p>
 <pre><code>package main
 
@@ -38,7 +39,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Values</h2>
+
+<h3>Values</h3>
 <p>Go has various value types including strings, integers, floats, and booleans. Here are a few basic examples.</p>
 <pre><code>package main
 
@@ -55,7 +57,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Variables</h2>
+
+<h3>Variables</h3>
 <p>In Go, variables are explicitly declared. The compiler uses the type to check correctness of function calls. <code>var</code> declares variables; <code>:=</code> is shorthand for declare-and-initialize inside functions.</p>
 <pre><code>package main
 
@@ -80,7 +83,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Constants</h2>
+
+<h3>Constants</h3>
 <p>Go supports constants of character, string, boolean, and numeric values. <code>const</code> declares a constant value that cannot be changed after assignment. Constants can appear anywhere a <code>var</code> can but with the <code>const</code> keyword.</p>
 <pre><code>package main
 
@@ -102,7 +106,9 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>For</h2>
+
+<h2>6. Control Flow & Loop Scope Mechanics</h2>
+<h3>For</h3>
 <p><code>for</code> is Go's only looping construct. It covers traditional for, while, and infinite loops — there is no <code>while</code> keyword.</p>
 <pre><code>package main
 
@@ -138,7 +144,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>If/Else</h2>
+
+<h3>If/Else</h3>
 <p>Branching with <code>if</code> and <code>else</code>. Parentheses are not needed around conditions, but braces are required. You can put a short statement before the condition — its variables are scoped to the if/else block.</p>
 <pre><code>package main
 
@@ -167,7 +174,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Switch</h2>
+
+<h3>Switch</h3>
 <p>Switch statements express conditionals across many branches. Go's switch is cleaner than C's: it doesn't need <code>break</code> statements and cases don't fall through by default.</p>
 <pre><code>package main
 
@@ -207,7 +215,319 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Arrays</h2>
+
+<h2>7. Functions, Defer, and Error Handling</h2>
+<h3>Functions</h3>
+<p>Functions are central in Go. They are defined with <code>func</code> and can take zero or more arguments and return zero or more values.</p>
+<pre><code>package main
+
+import "fmt"
+
+func plus(a int, b int) int {
+    return a + b
+}
+
+func plusPlus(a, b, c int) int {
+    return a + b + c
+}
+
+func main() {
+    res := plus(1, 2)
+    fmt.Println("1+2 =", res)
+
+    res = plusPlus(1, 2, 3)
+    fmt.Println("1+2+3 =", res)
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Multiple Return Values</h3>
+<p>Go has built-in support for multiple return values. This is used idiomatically to return both result and error values from a function.</p>
+<pre><code>package main
+
+import "fmt"
+
+func vals() (int, int) {
+    return 3, 7
+}
+
+func main() {
+    a, b := vals()
+    fmt.Println(a)
+    fmt.Println(b)
+
+    // Use _ to ignore a return value
+    _, c := vals()
+    fmt.Println(c)
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Variadic Functions</h3>
+<p>Variadic functions can be called with any number of trailing arguments. <code>fmt.Println</code> is a common variadic function.</p>
+<pre><code>package main
+
+import "fmt"
+
+func sum(nums ...int) {
+    fmt.Print(nums, " ")
+    total := 0
+    for _, num := range nums {
+        total += num
+    }
+    fmt.Println(total)
+}
+
+func main() {
+    sum(1, 2)
+    sum(1, 2, 3)
+
+    nums := []int{1, 2, 3, 4}
+    sum(nums...) // spread a slice
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Closures</h3>
+<p>Go supports anonymous functions, which can form closures. Anonymous functions are useful when you want to define a function inline without naming it. A closure captures variables from its surrounding scope.</p>
+<pre><code>package main
+
+import "fmt"
+
+func intSeq() func() int {
+    i := 0
+    return func() int {
+        i++
+        return i
+    }
+}
+
+func main() {
+    nextInt := intSeq()
+    fmt.Println(nextInt()) // 1
+    fmt.Println(nextInt()) // 2
+    fmt.Println(nextInt()) // 3
+
+    newInts := intSeq()
+    fmt.Println(newInts()) // 1 — fresh closure
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Recursion</h3>
+<p>Go supports recursive functions. A classic example is factorial.</p>
+<pre><code>package main
+
+import "fmt"
+
+func fact(n int) int {
+    if n == 0 {
+        return 1
+    }
+    return n * fact(n-1)
+}
+
+func main() {
+    fmt.Println(fact(7)) // 5040
+
+    // Recursive anonymous function (closure)
+    var fib func(n int) int
+    fib = func(n int) int {
+        if n &lt; 2 {
+            return n
+        }
+        return fib(n-1) + fib(n-2)
+    }
+    fmt.Println(fib(7)) // 13
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+```html
+<h3>Defer</h3>
+<p><code>defer</code> ensures a function call is performed later, usually for cleanup. It's commonly used to close files, unlock mutexes, or print a footer. Deferred calls execute in LIFO order when the surrounding function returns.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    f := createFile("/tmp/defer.txt")
+    defer closeFile(f)
+    writeFile(f)
+}
+
+func createFile(p string) *os.File {
+    fmt.Println("creating")
+    f, err := os.Create(p)
+    if err != nil {
+        panic(err)
+    }
+    return f
+}
+
+func writeFile(f *os.File) {
+    fmt.Println("writing")
+    fmt.Fprintln(f, "data")
+}
+
+func closeFile(f *os.File) {
+    fmt.Println("closing")
+    err := f.Close()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "error: %v\n", err)
+        os.Exit(1)
+    }
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Panic</h3>
+<p>A <code>panic</code> means something went unexpectedly wrong. Typically we use it for errors that shouldn't occur during normal operation — programmer errors, not user input errors.</p>
+<pre><code>package main
+
+import "os"
+
+func main() {
+    panic("a problem")
+
+    // A common use: abort if a function returns an unexpected error
+    _, err := os.Create("/tmp/file")
+    if err != nil {
+        panic(err)
+    }
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Recover</h3>
+<p><code>recover</code> catches a panic and resumes normal execution. It must be called inside a deferred function. This is useful for libraries that shouldn't crash the caller on unexpected errors.</p>
+<pre><code>package main
+
+import "fmt"
+
+func mayPanic() {
+    panic("a problem")
+}
+
+func safeDiv(a, b int) (result int, err error) {
+    defer func() {
+        if r := recover(); r != nil {
+            err = fmt.Errorf("recovered: %v", r)
+        }
+    }()
+    return a / b, nil
+}
+
+func main() {
+    // Recover from a panic
+    func() {
+        defer func() {
+            if r := recover(); r != nil {
+                fmt.Println("Recovered:", r)
+            }
+        }()
+        mayPanic()
+    }()
+
+    fmt.Println("After mayPanic()")
+
+    // Practical use: safe division
+    result, err := safeDiv(10, 0)
+    fmt.Println("Result:", result, "Error:", err)
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Errors</h3>
+<p>In Go, errors are values. Functions communicate errors by returning a value of type <code>error</code> as their last return value. A nil error means success; a non-nil error carries a message describing what went wrong.</p>
+<pre><code class="language-go">package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("cannot divide by zero")
+    }
+    return a / b, nil
+}
+
+func main() {
+    result, err := divide(10, 3)
+    if err != nil {
+        fmt.Println("error:", err)
+    } else {
+        fmt.Printf("10 / 3 = %.2f\n", result)
+    }
+
+    // This will produce an error
+    result, err = divide(10, 0)
+    if err != nil {
+        fmt.Println("error:", err)
+    } else {
+        fmt.Printf("10 / 0 = %.2f\n", result)
+    }
+}
+</code></pre>
+<a class="playground-btn" href="https://go.dev/play/p/errors" target="_blank" rel="noopener">Try in Go Playground</a>
+
+
+<h3>Custom Errors</h3>
+<p>You can create custom error types by implementing the <code>error</code> interface (which requires only an <code>Error() string</code> method). Custom errors let callers inspect error details using type assertions or <code>errors.As</code>.</p>
+<pre><code class="language-go">package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+// ArgError is a custom error type with extra context
+type ArgError struct {
+    Arg     int
+    Message string
+}
+
+func (e *ArgError) Error() string {
+    return fmt.Sprintf("%d - %s", e.Arg, e.Message)
+}
+
+func doSomething(arg int) (int, error) {
+    if arg == 42 {
+        return -1, &amp;ArgError{Arg: arg, Message: "can't work with it"}
+    }
+    return arg + 3, nil
+}
+
+func main() {
+    _, err := doSomething(42)
+    if err != nil {
+        // Use errors.As to check for a specific error type
+        var ae *ArgError
+        if errors.As(err, &amp;ae) {
+            fmt.Println("arg:", ae.Arg)
+            fmt.Println("message:", ae.Message)
+        } else {
+            fmt.Println("unexpected error:", err)
+        }
+    }
+}
+</code></pre>
+<a class="playground-btn" href="https://go.dev/play/p/custom-errors" target="_blank" rel="noopener">Try in Go Playground</a>
+
+
+<h2>8. Data Structures and Mutation</h2>
+<h3>Arrays</h3>
 <p>An array is a numbered sequence of elements of a fixed length. Arrays are values in Go — assigning one copies all elements. In typical Go code, slices are much more common than arrays.</p>
 <pre><code>package main
 
@@ -237,7 +557,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Slices</h2>
+
+<h3>Slices</h3>
 <p>Slices are a key data type in Go, giving a more powerful interface than arrays. Unlike arrays, slices are dynamically-sized. They have a length and a capacity, backed by an underlying array.</p>
 <pre><code>package main
 
@@ -269,7 +590,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Maps</h2>
+
+<h3>Maps</h3>
 <p>Maps are Go's built-in associative data type (sometimes called hashes or dicts in other languages). They map keys to values and are created with <code>make</code> or a literal.</p>
 <pre><code>package main
 
@@ -298,133 +620,67 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Functions</h2>
-<p>Functions are central in Go. They are defined with <code>func</code> and can take zero or more arguments and return zero or more values.</p>
+
+<h3>Sorting</h3>
+<p>Go's <code>slices</code> package implements sorting for built-in and user-defined types.</p>
 <pre><code>package main
 
-import "fmt"
-
-func plus(a int, b int) int {
-    return a + b
-}
-
-func plusPlus(a, b, c int) int {
-    return a + b + c
-}
+import (
+    "fmt"
+    "slices"
+)
 
 func main() {
-    res := plus(1, 2)
-    fmt.Println("1+2 =", res)
+    strs := []string{"c", "a", "b"}
+    slices.Sort(strs)
+    fmt.Println("Strings:", strs)
 
-    res = plusPlus(1, 2, 3)
-    fmt.Println("1+2+3 =", res)
+    ints := []int{7, 2, 4}
+    slices.Sort(ints)
+    fmt.Println("Ints:   ", ints)
+
+    fmt.Println("Sorted: ", slices.IsSorted(ints))
 }
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Multiple Return Values</h2>
-<p>Go has built-in support for multiple return values. This is used idiomatically to return both result and error values from a function.</p>
+
+<h3>Sorting by Functions</h3>
+<p>Sometimes you want to sort a collection by something other than its natural order. Use <code>slices.SortFunc</code> with a custom comparison function.</p>
 <pre><code>package main
 
-import "fmt"
-
-func vals() (int, int) {
-    return 3, 7
-}
+import (
+    "cmp"
+    "fmt"
+    "slices"
+)
 
 func main() {
-    a, b := vals()
-    fmt.Println(a)
-    fmt.Println(b)
-
-    // Use _ to ignore a return value
-    _, c := vals()
-    fmt.Println(c)
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Variadic Functions</h2>
-<p>Variadic functions can be called with any number of trailing arguments. <code>fmt.Println</code> is a common variadic function.</p>
-<pre><code>package main
-
-import "fmt"
-
-func sum(nums ...int) {
-    fmt.Print(nums, " ")
-    total := 0
-    for _, num := range nums {
-        total += num
+    fruits := []string{"peach", "kiwi", "apple", "pear"}
+    // Sort by length
+    lenCmp := func(a, b string) int {
+        return cmp.Compare(len(a), len(b))
     }
-    fmt.Println(total)
-}
+    slices.SortFunc(fruits, lenCmp)
+    fmt.Println(fruits) // [kiwi pear peach apple]
 
-func main() {
-    sum(1, 2)
-    sum(1, 2, 3)
-
-    nums := []int{1, 2, 3, 4}
-    sum(nums...) // spread a slice
+    type Person struct {
+        Name string
+        Age  int
+    }
+    people := []Person{
+        {"Jax", 37}, {"TJ", 25}, {"Alex", 72},
+    }
+    slices.SortFunc(people, func(a, b Person) int {
+        return cmp.Compare(a.Age, b.Age)
+    })
+    fmt.Println(people)
 }
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Closures</h2>
-<p>Go supports anonymous functions, which can form closures. Anonymous functions are useful when you want to define a function inline without naming it. A closure captures variables from its surrounding scope.</p>
-<pre><code>package main
 
-import "fmt"
-
-func intSeq() func() int {
-    i := 0
-    return func() int {
-        i++
-        return i
-    }
-}
-
-func main() {
-    nextInt := intSeq()
-    fmt.Println(nextInt()) // 1
-    fmt.Println(nextInt()) // 2
-    fmt.Println(nextInt()) // 3
-
-    newInts := intSeq()
-    fmt.Println(newInts()) // 1 — fresh closure
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Recursion</h2>
-<p>Go supports recursive functions. A classic example is factorial.</p>
-<pre><code>package main
-
-import "fmt"
-
-func fact(n int) int {
-    if n == 0 {
-        return 1
-    }
-    return n * fact(n-1)
-}
-
-func main() {
-    fmt.Println(fact(7)) // 5040
-
-    // Recursive anonymous function (closure)
-    var fib func(n int) int
-    fib = func(n int) int {
-        if n &lt; 2 {
-            return n
-        }
-        return fib(n-1) + fib(n-2)
-    }
-    fmt.Println(fib(7)) // 13
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-```html
-<h2 id="range-over-built-in-types">Range over Built-in Types</h2>
+<h3>Range over Built-in Types</h3>
 <p><code>range</code> iterates over elements in a variety of built-in data structures. Let's see how to use <code>range</code> with slices, maps, and strings.</p>
 <pre><code class="language-go">package main
 
@@ -460,7 +716,9 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/range-builtins" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="pointers">Pointers</h2>
+
+<h2>9. Structs, Methods, and Interfaces</h2>
+<h3>Pointers</h3>
 <p>Go supports pointers, allowing you to pass references to values and records within your program. A pointer holds the memory address of a value. The <code>&amp;</code> operator generates a pointer to its operand, and the <code>*</code> operator dereferences a pointer.</p>
 <pre><code class="language-go">package main
 
@@ -494,7 +752,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/pointers" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="strings-and-runes">Strings and Runes</h2>
+
+<h3>Strings and Runes</h3>
 <p>A Go string is a read-only slice of bytes. The language and standard library treat strings specially — as containers of text encoded in UTF-8. A <code>rune</code> is an alias for <code>int32</code> and represents a Unicode code point.</p>
 <pre><code class="language-go">package main
 
@@ -530,7 +789,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/strings-runes" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="structs">Structs</h2>
+
+<h3>Structs</h3>
 <p>Go's <em>structs</em> are typed collections of fields. They're useful for grouping data together to form records. Structs are value types — when assigned or passed, they are copied.</p>
 <pre><code class="language-go">package main
 
@@ -579,7 +839,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/structs" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="methods">Methods</h2>
+
+<h3>Methods</h3>
 <p>Go supports <em>methods</em> defined on struct types. A method is a function with a special <em>receiver</em> argument. You can define methods with pointer receivers (to mutate state) or value receivers (read-only).</p>
 <pre><code class="language-go">package main
 
@@ -622,7 +883,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/methods" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="interfaces">Interfaces</h2>
+
+<h3>Interfaces</h3>
 <p>Interfaces are named collections of method signatures. They are implemented implicitly — a type implements an interface by implementing its methods. No explicit "implements" declaration is needed.</p>
 <pre><code class="language-go">package main
 
@@ -678,7 +940,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/interfaces" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="enums">Enums</h2>
+
+<h3>Enums</h3>
 <p>Go doesn't have a dedicated enum keyword but uses typed constants with <code>iota</code> to create enumerated types. This pattern gives you type safety and auto-incrementing values.</p>
 <pre><code class="language-go">package main
 
@@ -733,7 +996,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/enums" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="struct-embedding">Struct Embedding</h2>
+
+<h3>Struct Embedding</h3>
 <p>Go supports <em>embedding</em> of structs and interfaces to express a more seamless <em>composition</em> of types. This is not inheritance — it's composition where the embedded type's methods are promoted to the embedding struct.</p>
 <pre><code class="language-go">package main
 
@@ -777,7 +1041,9 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/struct-embedding" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="generics">Generics</h2>
+
+<h2>10. Generics</h2>
+<h3>Generics</h3>
 <p>Starting with Go 1.18, the language supports generics via type parameters. This lets you write functions and types that work with multiple types while remaining type-safe at compile time.</p>
 <pre><code class="language-go">package main
 
@@ -834,7 +1100,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/generics" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="range-over-iterators">Range over Iterators</h2>
+
+<h3>Range over Iterators</h3>
 <p>Starting with Go 1.23, you can use <code>range</code> over custom iterator functions. An iterator is a function that takes a <code>yield</code> callback and calls it for each element. This enables <code>for...range</code> syntax over any sequence.</p>
 <pre><code class="language-go">package main
 
@@ -868,158 +1135,9 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/range-iterators" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2 id="errors">Errors</h2>
-<p>In Go, errors are values. Functions communicate errors by returning a value of type <code>error</code> as their last return value. A nil error means success; a non-nil error carries a message describing what went wrong.</p>
-<pre><code class="language-go">package main
 
-import (
-    "errors"
-    "fmt"
-)
-
-func divide(a, b float64) (float64, error) {
-    if b == 0 {
-        return 0, errors.New("cannot divide by zero")
-    }
-    return a / b, nil
-}
-
-func main() {
-    result, err := divide(10, 3)
-    if err != nil {
-        fmt.Println("error:", err)
-    } else {
-        fmt.Printf("10 / 3 = %.2f\n", result)
-    }
-
-    // This will produce an error
-    result, err = divide(10, 0)
-    if err != nil {
-        fmt.Println("error:", err)
-    } else {
-        fmt.Printf("10 / 0 = %.2f\n", result)
-    }
-}
-</code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/errors" target="_blank" rel="noopener">Try in Go Playground</a>
-
-<h2 id="custom-errors">Custom Errors</h2>
-<p>You can create custom error types by implementing the <code>error</code> interface (which requires only an <code>Error() string</code> method). Custom errors let callers inspect error details using type assertions or <code>errors.As</code>.</p>
-<pre><code class="language-go">package main
-
-import (
-    "errors"
-    "fmt"
-)
-
-// ArgError is a custom error type with extra context
-type ArgError struct {
-    Arg     int
-    Message string
-}
-
-func (e *ArgError) Error() string {
-    return fmt.Sprintf("%d - %s", e.Arg, e.Message)
-}
-
-func doSomething(arg int) (int, error) {
-    if arg == 42 {
-        return -1, &amp;ArgError{Arg: arg, Message: "can't work with it"}
-    }
-    return arg + 3, nil
-}
-
-func main() {
-    _, err := doSomething(42)
-    if err != nil {
-        // Use errors.As to check for a specific error type
-        var ae *ArgError
-        if errors.As(err, &amp;ae) {
-            fmt.Println("arg:", ae.Arg)
-            fmt.Println("message:", ae.Message)
-        } else {
-            fmt.Println("unexpected error:", err)
-        }
-    }
-}
-</code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/custom-errors" target="_blank" rel="noopener">Try in Go Playground</a>
-
-<h2 id="goroutines">Goroutines</h2>
-<p>A <em>goroutine</em> is a lightweight thread of execution managed by the Go runtime. You start one by placing <code>go</code> before a function call. Goroutines run concurrently with the calling code and with each other.</p>
-<pre><code class="language-go">package main
-
-import (
-    "fmt"
-    "time"
-)
-
-func worker(id int) {
-    fmt.Printf("Worker %d starting\n", id)
-    time.Sleep(time.Second)
-    fmt.Printf("Worker %d done\n", id)
-}
-
-func main() {
-    // Start several goroutines
-    for i := 1; i &lt;= 5; i++ {
-        go worker(i)
-    }
-
-    // You can also start a goroutine with an anonymous function
-    go func(msg string) {
-        fmt.Println(msg)
-    }("going")
-
-    // Wait for goroutines to finish (in real code, use sync.WaitGroup)
-    time.Sleep(2 * time.Second)
-    fmt.Println("all workers done")
-}
-</code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/goroutines" target="_blank" rel="noopener">Try in Go Playground</a>
-
-<h2 id="channels">Channels</h2>
-<p>Channels are the pipes that connect concurrent goroutines. You can send values into channels from one goroutine and receive those values in another. By default, sends and receives block until both sides are ready, enabling synchronization without locks.</p>
-<pre><code class="language-go">package main
-
-import "fmt"
-
-func main() {
-    // Create a new channel with make(chan val-type)
-    messages := make(chan string)
-
-    // Send a value into a channel from a goroutine
-    go func() {
-        messages &lt;- "ping"
-    }()
-
-    // Receive a value from the channel
-    msg := &lt;-messages
-    fmt.Println(msg)
-
-    // Buffered channels accept a limited number of values
-    // without a corresponding receiver
-    ch := make(chan int, 2)
-    ch &lt;- 1
-    ch &lt;- 2
-
-    fmt.Println(&lt;-ch)
-    fmt.Println(&lt;-ch)
-
-    // Channels can be used for synchronization
-    done := make(chan bool)
-    go func() {
-        fmt.Println("working...")
-        done &lt;- true
-    }()
-    &lt;-done
-    fmt.Println("finished")
-}
-</code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/channels" target="_blank" rel="noopener">Try in Go Playground</a>
-```
-
-<h2>Channel Buffering</h2>
+<h2>11. Concurrency Patterns</h2>
+<h3>Channel Buffering</h3>
 <p>By default channels are unbuffered — they only accept sends if there's a corresponding receive ready. Buffered channels accept a limited number of values without a corresponding receiver.</p>
 <pre><code>package main
 
@@ -1035,7 +1153,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Channel Synchronization</h2>
+
+<h3>Channel Synchronization</h3>
 <p>We can use channels to synchronize execution across goroutines. A blocking receive waits for the sender to complete.</p>
 <pre><code>package main
 
@@ -1059,7 +1178,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Channel Directions</h2>
+
+<h3>Channel Directions</h3>
 <p>When using channels as function parameters, you can specify if a channel is meant to only send or receive values, increasing type-safety.</p>
 <pre><code>package main
 
@@ -1084,7 +1204,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Select</h2>
+
+<h3>Select</h3>
 <p>Go's <code>select</code> lets you wait on multiple channel operations. It's like a switch but for channels — it blocks until one case can proceed.</p>
 <pre><code>package main
 
@@ -1118,7 +1239,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Timeouts</h2>
+
+<h3>Timeouts</h3>
 <p>Timeouts are important for programs that connect to external resources. Implementing timeouts in Go is easy with channels and <code>select</code>.</p>
 <pre><code>package main
 
@@ -1155,7 +1277,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Non-Blocking Channel Operations</h2>
+
+<h3>Non-Blocking Channel Operations</h3>
 <p>A <code>select</code> with a <code>default</code> case implements a non-blocking send, receive, or multi-way select.</p>
 <pre><code>package main
 
@@ -1192,7 +1315,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Closing Channels</h2>
+
+<h3>Closing Channels</h3>
 <p>Closing a channel indicates that no more values will be sent on it. This is useful to communicate completion to a receiver.</p>
 <pre><code>package main
 
@@ -1226,7 +1350,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Range over Channels</h2>
+
+<h3>Range over Channels</h3>
 <p>You can use <code>for</code>...<code>range</code> to iterate over values received from a channel, automatically ending when the channel is closed.</p>
 <pre><code>package main
 
@@ -1245,7 +1370,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Timers</h2>
+
+<h3>Timers</h3>
 <p>Timers fire once in the future. They're useful when you want to wait or do something after a specific duration.</p>
 <pre><code>package main
 
@@ -1273,7 +1399,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Tickers</h2>
+
+<h3>Tickers</h3>
 <p>Tickers are for when you want to do something repeatedly at regular intervals, unlike timers which fire once.</p>
 <pre><code>package main
 
@@ -1305,7 +1432,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Worker Pools</h2>
+
+<h3>Worker Pools</h3>
 <p>A worker pool is a common concurrency pattern: a fixed number of goroutines process jobs from a shared channel. This limits concurrency while keeping throughput high.</p>
 <pre><code>package main
 
@@ -1344,7 +1472,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>WaitGroups</h2>
+
+<h3>WaitGroups</h3>
 <p>A <code>sync.WaitGroup</code> waits for a collection of goroutines to finish. Add to the counter before launching, call Done when each finishes, and Wait blocks until the counter is zero.</p>
 <pre><code>package main
 
@@ -1375,7 +1504,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Rate Limiting</h2>
+
+<h3>Rate Limiting</h3>
 <p>Rate limiting is an important mechanism for controlling resource utilization and maintaining quality of service. Go supports rate limiting with goroutines, channels, and tickers.</p>
 <pre><code>package main
 
@@ -1422,7 +1552,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Atomic Counters</h2>
+
+<h3>Atomic Counters</h3>
 <p>The <code>sync/atomic</code> package provides low-level atomic operations on integers, useful for simple shared state accessed by multiple goroutines without a full mutex.</p>
 <pre><code>package main
 
@@ -1451,7 +1582,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Mutexes</h2>
+
+<h3>Mutexes</h3>
 <p>For more complex shared state, use a <code>sync.Mutex</code> to safely access data across multiple goroutines.</p>
 <pre><code>package main
 
@@ -1492,7 +1624,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Stateful Goroutines</h2>
+
+<h3>Stateful Goroutines</h3>
 <p>An alternative to mutexes: use a single goroutine that owns the state, and communicate via channels. This is the "share memory by communicating" approach.</p>
 <pre><code>package main
 
@@ -1564,161 +1697,184 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Sorting</h2>
-<p>Go's <code>slices</code> package implements sorting for built-in and user-defined types.</p>
+
+<h3>Context</h3>
+<p><code>context.Context</code> carries deadlines, cancellation signals, and request-scoped values across API boundaries and goroutines. It's the standard way to control long-running operations.</p>
 <pre><code>package main
 
 import (
+    "context"
     "fmt"
-    "slices"
+    "time"
 )
 
+func doWork(ctx context.Context) {
+    select {
+    case &lt;-time.After(5 * time.Second):
+        fmt.Println("work done")
+    case &lt;-ctx.Done():
+        fmt.Println("cancelled:", ctx.Err())
+    }
+}
+
 func main() {
-    strs := []string{"c", "a", "b"}
-    slices.Sort(strs)
-    fmt.Println("Strings:", strs)
-
-    ints := []int{7, 2, 4}
-    slices.Sort(ints)
-    fmt.Println("Ints:   ", ints)
-
-    fmt.Println("Sorted: ", slices.IsSorted(ints))
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
+    doWork(ctx) // prints "cancelled: context deadline exceeded"
 }
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Sorting by Functions</h2>
-<p>Sometimes you want to sort a collection by something other than its natural order. Use <code>slices.SortFunc</code> with a custom comparison function.</p>
-<pre><code>package main
 
-import (
-    "cmp"
-    "fmt"
-    "slices"
-)
-
-func main() {
-    fruits := []string{"peach", "kiwi", "apple", "pear"}
-    // Sort by length
-    lenCmp := func(a, b string) int {
-        return cmp.Compare(len(a), len(b))
-    }
-    slices.SortFunc(fruits, lenCmp)
-    fmt.Println(fruits) // [kiwi pear peach apple]
-
-    type Person struct {
-        Name string
-        Age  int
-    }
-    people := []Person{
-        {"Jax", 37}, {"TJ", 25}, {"Alex", 72},
-    }
-    slices.SortFunc(people, func(a, b Person) int {
-        return cmp.Compare(a.Age, b.Age)
-    })
-    fmt.Println(people)
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Panic</h2>
-<p>A <code>panic</code> means something went unexpectedly wrong. Typically we use it for errors that shouldn't occur during normal operation — programmer errors, not user input errors.</p>
-<pre><code>package main
-
-import "os"
-
-func main() {
-    panic("a problem")
-
-    // A common use: abort if a function returns an unexpected error
-    _, err := os.Create("/tmp/file")
-    if err != nil {
-        panic(err)
-    }
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Defer</h2>
-<p><code>defer</code> ensures a function call is performed later, usually for cleanup. It's commonly used to close files, unlock mutexes, or print a footer. Deferred calls execute in LIFO order when the surrounding function returns.</p>
-<pre><code>package main
+<h3>Goroutines</h3>
+<p>A <em>goroutine</em> is a lightweight thread of execution managed by the Go runtime. You start one by placing <code>go</code> before a function call. Goroutines run concurrently with the calling code and with each other.</p>
+<pre><code class="language-go">package main
 
 import (
     "fmt"
-    "os"
+    "time"
 )
 
+func worker(id int) {
+    fmt.Printf("Worker %d starting\n", id)
+    time.Sleep(time.Second)
+    fmt.Printf("Worker %d done\n", id)
+}
+
 func main() {
-    f := createFile("/tmp/defer.txt")
-    defer closeFile(f)
-    writeFile(f)
-}
-
-func createFile(p string) *os.File {
-    fmt.Println("creating")
-    f, err := os.Create(p)
-    if err != nil {
-        panic(err)
+    // Start several goroutines
+    for i := 1; i &lt;= 5; i++ {
+        go worker(i)
     }
-    return f
-}
 
-func writeFile(f *os.File) {
-    fmt.Println("writing")
-    fmt.Fprintln(f, "data")
-}
+    // You can also start a goroutine with an anonymous function
+    go func(msg string) {
+        fmt.Println(msg)
+    }("going")
 
-func closeFile(f *os.File) {
-    fmt.Println("closing")
-    err := f.Close()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "error: %v\n", err)
-        os.Exit(1)
-    }
+    // Wait for goroutines to finish (in real code, use sync.WaitGroup)
+    time.Sleep(2 * time.Second)
+    fmt.Println("all workers done")
 }
 </code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+<a class="playground-btn" href="https://go.dev/play/p/goroutines" target="_blank" rel="noopener">Try in Go Playground</a>
 
-<h2>Recover</h2>
-<p><code>recover</code> catches a panic and resumes normal execution. It must be called inside a deferred function. This is useful for libraries that shouldn't crash the caller on unexpected errors.</p>
-<pre><code>package main
+
+<h3>Channels</h3>
+<p>Channels are the pipes that connect concurrent goroutines. You can send values into channels from one goroutine and receive those values in another. By default, sends and receives block until both sides are ready, enabling synchronization without locks.</p>
+<pre><code class="language-go">package main
 
 import "fmt"
 
-func mayPanic() {
-    panic("a problem")
-}
+func main() {
+    // Create a new channel with make(chan val-type)
+    messages := make(chan string)
 
-func safeDiv(a, b int) (result int, err error) {
-    defer func() {
-        if r := recover(); r != nil {
-            err = fmt.Errorf("recovered: %v", r)
-        }
+    // Send a value into a channel from a goroutine
+    go func() {
+        messages &lt;- "ping"
     }()
-    return a / b, nil
+
+    // Receive a value from the channel
+    msg := &lt;-messages
+    fmt.Println(msg)
+
+    // Buffered channels accept a limited number of values
+    // without a corresponding receiver
+    ch := make(chan int, 2)
+    ch &lt;- 1
+    ch &lt;- 2
+
+    fmt.Println(&lt;-ch)
+    fmt.Println(&lt;-ch)
+
+    // Channels can be used for synchronization
+    done := make(chan bool)
+    go func() {
+        fmt.Println("working...")
+        done &lt;- true
+    }()
+    &lt;-done
+    fmt.Println("finished")
 }
+</code></pre>
+<a class="playground-btn" href="https://go.dev/play/p/channels" target="_blank" rel="noopener">Try in Go Playground</a>
+```
+
+
+
+<h2>12. Testing, Fuzzing, and Security</h2>
+<h3>SHA256 Hashes</h3>
+<p>SHA256 hashes are frequently used to compute short identities for binary or text blobs. Go implements several hash functions in the <code>crypto/*</code> packages.</p>
+<pre><code>package main
+
+import (
+    "crypto/sha256"
+    "fmt"
+)
 
 func main() {
-    // Recover from a panic
-    func() {
-        defer func() {
-            if r := recover(); r != nil {
-                fmt.Println("Recovered:", r)
-            }
-        }()
-        mayPanic()
-    }()
-
-    fmt.Println("After mayPanic()")
-
-    // Practical use: safe division
-    result, err := safeDiv(10, 0)
-    fmt.Println("Result:", result, "Error:", err)
+    s := "sha256 this string"
+    h := sha256.New()
+    h.Write([]byte(s))
+    bs := h.Sum(nil)
+    fmt.Println(s)
+    fmt.Printf("%x\n", bs)
 }
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>String Functions</h2>
+
+<h3>Testing and Benchmarking</h3>
+<p>Tests go in <code>*_test.go</code> files. Use <code>t.Run</code> for table-driven tests and <code>*testing.B</code> for benchmarks.</p>
+<pre><code>// intutils.go
+package main
+
+func IntMin(a, b int) int {
+    if a &lt; b { return a }
+    return b
+}
+</code></pre>
+<pre><code>// intutils_test.go
+package main
+
+import (
+    "fmt"
+    "testing"
+)
+
+func TestIntMinBasic(t *testing.T) {
+    ans := IntMin(2, -2)
+    if ans != -2 {
+        t.Errorf("IntMin(2, -2) = %d; want -2", ans)
+    }
+}
+
+func TestIntMinTableDriven(t *testing.T) {
+    tests := []struct{ a, b, want int }{
+        {0, 1, 0}, {1, 0, 0}, {2, -2, -2}, {0, -1, -1}, {-1, 0, -1},
+    }
+    for _, tt := range tests {
+        t.Run(fmt.Sprintf("%d,%d", tt.a, tt.b), func(t *testing.T) {
+            if ans := IntMin(tt.a, tt.b); ans != tt.want {
+                t.Errorf("got %d, want %d", ans, tt.want)
+            }
+        })
+    }
+}
+
+func BenchmarkIntMin(b *testing.B) {
+    for i := 0; i &lt; b.N; i++ {
+        IntMin(1, 2)
+    }
+}
+</code></pre>
+<p>Run: <code>go test -v</code> | Bench: <code>go test -bench=.</code></p>
+<a class="playground-btn" href="https://go.dev/play/p/testing-and-benchmarking">Try in Go Playground</a>
+
+
+<h2>13. Modern System Standard Utilities</h2>
+<h3>String Functions</h3>
 <p>The standard library's <code>strings</code> package provides many useful string-related functions. Here are some examples to give you a sense of the package.</p>
 <pre><code>package main
 
@@ -1743,7 +1899,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>String Formatting</h2>
+
+<h3>String Formatting</h3>
 <p>Go offers excellent support for string formatting via <code>fmt.Sprintf</code> and the <code>Printf</code> family. The verbs control how values are printed.</p>
 <pre><code>package main
 
@@ -1779,7 +1936,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Text Templates</h2>
+
+<h3>Text Templates</h3>
 <p>Go's <code>text/template</code> package implements data-driven templates for generating textual output. It's the basis for Go's HTML templating too.</p>
 <pre><code>package main
 
@@ -1811,7 +1969,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Regular Expressions</h2>
+
+<h3>Regular Expressions</h3>
 <p>Go's <code>regexp</code> package implements regular expression search. The syntax is RE2 (guaranteed linear time).</p>
 <pre><code>package main
 
@@ -1835,7 +1994,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>JSON</h2>
+
+<h3>JSON</h3>
 <p>Go's <code>encoding/json</code> package handles JSON encoding and decoding, including to/from structs, maps, and custom types.</p>
 <pre><code>package main
 
@@ -1894,7 +2054,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>XML</h2>
+
+<h3>XML</h3>
 <p>Go's <code>encoding/xml</code> package supports XML, similar to JSON. Struct field tags control the output element names.</p>
 <pre><code>package main
 
@@ -1926,7 +2087,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Time</h2>
+
+<h3>Time</h3>
 <p>Go's <code>time</code> package provides functionality for representing and manipulating time.</p>
 <pre><code>package main
 
@@ -1963,7 +2125,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Epoch</h2>
+
+<h3>Epoch</h3>
 <p>Programs often need to get the number of seconds, milliseconds, or nanoseconds since the Unix epoch.</p>
 <pre><code>package main
 
@@ -1986,7 +2149,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Time Formatting / Parsing</h2>
+
+<h3>Time Formatting / Parsing</h3>
 <p>Go uses pattern-based time formatting. The reference time is <code>Mon Jan 2 15:04:05 MST 2006</code> — you rearrange its components to define your format.</p>
 <pre><code>package main
 
@@ -2013,7 +2177,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Random Numbers</h2>
+
+<h3>Random Numbers</h3>
 <p>Go's <code>math/rand/v2</code> package provides pseudo-random number generation. For cryptographic randomness, use <code>crypto/rand</code>.</p>
 <pre><code>package main
 
@@ -2043,7 +2208,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Number Parsing</h2>
+
+<h3>Number Parsing</h3>
 <p>Parsing numbers from strings is a basic but common task; the <code>strconv</code> package handles it.</p>
 <pre><code>package main
 
@@ -2074,7 +2240,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>URL Parsing</h2>
+
+<h3>URL Parsing</h3>
 <p>URLs provide a uniform way to locate resources. The <code>net/url</code> package parses URLs into their components.</p>
 <pre><code>package main
 
@@ -2108,27 +2275,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>SHA256 Hashes</h2>
-<p>SHA256 hashes are frequently used to compute short identities for binary or text blobs. Go implements several hash functions in the <code>crypto/*</code> packages.</p>
-<pre><code>package main
 
-import (
-    "crypto/sha256"
-    "fmt"
-)
-
-func main() {
-    s := "sha256 this string"
-    h := sha256.New()
-    h.Write([]byte(s))
-    bs := h.Sum(nil)
-    fmt.Println(s)
-    fmt.Printf("%x\n", bs)
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Base64 Encoding</h2>
+<h3>Base64 Encoding</h3>
 <p>Go provides built-in support for base64 encoding/decoding.</p>
 <pre><code>package main
 
@@ -2155,7 +2303,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 
-<h2>Reading Files</h2>
+
+<h3>Reading Files</h3>
 <p>Reading files is one of the most basic tasks. Go's <code>os</code> package provides the tools.</p>
 <pre><code>package main
 
@@ -2195,7 +2344,7 @@ func main() {
 <a class="playground-btn" href="#">▶ Run in Go Playground</a>
 Here's the HTML fragment covering Go by Example topics 66–76:
 
-<h2 id="writing-files">Writing Files</h2>
+<h3>Writing Files</h3>
 <p>Writing files in Go follows similar patterns to reading. Go provides multiple approaches from simple one-shot writes to buffered writing for performance.</p>
 <pre><code>package main
 
@@ -2231,7 +2380,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/writing-files">Try in Go Playground</a>
 
-<h2 id="line-filters">Line Filters</h2>
+
+<h3>Line Filters</h3>
 <p>A line filter reads input on stdin, processes it, and prints results to stdout. Uses <code>bufio.Scanner</code>.</p>
 <pre><code>package main
 
@@ -2256,7 +2406,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/line-filters">Try in Go Playground</a>
 
-<h2 id="file-paths">File Paths</h2>
+
+<h3>File Paths</h3>
 <p>The <code>filepath</code> package provides portable path manipulation — Join, Dir, Base, Ext, Rel, IsAbs.</p>
 <pre><code>package main
 
@@ -2293,7 +2444,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/file-paths">Try in Go Playground</a>
 
-<h2 id="directories">Directories</h2>
+
+<h3>Directories</h3>
 <p>Create, list, and walk directories using <code>os.Mkdir</code>, <code>os.MkdirAll</code>, <code>os.ReadDir</code>, and <code>filepath.WalkDir</code>.</p>
 <pre><code>package main
 
@@ -2335,7 +2487,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/directories">Try in Go Playground</a>
 
-<h2 id="temporary-files-and-directories">Temporary Files and Directories</h2>
+
+<h3>Temporary Files and Directories</h3>
 <p><code>os.CreateTemp</code> and <code>os.MkdirTemp</code> create temporary files/dirs. The "*" in patterns is replaced with a random value.</p>
 <pre><code>package main
 
@@ -2364,7 +2517,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/temporary-files-and-directories">Try in Go Playground</a>
 
-<h2 id="embed-directive">Embed Directive</h2>
+
+<h3>Embed Directive</h3>
 <p><code>//go:embed</code> bakes file contents into the binary at compile time. Supports strings, byte slices, and <code>embed.FS</code> for multiple files.</p>
 <pre><code>package main
 
@@ -2397,54 +2551,273 @@ func main() {
 <p><strong>Project structure required:</strong> <code>single_file.txt</code> + <code>folder/</code> with matching files must exist at build time.</p>
 <a class="playground-btn" href="https://go.dev/play/p/embed-directive">Try in Go Playground</a>
 
-<h2 id="testing-and-benchmarking">Testing and Benchmarking</h2>
-<p>Tests go in <code>*_test.go</code> files. Use <code>t.Run</code> for table-driven tests and <code>*testing.B</code> for benchmarks.</p>
-<pre><code>// intutils.go
-package main
 
-func IntMin(a, b int) int {
-    if a &lt; b { return a }
-    return b
-}
-</code></pre>
-<pre><code>// intutils_test.go
-package main
+<h3>Environment Variables</h3>
+<p><code>os.Setenv</code>, <code>os.Getenv</code>, <code>os.LookupEnv</code> (distinguishes unset from empty), and <code>os.Environ</code> (all vars).</p>
+<pre><code>package main
 
 import (
     "fmt"
-    "testing"
+    "os"
+    "strings"
 )
 
-func TestIntMinBasic(t *testing.T) {
-    ans := IntMin(2, -2)
-    if ans != -2 {
-        t.Errorf("IntMin(2, -2) = %d; want -2", ans)
-    }
-}
+func main() {
+    os.Setenv("FOO", "1")
+    fmt.Println("FOO:", os.Getenv("FOO"))
+    fmt.Println("BAR:", os.Getenv("BAR"))
 
-func TestIntMinTableDriven(t *testing.T) {
-    tests := []struct{ a, b, want int }{
-        {0, 1, 0}, {1, 0, 0}, {2, -2, -2}, {0, -1, -1}, {-1, 0, -1},
+    val, ok := os.LookupEnv("BAR")
+    if !ok {
+        fmt.Println("BAR is not set")
+    } else {
+        fmt.Println("BAR:", val)
     }
-    for _, tt := range tests {
-        t.Run(fmt.Sprintf("%d,%d", tt.a, tt.b), func(t *testing.T) {
-            if ans := IntMin(tt.a, tt.b); ans != tt.want {
-                t.Errorf("got %d, want %d", ans, tt.want)
-            }
-        })
-    }
-}
 
-func BenchmarkIntMin(b *testing.B) {
-    for i := 0; i &lt; b.N; i++ {
-        IntMin(1, 2)
+    fmt.Println()
+    for _, e := range os.Environ() {
+        pair := strings.SplitN(e, "=", 2)
+        fmt.Println(pair[0])
     }
 }
 </code></pre>
-<p>Run: <code>go test -v</code> | Bench: <code>go test -bench=.</code></p>
-<a class="playground-btn" href="https://go.dev/play/p/testing-and-benchmarking">Try in Go Playground</a>
+<a class="playground-btn" href="https://go.dev/play/p/environment-variables">Try in Go Playground</a>
 
-<h2 id="command-line-arguments">Command-Line Arguments</h2>
+---
+
+<h2>`, explanations, `<pre><code>` blocks (properly escaped), and playground buttons.
+
+
+<h3>Logging</h3>
+<p>Go's standard library provides straightforward logging via the <code>log</code> package, and structured logging via <code>log/slog</code> (Go 1.21+).</p>
+<pre><code>package main
+
+import (
+    "log"
+    "log/slog"
+    "os"
+)
+
+func main() {
+    log.Println("standard logger")
+    log.SetPrefix("my-app: ")
+    log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+    log.Println("with prefix and microseconds")
+
+    mylog := log.New(os.Stdout, "custom: ", log.LstdFlags)
+    mylog.Println("from custom logger")
+
+    // Structured logging with slog
+    slog.Info("starting app", "version", "1.0.0")
+    slog.Warn("connection slow", "latency_ms", 450)
+
+    // JSON handler
+    jsonHandler := slog.NewJSONHandler(os.Stdout, nil)
+    jsonLogger := slog.New(jsonHandler)
+    jsonLogger.Info("user login", "user", "alice", "ip", "203.0.113.10")
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Spawning Processes</h3>
+<p>Sometimes a Go program needs to spawn other processes. <code>os/exec</code> runs external commands and captures their output.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "os/exec"
+)
+
+func main() {
+    // Simple command
+    out, err := exec.Command("date").Output()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println("date:", string(out))
+
+    // Command with args + piping
+    grep := exec.Command("grep", "hello")
+    grep.Stdin = nil
+    grepIn, _ := grep.StdinPipe()
+    grepOut, _ := grep.StdoutPipe()
+    grep.Start()
+    grepIn.Write([]byte("hello grep\ngoodbye grep"))
+    grepIn.Close()
+    grepBytes, _ := fmt.Println(grepOut)
+    _ = grepBytes
+    grep.Wait()
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Exec'ing Processes</h3>
+<p>Sometimes we want to completely replace the current Go process with another. <code>syscall.Exec</code> does this (Unix only) — the Go program disappears and the new process takes over its PID.</p>
+<pre><code>package main
+
+import (
+    "os"
+    "os/exec"
+    "syscall"
+)
+
+func main() {
+    binary, err := exec.LookPath("ls")
+    if err != nil {
+        panic(err)
+    }
+    args := []string{"ls", "-a", "-l", "-h"}
+    env := os.Environ()
+    execErr := syscall.Exec(binary, args, env)
+    if execErr != nil {
+        panic(execErr)
+    }
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Signals</h3>
+<p>Go programs can handle Unix signals for graceful shutdown. The <code>os/signal</code> package notifies a channel when signals arrive.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "os"
+    "os/signal"
+    "syscall"
+)
+
+func main() {
+    sigs := make(chan os.Signal, 1)
+    signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+    done := make(chan bool, 1)
+    go func() {
+        sig := &lt;-sigs
+        fmt.Println()
+        fmt.Println("received:", sig)
+        done &lt;- true
+    }()
+
+    fmt.Println("awaiting signal (press Ctrl+C)")
+    &lt;-done
+    fmt.Println("exiting")
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>Exit</h3>
+<p>Use <code>os.Exit</code> to immediately exit with a status code. Deferred functions will NOT run. Use this for scripts/CLI tools, not libraries.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    defer fmt.Println("!") // this will NOT be printed
+    os.Exit(3)
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+<h2>14. HTTP Infrastructure</h2>
+<h3>HTTP Client</h3>
+<p>Go's <code>net/http</code> package makes it easy to make HTTP requests. The default client handles most needs; for production, configure timeouts.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    resp, err := http.Get("https://httpbin.org/get")
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+
+    fmt.Println("Status:", resp.Status)
+    body, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(body[:100]))
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>HTTP Server</h3>
+<p>Writing a basic HTTP server in Go is straightforward. Handlers are functions with a standard signature. The server runs until stopped.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func hello(w http.ResponseWriter, req *http.Request) {
+    fmt.Fprintf(w, "hello\n")
+}
+
+func headers(w http.ResponseWriter, req *http.Request) {
+    for name, headers := range req.Header {
+        for _, h := range headers {
+            fmt.Fprintf(w, "%v: %v\n", name, h)
+        }
+    }
+}
+
+func main() {
+    http.HandleFunc("/hello", hello)
+    http.HandleFunc("/headers", headers)
+    fmt.Println("Listening on :8090")
+    http.ListenAndServe(":8090", nil)
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h3>TCP Server</h3>
+<p>Go's <code>net</code> package provides low-level networking. Here's a TCP echo server that handles each connection in its own goroutine.</p>
+<pre><code>package main
+
+import (
+    "fmt"
+    "io"
+    "net"
+)
+
+func handleConn(conn net.Conn) {
+    defer conn.Close()
+    io.Copy(conn, conn) // echo back
+}
+
+func main() {
+    ln, err := net.Listen("tcp", ":9000")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println("TCP echo server on :9000")
+    for {
+        conn, err := ln.Accept()
+        if err != nil {
+            continue
+        }
+        go handleConn(conn)
+    }
+}
+</code></pre>
+<a class="playground-btn" href="#">▶ Run in Go Playground</a>
+
+
+<h2>15. Structural Production Layout & Deployment</h2>
+<h3>Command-Line Arguments</h3>
 <p>Raw CLI args via <code>os.Args</code>. Index 0 is the program path; real arguments start at [1:].</p>
 <pre><code>package main
 
@@ -2465,7 +2838,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/command-line-arguments">Try in Go Playground</a>
 
-<h2 id="command-line-flags">Command-Line Flags</h2>
+
+<h3>Command-Line Flags</h3>
 <p>The <code>flag</code> package handles typed flags with defaults, descriptions, and auto-generated <code>-h</code> output.</p>
 <pre><code>package main
 
@@ -2493,7 +2867,8 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/command-line-flags">Try in Go Playground</a>
 
-<h2 id="command-line-subcommands">Command-Line Subcommands</h2>
+
+<h3>Command-Line Subcommands</h3>
 <p>Use <code>flag.NewFlagSet</code> for each subcommand, then parse based on <code>os.Args[1]</code>.</p>
 <pre><code>package main
 
@@ -2536,284 +2911,4 @@ func main() {
 </code></pre>
 <a class="playground-btn" href="https://go.dev/play/p/command-line-subcommands">Try in Go Playground</a>
 
-<h2 id="environment-variables">Environment Variables</h2>
-<p><code>os.Setenv</code>, <code>os.Getenv</code>, <code>os.LookupEnv</code> (distinguishes unset from empty), and <code>os.Environ</code> (all vars).</p>
-<pre><code>package main
 
-import (
-    "fmt"
-    "os"
-    "strings"
-)
-
-func main() {
-    os.Setenv("FOO", "1")
-    fmt.Println("FOO:", os.Getenv("FOO"))
-    fmt.Println("BAR:", os.Getenv("BAR"))
-
-    val, ok := os.LookupEnv("BAR")
-    if !ok {
-        fmt.Println("BAR is not set")
-    } else {
-        fmt.Println("BAR:", val)
-    }
-
-    fmt.Println()
-    for _, e := range os.Environ() {
-        pair := strings.SplitN(e, "=", 2)
-        fmt.Println(pair[0])
-    }
-}
-</code></pre>
-<a class="playground-btn" href="https://go.dev/play/p/environment-variables">Try in Go Playground</a>
-
----
-
-Saved as artifact `go-by-example-66-76`. All 11 topics covered in order with `<h2>`, explanations, `<pre><code>` blocks (properly escaped), and playground buttons.
-
-<h2>Logging</h2>
-<p>Go's standard library provides straightforward logging via the <code>log</code> package, and structured logging via <code>log/slog</code> (Go 1.21+).</p>
-<pre><code>package main
-
-import (
-    "log"
-    "log/slog"
-    "os"
-)
-
-func main() {
-    log.Println("standard logger")
-    log.SetPrefix("my-app: ")
-    log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-    log.Println("with prefix and microseconds")
-
-    mylog := log.New(os.Stdout, "custom: ", log.LstdFlags)
-    mylog.Println("from custom logger")
-
-    // Structured logging with slog
-    slog.Info("starting app", "version", "1.0.0")
-    slog.Warn("connection slow", "latency_ms", 450)
-
-    // JSON handler
-    jsonHandler := slog.NewJSONHandler(os.Stdout, nil)
-    jsonLogger := slog.New(jsonHandler)
-    jsonLogger.Info("user login", "user", "alice", "ip", "203.0.113.10")
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>HTTP Client</h2>
-<p>Go's <code>net/http</code> package makes it easy to make HTTP requests. The default client handles most needs; for production, configure timeouts.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "io"
-    "net/http"
-)
-
-func main() {
-    resp, err := http.Get("https://httpbin.org/get")
-    if err != nil {
-        panic(err)
-    }
-    defer resp.Body.Close()
-
-    fmt.Println("Status:", resp.Status)
-    body, _ := io.ReadAll(resp.Body)
-    fmt.Println(string(body[:100]))
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>HTTP Server</h2>
-<p>Writing a basic HTTP server in Go is straightforward. Handlers are functions with a standard signature. The server runs until stopped.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "net/http"
-)
-
-func hello(w http.ResponseWriter, req *http.Request) {
-    fmt.Fprintf(w, "hello\n")
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-    for name, headers := range req.Header {
-        for _, h := range headers {
-            fmt.Fprintf(w, "%v: %v\n", name, h)
-        }
-    }
-}
-
-func main() {
-    http.HandleFunc("/hello", hello)
-    http.HandleFunc("/headers", headers)
-    fmt.Println("Listening on :8090")
-    http.ListenAndServe(":8090", nil)
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>TCP Server</h2>
-<p>Go's <code>net</code> package provides low-level networking. Here's a TCP echo server that handles each connection in its own goroutine.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "io"
-    "net"
-)
-
-func handleConn(conn net.Conn) {
-    defer conn.Close()
-    io.Copy(conn, conn) // echo back
-}
-
-func main() {
-    ln, err := net.Listen("tcp", ":9000")
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println("TCP echo server on :9000")
-    for {
-        conn, err := ln.Accept()
-        if err != nil {
-            continue
-        }
-        go handleConn(conn)
-    }
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Context</h2>
-<p><code>context.Context</code> carries deadlines, cancellation signals, and request-scoped values across API boundaries and goroutines. It's the standard way to control long-running operations.</p>
-<pre><code>package main
-
-import (
-    "context"
-    "fmt"
-    "time"
-)
-
-func doWork(ctx context.Context) {
-    select {
-    case &lt;-time.After(5 * time.Second):
-        fmt.Println("work done")
-    case &lt;-ctx.Done():
-        fmt.Println("cancelled:", ctx.Err())
-    }
-}
-
-func main() {
-    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-    defer cancel()
-    doWork(ctx) // prints "cancelled: context deadline exceeded"
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Spawning Processes</h2>
-<p>Sometimes a Go program needs to spawn other processes. <code>os/exec</code> runs external commands and captures their output.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "os/exec"
-)
-
-func main() {
-    // Simple command
-    out, err := exec.Command("date").Output()
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println("date:", string(out))
-
-    // Command with args + piping
-    grep := exec.Command("grep", "hello")
-    grep.Stdin = nil
-    grepIn, _ := grep.StdinPipe()
-    grepOut, _ := grep.StdoutPipe()
-    grep.Start()
-    grepIn.Write([]byte("hello grep\ngoodbye grep"))
-    grepIn.Close()
-    grepBytes, _ := fmt.Println(grepOut)
-    _ = grepBytes
-    grep.Wait()
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Exec'ing Processes</h2>
-<p>Sometimes we want to completely replace the current Go process with another. <code>syscall.Exec</code> does this (Unix only) — the Go program disappears and the new process takes over its PID.</p>
-<pre><code>package main
-
-import (
-    "os"
-    "os/exec"
-    "syscall"
-)
-
-func main() {
-    binary, err := exec.LookPath("ls")
-    if err != nil {
-        panic(err)
-    }
-    args := []string{"ls", "-a", "-l", "-h"}
-    env := os.Environ()
-    execErr := syscall.Exec(binary, args, env)
-    if execErr != nil {
-        panic(execErr)
-    }
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Signals</h2>
-<p>Go programs can handle Unix signals for graceful shutdown. The <code>os/signal</code> package notifies a channel when signals arrive.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "os"
-    "os/signal"
-    "syscall"
-)
-
-func main() {
-    sigs := make(chan os.Signal, 1)
-    signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-    done := make(chan bool, 1)
-    go func() {
-        sig := &lt;-sigs
-        fmt.Println()
-        fmt.Println("received:", sig)
-        done &lt;- true
-    }()
-
-    fmt.Println("awaiting signal (press Ctrl+C)")
-    &lt;-done
-    fmt.Println("exiting")
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
-
-<h2>Exit</h2>
-<p>Use <code>os.Exit</code> to immediately exit with a status code. Deferred functions will NOT run. Use this for scripts/CLI tools, not libraries.</p>
-<pre><code>package main
-
-import (
-    "fmt"
-    "os"
-)
-
-func main() {
-    defer fmt.Println("!") // this will NOT be printed
-    os.Exit(3)
-}
-</code></pre>
-<a class="playground-btn" href="#">▶ Run in Go Playground</a>
