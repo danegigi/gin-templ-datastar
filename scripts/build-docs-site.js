@@ -24,9 +24,9 @@ const PAGES = [
   {
     slug: "go-basics",
     title: "Go Basics",
-    blurb: "The Go language fundamentals — types, variables, functions, structs, slices, maps, and control flow.",
+    blurb: "The Go language fundamentals — every topic from Go by Example with runnable playground links.",
     src: `${UPLOADS}/c3c1af49d041422c908ee8b59dccf753_GO_Basics.docx`,
-    append: "go-basics.html",
+    append: "go-basics-gobyexample.html",
   },
   {
     slug: "go-stdlib",
